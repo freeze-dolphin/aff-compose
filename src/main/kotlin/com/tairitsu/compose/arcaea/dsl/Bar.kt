@@ -148,10 +148,6 @@ class Bar(private val diff: Difficulty, private val count: Int) {
                 tap(*tap)
             }
 
-            fun arcTap(vararg tap: Number) {
-                tap(*tap)
-            }
-
             companion object {
                 fun createProxy(
                     bar: Bar,
