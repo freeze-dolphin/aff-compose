@@ -7,14 +7,17 @@ import kotlin.math.roundToInt
 
 class Chart {
 
-    var audioOffset: Long = 0
+    val configuration: ChartConfiguration = ChartConfiguration(0, mutableListOf())
     val mainTiming: TimingGroup = TimingGroup("main")
     val subTiming: MutableMap<String, TimingGroup> = mutableMapOf()
 
     fun serialize(): String {
         val sb = StringBuilder()
 
-        sb.append("AudioOffset:${audioOffset}\r\n")
+        sb.append("AudioOffset:${configuration.audioOffset}\r\n")
+        configuration.extra.forEach {
+            sb.append("${it.name}:${it.value}\r\n")
+        }
         sb.append("-\r\n")
 
         sb.append(mainTiming.serialize(0))
@@ -25,6 +28,24 @@ class Chart {
         }
 
         return sb.toString().trim { it <= ' ' }
+    }
+
+}
+
+
+class ChartConfiguration(var audioOffset: Long, val extra: MutableList<ConfigurationItem>) {
+    data class ConfigurationItem(val name: String, val value: String)
+
+    fun tuneOffset(newOffset: Long) {
+        audioOffset = newOffset
+    }
+
+    fun addItem(name: String, value: String) {
+        extra.add(ConfigurationItem(name, value))
+    }
+
+    fun addItem(name: String, value: Number) {
+        extra.add(ConfigurationItem(name, value.toString()))
     }
 }
 
@@ -86,7 +107,7 @@ class Scenecontrol(
     override val time: Long,
     val type: ScenecontrolType,
     val param1: Double?,
-    val param2: Int?
+    val param2: Int?,
 ) : TimedObject {
     override fun serialize(): String {
         val params = when {
