@@ -126,43 +126,43 @@ fun Difficulty.timingGroup(name: String = uuid4().toString(), closure: TimingGro
 
 // Scenecontrol
 
-fun Difficulty.scenecontrol(
-    time: Long,
+fun <TTime : Number> Difficulty.scenecontrol(
+    time: TTime,
     type: ScenecontrolType,
     param1: Double,
-    param2: Int
+    param2: Int,
 ) {
     val ctx = this.currentTimingGroup
-    val sc = Scenecontrol(time, type, param1, param2)
+    val sc = Scenecontrol(time.toLong(), type, param1, param2)
     return ctx.addScenecontrol(sc)
 }
 
-fun Difficulty.scenecontrol(
-    time: Long,
+fun <TTime : Number> Difficulty.scenecontrol(
+    time: TTime,
     type: ScenecontrolType,
-    param2: Int
+    param2: Int,
 ) {
     val ctx = this.currentTimingGroup
-    val sc = Scenecontrol(time, type, null, param2)
+    val sc = Scenecontrol(time.toLong(), type, null, param2)
     return ctx.addScenecontrol(sc)
 }
 
-fun Difficulty.scenecontrol(
-    time: Long,
+fun <TTime : Number> Difficulty.scenecontrol(
+    time: TTime,
     type: ScenecontrolType,
     param1: Double,
 ) {
     val ctx = this.currentTimingGroup
-    val sc = Scenecontrol(time, type, param1, null)
+    val sc = Scenecontrol(time.toLong(), type, param1, null)
     return ctx.addScenecontrol(sc)
 }
 
-fun Difficulty.scenecontrol(
-    time: Long,
+fun <TTime : Number> Difficulty.scenecontrol(
+    time: TTime,
     type: ScenecontrolType,
 ) {
     val ctx = this.currentTimingGroup
-    val sc = Scenecontrol(time, type, null, null)
+    val sc = Scenecontrol(time.toLong(), type, null, null)
     return ctx.addScenecontrol(sc)
 }
 
