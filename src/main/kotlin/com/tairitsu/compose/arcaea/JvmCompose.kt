@@ -13,8 +13,32 @@ fun MapSet.writeToFolder(outputPath: File) {
     writeToFile(outputPath.path)
 }
 
-fun Difficulty.printToConsole() {
-    this.chart.serialize().let {
-        println(it)
+fun Difficulty.printToConsole(containHeaders: Boolean = true, containBaseTiming: Boolean = true) {
+    var headerOver = false
+    var baseTimingOver = false
+    this.chart.serialize().split("\r\n").forEach {
+        if (it.startsWith("-")) {
+            headerOver = true
+            if (containHeaders) {
+                println("-")
+            }
+            return@forEach
+        }
+
+        if (!headerOver && containHeaders) {
+            println(it)
+            return@forEach
+        }
+
+        if (it.startsWith("timing") && !baseTimingOver) {
+            baseTimingOver = true
+            if (containBaseTiming) {
+                println(it)
+            }
+            return@forEach
+        }
+
+        if (headerOver) println(it)
+
     }
 }
