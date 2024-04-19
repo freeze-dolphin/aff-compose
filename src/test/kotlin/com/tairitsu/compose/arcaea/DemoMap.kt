@@ -28,6 +28,8 @@ object DemoMap {
                 chartDesigner = "Eric_Lian"
                 jacketDesigner = "Eric_Lian"
 
+                chart.configuration.tuneOffset(1)
+                chart.configuration.addItem("Version", 1)
 
                 // The timing setting for your main timing group
                 timing(
@@ -230,8 +232,7 @@ object DemoMap {
                     normalNote(0, 1)
                 }
 
-
-                printToConsole()
+                printToConsole(containHeaders = true, containBaseTiming = false)
             }
         }.writeToFolder(File(File("."), "result"))
     }
