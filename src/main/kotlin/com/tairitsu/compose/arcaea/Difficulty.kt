@@ -33,6 +33,7 @@ class Difficulty {
         PRESENT(1),
         FUTURE(2),
         BEYOND(3),
+        ETERNAL(4),
     }
 
     /**
@@ -101,6 +102,7 @@ class Difficulty {
             1 -> RatingClass.PRESENT
             2 -> RatingClass.FUTURE
             3 -> RatingClass.BEYOND
+            4 -> RatingClass.ETERNAL
             else -> throw IllegalArgumentException("Invalid rating class")
         }
 
