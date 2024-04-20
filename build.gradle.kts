@@ -1,10 +1,10 @@
 plugins {
     alias(libs.plugins.jvm)
-    kotlin("plugin.serialization") version "1.9.21"
+    kotlin("plugin.serialization") version "1.9.22"
+    id("com.autonomousapps.dependency-analysis") version "1.29.0"
     `java-library`
     java
     `maven-publish`
-    id("com.autonomousapps.dependency-analysis") version "1.29.0"
 }
 
 group = "com.tairitsu"
@@ -21,14 +21,10 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:${project.property("kotlinxSerializationJsonVersion")}")
-    api("org.jetbrains.kotlinx:kotlinx-serialization-core:${project.property("kotlinxSerializationJsonVersion")}")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${property("kotlinxSerializationJsonVersion")}")
 
     // https://mvnrepository.com/artifact/com.benasher44/uuid
-    api("com.benasher44:uuid:0.8.2")
-
-    // https://mvnrepository.com/artifact/io.ktor/ktor-io
-    api("io.ktor:ktor-io:2.3.8")
+    implementation("com.benasher44:uuid:0.8.2")
 }
 
 java {
