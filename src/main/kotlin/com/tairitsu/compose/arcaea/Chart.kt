@@ -410,9 +410,12 @@ class ArcNote(
         SOSI("sosi"),
     }
 
-    enum class Color(val value: Int) {
-        BLUE(0),
-        RED(1),
+    class Color(val value: Int) {
+        companion object {
+            val BLUE = Color(0)
+            val RED = Color(1)
+            val GREEN = Color(2)
+        }
     }
 
     class ArcTapList(private val tapList: MutableList<Int>) {
