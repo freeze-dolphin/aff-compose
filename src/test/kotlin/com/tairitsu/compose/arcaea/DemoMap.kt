@@ -232,7 +232,9 @@ object DemoMap {
                     normalNote(0, 1)
                 }
 
-                printToConsole(containHeaders = true, containBaseTiming = false)
+                vlArctapWithRadius(1, 1.0 to 1.0, 1.0)
+
+                printToConsole(containHeaders = true, containBaseTiming = true)
             }
         }.writeToFolder(File(File("."), "result"))
     }
