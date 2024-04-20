@@ -12,7 +12,10 @@ object DemoMap {
     fun main() {
         mapSet {
             id = "composingdream"
-            titleLocalized = LocalizedString("Composing Dream")
+            titleLocalized = LocalizedString("Composing Dream").apply {
+                zhHans = "梦里写谱"
+                ja = "夢を作曲する"
+            }
             idx = 330
             artist = "ZZM"
             bpm = "124"
