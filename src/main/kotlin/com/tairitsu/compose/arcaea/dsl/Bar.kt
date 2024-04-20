@@ -1,6 +1,5 @@
 package com.tairitsu.compose.arcaea.dsl
 
-import com.tairitsu.compose.*
 import com.tairitsu.compose.arcaea.*
 import kotlin.math.roundToLong
 import com.tairitsu.compose.arcaea.ArcNote as MappingArcNote
@@ -11,6 +10,7 @@ import com.tairitsu.compose.arcaea.ArcNote as MappingArcNote
  * [diff] is the difficulty we are modifying.
  * [count] is the bar number we are modifying.
  */
+@Deprecated(message = "This feature is currently not supported", level = DeprecationLevel.WARNING)
 class Bar(private val diff: Difficulty, private val count: Int) {
 
     /**
