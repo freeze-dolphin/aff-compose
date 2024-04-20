@@ -1,14 +1,13 @@
 plugins {
     alias(libs.plugins.jvm)
     kotlin("plugin.serialization") version "1.9.22"
-    id("com.autonomousapps.dependency-analysis") version "1.29.0"
+    id("com.autonomousapps.dependency-analysis") version "1.31.0"
     `java-library`
     java
     `maven-publish`
 }
 
 group = "com.tairitsu"
-version = "1.0.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -23,8 +22,9 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${property("kotlinxSerializationJsonVersion")}")
 
-    // https://mvnrepository.com/artifact/com.benasher44/uuid
     implementation("com.benasher44:uuid:0.8.2")
+
+    api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3")
 }
 
 java {
