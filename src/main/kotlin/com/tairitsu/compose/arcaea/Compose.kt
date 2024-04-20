@@ -248,3 +248,31 @@ fun <TTime : Number, TEndTime : Number, TStartPositionX : Number, TStartPosition
     )
     return ctx.addArcNote(note)
 }
+
+// Var-len Arctap
+
+fun <TTime : Number, TStartPositionX : Number, TStartPositionY : Number, TEndPositionX : Number, TEndPositionY : Number> Difficulty.vlArctap(
+    time: TTime, startPosition: Pair<TStartPositionX, TStartPositionY>, endPosition: Pair<TEndPositionX, TEndPositionY>,
+) {
+    arcNote(time, time, startPosition, ArcNote.Type.S, endPosition, ArcNote.Color(3), false) { }
+}
+
+fun <TTime : Number> Difficulty.vlArctapWithRadius(
+    time: TTime, centerPosition: Pair<Double, Double>, radius: Double,
+) {
+    vlArctap(
+        time,
+        centerPosition.first - radius to centerPosition.second,
+        centerPosition.first + radius to centerPosition.second
+    )
+}
+
+fun <TTime : Number> Difficulty.vlArctapWithDistance(
+    time: TTime, centerPosition: Pair<Double, Double>, distance: Double,
+) {
+    vlArctapWithRadius(
+        time,
+        centerPosition,
+        distance / 2
+    )
+}
