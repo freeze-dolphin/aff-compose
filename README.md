@@ -17,7 +17,6 @@ deprecated
 [![](https://jitpack.io/v/freeze-dolphin/aff-compose.svg)](https://jitpack.io/#freeze-dolphin/aff-compose)
 
 ```kotlin
-
 val affComposeVersion = "eed8e2ad78" // the hash / tag
 
 repositories {
