@@ -219,6 +219,13 @@ val Difficulty.sisi: ArcNote.CurveType
 val Difficulty.soso: ArcNote.CurveType
     get() = ArcNote.CurveType.SOSO
 
+val Difficulty.blue: ArcNote.Color
+    get() = ArcNote.Color.BLUE
+val Difficulty.red: ArcNote.Color
+    get() = ArcNote.Color.RED
+val Difficulty.green: ArcNote.Color
+    get() = ArcNote.Color.GREEN
+
 fun <TTime : Number, TEndTime : Number> Difficulty.arcNote(
     time: TTime,
     endTime: TEndTime,
