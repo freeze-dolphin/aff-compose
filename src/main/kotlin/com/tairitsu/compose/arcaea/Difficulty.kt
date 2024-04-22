@@ -1,20 +1,16 @@
 package com.tairitsu.compose.arcaea
 
 import com.tairitsu.compose.arcaea.DifficultyContext.Companion.wrap
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
+import com.tairitsu.compose.arcaea.serializer.DifficultyRatingClassSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 
 /**
  * A difficulty of the song
  */
 @Serializable
 class Difficulty {
+
     /**
      * The rating class of the difficulty, 0 for past, 1 for present, 2 for future, and 3 for beyond
      */
@@ -91,27 +87,5 @@ class Difficulty {
     companion object {
         val DifficultyContext.timingGroupStack: ArrayDeque<TimingGroup>
             get() = this.wrap("AffComposeTimingGroupStack")
-    }
-
-    /**
-     * Serializer for [RatingClass]
-     */
-    object DifficultyRatingClassSerializer : KSerializer<RatingClass> {
-        override fun deserialize(decoder: Decoder): RatingClass = when (decoder.decodeInt()) {
-            0 -> RatingClass.PAST
-            1 -> RatingClass.PRESENT
-            2 -> RatingClass.FUTURE
-            3 -> RatingClass.BEYOND
-            4 -> RatingClass.ETERNAL
-            else -> throw IllegalArgumentException("Invalid rating class")
-        }
-
-        @OptIn(ExperimentalSerializationApi::class)
-        override val descriptor: SerialDescriptor
-            get() = SerialDescriptor("Difficulty.RatingClass", Int.serializer().descriptor)
-
-        override fun serialize(encoder: Encoder, value: RatingClass) {
-            encoder.encodeInt(value.rating)
-        }
     }
 }

@@ -183,32 +183,32 @@ fun <TTime : Number, TEndTime : Number> Difficulty.holdNote(time: TTime, endTime
 
 // ArcNote
 
-val Difficulty.s: ArcNote.Type
-    get() = ArcNote.Type.S
-val Difficulty.b: ArcNote.Type
-    get() = ArcNote.Type.B
-val Difficulty.si: ArcNote.Type
-    get() = ArcNote.Type.SI
-val Difficulty.so: ArcNote.Type
-    get() = ArcNote.Type.SO
-val Difficulty.siso: ArcNote.Type
-    get() = ArcNote.Type.SISO
-val Difficulty.sosi: ArcNote.Type
-    get() = ArcNote.Type.SOSI
-val Difficulty.sisi: ArcNote.Type
-    get() = ArcNote.Type.SISI
-val Difficulty.soso: ArcNote.Type
-    get() = ArcNote.Type.SOSO
+val Difficulty.s: ArcNote.CurveType
+    get() = ArcNote.CurveType.S
+val Difficulty.b: ArcNote.CurveType
+    get() = ArcNote.CurveType.B
+val Difficulty.si: ArcNote.CurveType
+    get() = ArcNote.CurveType.SI
+val Difficulty.so: ArcNote.CurveType
+    get() = ArcNote.CurveType.SO
+val Difficulty.siso: ArcNote.CurveType
+    get() = ArcNote.CurveType.SISO
+val Difficulty.sosi: ArcNote.CurveType
+    get() = ArcNote.CurveType.SOSI
+val Difficulty.sisi: ArcNote.CurveType
+    get() = ArcNote.CurveType.SISI
+val Difficulty.soso: ArcNote.CurveType
+    get() = ArcNote.CurveType.SOSO
 
 fun <TTime : Number, TEndTime : Number> Difficulty.arcNote(
     time: TTime,
     endTime: TEndTime,
     startPosition: Position,
-    curveType: ArcNote.Type,
+    curveType: ArcNote.CurveType,
     endPosition: Position,
     color: ArcNote.Color? = null,
     isGuidingLine: Boolean = color == null,
-    arcTapClosure: (ArcNote.ArcTapList.() -> Unit) = {},
+    arcTapClosure: (ArcNote.ArcTapList.() -> Unit) = { },
 ): Note {
     val ctx = this.currentTimingGroup
     val note = ArcNote(
@@ -228,11 +228,11 @@ fun <TTime : Number, TEndTime : Number, TStartPositionX : Number, TStartPosition
     time: TTime,
     endTime: TEndTime,
     startPosition: Pair<TStartPositionX, TStartPositionY>,
-    curveType: ArcNote.Type,
+    curveType: ArcNote.CurveType,
     endPosition: Pair<TEndPositionX, TEndPositionY>,
     color: ArcNote.Color? = null,
     isGuidingLine: Boolean = color == null,
-    arcTapClosure: (ArcNote.ArcTapList.() -> Unit) = {},
+    arcTapClosure: (ArcNote.ArcTapList.() -> Unit) = { },
 ): Note {
     val ctx = this.currentTimingGroup
     val note = ArcNote(
@@ -253,7 +253,7 @@ fun <TTime : Number, TEndTime : Number, TStartPositionX : Number, TStartPosition
 fun <TTime : Number, TStartPositionX : Number, TStartPositionY : Number, TEndPositionX : Number, TEndPositionY : Number> Difficulty.vlArctap(
     time: TTime, startPosition: Pair<TStartPositionX, TStartPositionY>, endPosition: Pair<TEndPositionX, TEndPositionY>,
 ) {
-    arcNote(time, time, startPosition, ArcNote.Type.S, endPosition, ArcNote.Color(3), false) { }
+    arcNote(time, time, startPosition, ArcNote.CurveType.S, endPosition, ArcNote.Color(3), false) { }
 }
 
 fun <TTime : Number> Difficulty.vlArctapWithRadius(

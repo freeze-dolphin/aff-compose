@@ -1,10 +1,16 @@
 package com.tairitsu.compose.arcaea
 
-import java.io.Serializable
+import com.tairitsu.compose.arcaea.serializer.ArcNoteColorSerializer
+import com.tairitsu.compose.arcaea.serializer.ArcNoteCurveTypeSerializer
+import com.tairitsu.compose.arcaea.serializer.ArcTapListSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import java.text.DecimalFormat
 import kotlin.math.roundToInt
 
 
+@Serializable
 class Chart {
 
     val configuration: ChartConfiguration = ChartConfiguration(0, mutableListOf())
@@ -22,7 +28,13 @@ class Chart {
 
         sb.append(mainTiming.serialize(0))
         for (timing in subTiming.values) {
-            sb.append("timinggroup(${timing.specialEffects.serialize()}){\r\n")
+            sb.append(
+                "timinggroup(${
+                    timing.specialEffects.joinToString("_") {
+                        it.serialize()
+                    }
+                }){\r\n"
+            )
             sb.append(timing.serialize(padding = 4))
             sb.append("};\r\n")
         }
@@ -33,7 +45,9 @@ class Chart {
 }
 
 
-class ChartConfiguration(var audioOffset: Long, val extra: MutableList<ConfigurationItem>) {
+@Serializable
+data class ChartConfiguration(var audioOffset: Long, val extra: MutableList<ConfigurationItem>) {
+    @Serializable
     data class ConfigurationItem(val name: String, val value: String)
 
     fun tuneOffset(newOffset: Long) {
@@ -81,6 +95,7 @@ internal val Double.affFormat: String
         return DecimalFormat("#0.00").format((this * 100.00).roundToInt() / 100.00)
     }
 
+@Serializable
 class Timing(val offset: Long, val bpm: Double, val beats: Double) : TimedObject {
     override val time: Long
         get() = offset
@@ -103,6 +118,7 @@ enum class ScenecontrolType(val id: String, val paramReq1: Boolean, val paramReq
     ENWIDEN_LANES("enwidenlanes", true, true)
 }
 
+@Serializable
 class Scenecontrol(
     override val time: Long,
     val type: ScenecontrolType,
@@ -132,7 +148,7 @@ class Scenecontrol(
     }
 }
 
-@Suppress("unused")
+@Serializable
 enum class TimingGroupSpecialEffectType(val codeName: String) {
     NO_INPUT("noinput"),
     FADING_HOLDS("fadingholds"),
@@ -140,29 +156,30 @@ enum class TimingGroupSpecialEffectType(val codeName: String) {
     ANGLEY("angley"),
 }
 
-class TimingGroupSpecialEffects {
-
-    private val effects = mutableListOf<String>()
-
-    fun add(effect: TimingGroupSpecialEffectType, extraParam: Int?) {
-        if (extraParam == null) {
-            effects.add(effect.codeName)
-        } else {
-            effects.add("${effect.codeName}${extraParam}")
-        }
-    }
+@Serializable
+data class TimingGroupSpecialEffect(val effect: TimingGroupSpecialEffectType, val extraParam: Int?) {
 
     fun serialize(): String {
-        return effects.joinToString(separator = "_")
+        return "${effect.codeName}${extraParam ?: ""}"
     }
+
 }
 
-class TimingGroup(val name: String) {
+@Serializable
+class TimingGroup {
 
-    val specialEffects: TimingGroupSpecialEffects = TimingGroupSpecialEffects()
+    @Transient
+    var name: String = ""
+
+    constructor(name: String) {
+        this.name = name
+    }
+
+    val specialEffects: MutableList<TimingGroupSpecialEffect> = mutableListOf()
 
     internal val timing: MutableList<Timing> = mutableListOf()
 
+    @Transient
     private val noteFilters: ArrayDeque<NoteFilter> = ArrayDeque()
 
     private val notes = mutableListOf<Note>()
@@ -248,14 +265,14 @@ class TimingGroup(val name: String) {
     }
 
     fun addSpecialEffect(effect: TimingGroupSpecialEffectType, extraParam: Int?) {
-        specialEffects.add(effect, extraParam)
+        specialEffects.add(TimingGroupSpecialEffect(effect, extraParam))
     }
 
     fun addSpecialEffect(effect: TimingGroupSpecialEffectType) {
         if (effect == TimingGroupSpecialEffectType.ANGLEX || effect == TimingGroupSpecialEffectType.ANGLEY) {
             throw IllegalArgumentException("Effect `${effect.codeName}` needs a parameter")
         }
-        specialEffects.add(effect, null)
+        specialEffects.add(TimingGroupSpecialEffect(effect, null))
     }
 
     fun serialize(padding: Int): String {
@@ -280,7 +297,8 @@ class TimingGroup(val name: String) {
     }
 }
 
-abstract class Note : TimedObject {
+@Serializable
+sealed class Note : TimedObject {
     override fun toString(): String = serialize()
 
     object Comparator : kotlin.Comparator<Note> {
@@ -314,18 +332,24 @@ abstract class Note : TimedObject {
     }
 }
 
-abstract class KeyboardNote : Note() {
+@Serializable
+@SerialName("keyboard")
+sealed class KeyboardNote : Note() {
     abstract val column: Int
 }
 
-class NormalNote(
+@Serializable
+@SerialName("normal")
+data class NormalNote(
     override val time: Long,
     override val column: Int,
 ) : KeyboardNote() {
     override fun serialize(): String = "($time,$column);"
 }
 
-class HoldNote(
+@Serializable
+@SerialName("hold")
+data class HoldNote(
     override val time: Long,
     val endTime: Long,
     override val column: Int,
@@ -333,22 +357,28 @@ class HoldNote(
     override fun serialize(): String = "hold($time,$endTime,$column);"
 }
 
-class ArcNote(
+@Serializable
+@SerialName("arc")
+data class ArcNote(
     override val time: Long,
     val endTime: Long,
     val startPosition: Position,
-    val curveType: Type,
+    val curveType: CurveType,
     val endPosition: Position,
     val color: Color,
-    isGuidingLine: Boolean,
-    arcTapClosure: (ArcTapList.() -> Unit) = {},
+    var hitSound: String,
+    var isGuidingLine: Boolean,
+
+    @Serializable(ArcTapListSerializer::class)
+    @SerialName("tapList")
+    val arcTapList: ArcTapList,
 ) : Note() {
 
     constructor(
         time: Long,
         endTime: Long,
         startPosition: Pair<Double, Double>,
-        curveType: Type,
+        curveType: CurveType,
         endPosition: Pair<Double, Double>,
         color: Color,
         isGuidingLine: Boolean,
@@ -360,29 +390,51 @@ class ArcNote(
         curveType,
         Position(endPosition.first, endPosition.second),
         color,
+        "none",
         isGuidingLine,
-        arcTapClosure
-    )
+        ArcTapList(mutableListOf())
+    ) {
+        arcTapClosure.invoke(arcTapList)
+        if (tapTimestampList.isNotEmpty()) {
+            this@ArcNote.isGuidingLine = true
+        }
+    }
 
-    val padding = "none"
+    constructor(
+        time: Long,
+        endTime: Long,
+        startPosition: Position,
+        curveType: CurveType,
+        endPosition: Position,
+        color: Color,
+        isGuidingLine: Boolean,
+        arcTapClosure: (ArcTapList.() -> Unit) = {},
+    ) : this(
+        time,
+        endTime,
+        startPosition,
+        curveType,
+        endPosition,
+        color,
+        "none",
+        isGuidingLine,
+        ArcTapList(mutableListOf())
+    ) {
+        arcTapClosure.invoke(arcTapList)
+        if (tapTimestampList.isNotEmpty()) {
+            this@ArcNote.isGuidingLine = true
+        }
+    }
 
-    private val isGuidingLineField: Boolean = isGuidingLine
-
-    val isGuidingLine: Boolean
-        get() = isGuidingLineField || tapTimestampList.isNotEmpty()
-
-    private val tapTimestampList: MutableList<Int> = mutableListOf()
+    @Transient
+    private val tapTimestampList: MutableList<Long> = mutableListOf()
 
     val tapList: ArcTapList
         get() = ArcTapList(tapTimestampList)
 
-    init {
-        arcTapClosure(tapList)
-    }
-
     override fun serialize(): String {
         val sb = StringBuilder()
-        sb.append("arc(${time},${endTime},${startPosition.x.affFormat},${endPosition.x.affFormat},${curveType.value},${startPosition.y.affFormat},${endPosition.y.affFormat},${color.value},$padding,$isGuidingLine)")
+        sb.append("arc(${time},${endTime},${startPosition.x.affFormat},${endPosition.x.affFormat},${curveType.value},${startPosition.y.affFormat},${endPosition.y.affFormat},${color.value},$hitSound,$isGuidingLine)")
         if (tapTimestampList.isNotEmpty()) {
             tapTimestampList.sort()
             sb.append("[")
@@ -399,18 +451,22 @@ class ArcNote(
         return sb.toString()
     }
 
-    enum class Type(val value: String) {
-        S("s"),
-        B("b"),
-        SI("si"),
-        SO("so"),
-        SISI("sisi"),
-        SOSO("soso"),
-        SISO("siso"),
-        SOSI("sosi"),
+    @Serializable(ArcNoteCurveTypeSerializer::class)
+    data class CurveType(val value: String) {
+        companion object {
+            val S = CurveType("s")
+            val B = CurveType("b")
+            val SI = CurveType("si")
+            val SO = CurveType("so")
+            val SISI = CurveType("sisi")
+            val SOSO = CurveType("soso")
+            val SISO = CurveType("siso")
+            val SOSI = CurveType("sosi")
+        }
     }
 
-    class Color(val value: Int) {
+    @Serializable(ArcNoteColorSerializer::class)
+    data class Color(val value: Int) {
         companion object {
             val BLUE = Color(0)
             val RED = Color(1)
@@ -418,29 +474,29 @@ class ArcNote(
         }
     }
 
-    class ArcTapList(private val tapList: MutableList<Int>) {
-        fun tap(vararg tap: Int) {
-            tap.forEach { tapList.add(it) }
+    @Serializable
+    data class ArcTapList(
+        val data: MutableList<Long>,
+    ) {
+
+        fun tap(vararg tap: Long) {
+            tap.forEach { data.add(it) }
         }
 
-        fun arctap(vararg tap: Int) {
+        /**
+         * The same as [ArcTapList.tap]
+         */
+        fun arctap(vararg tap: Long) {
             tap(*tap)
         }
-
-        fun arcTap(vararg tap: Int) {
-            tap(*tap)
-        }
-
-        val data: MutableList<Int>
-            get() = tapList
-
     }
 }
 
+@Serializable
 data class Position(
     var x: Double,
     var y: Double,
-) : Serializable {
+) {
 
     /**
      * Returns string representation of the [Position] including its [x] and [y] values.
@@ -456,4 +512,11 @@ infix fun <A : Number, B : Number> A.pos(that: B): Position = Position(this.toDo
 
 fun Pair<Double, Double>.toPosition(): Position {
     return this.first pos this.second
+}
+
+fun Note.withHitsound(hitsound: String): ArcNote {
+    if (this !is ArcNote) throw IllegalStateException("Hitsound is only available for ArcNotes")
+    if (this.isGuidingLine) return this
+    this.hitSound = "${hitsound}_wav"
+    return this
 }
