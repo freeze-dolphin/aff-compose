@@ -265,6 +265,18 @@ class TimingGroup {
     }
 
     fun addSpecialEffect(effect: TimingGroupSpecialEffectType, extraParam: Int?) {
+        if (effect == TimingGroupSpecialEffectType.ANGLEX || effect == TimingGroupSpecialEffectType.ANGLEY) {
+            specialEffects.add(
+                TimingGroupSpecialEffect(
+                    effect, if (extraParam!! <= 0) {
+                        extraParam + (3600 - (extraParam % 3600))
+                    } else {
+                        extraParam % 3600
+                    }
+                )
+            )
+            return
+        }
         specialEffects.add(TimingGroupSpecialEffect(effect, extraParam))
     }
 
@@ -394,8 +406,9 @@ data class ArcNote(
         isGuidingLine,
         ArcTapList(mutableListOf())
     ) {
+        arcTapList.arcNote = this
         arcTapClosure.invoke(arcTapList)
-        if (tapTimestampList.isNotEmpty()) {
+        if (arcTapTimestamps.isNotEmpty()) {
             this@ArcNote.isGuidingLine = true
         }
     }
@@ -420,28 +433,26 @@ data class ArcNote(
         isGuidingLine,
         ArcTapList(mutableListOf())
     ) {
+        arcTapList.arcNote = this
         arcTapClosure.invoke(arcTapList)
-        if (tapTimestampList.isNotEmpty()) {
+        if (arcTapTimestamps.isNotEmpty()) {
             this@ArcNote.isGuidingLine = true
         }
     }
 
-    @Transient
-    private val tapTimestampList: MutableList<Long> = mutableListOf()
-
-    val tapList: ArcTapList
-        get() = ArcTapList(tapTimestampList)
+    private val arcTapTimestamps: MutableList<Long>
+        get() = arcTapList.data
 
     override fun serialize(): String {
         val sb = StringBuilder()
         sb.append("arc(${time},${endTime},${startPosition.x.affFormat},${endPosition.x.affFormat},${curveType.value},${startPosition.y.affFormat},${endPosition.y.affFormat},${color.value},$hitSound,$isGuidingLine)")
-        if (tapTimestampList.isNotEmpty()) {
-            tapTimestampList.sort()
+        if (arcTapTimestamps.isNotEmpty()) {
+            arcTapTimestamps.sort()
             sb.append("[")
-            for (idx in tapTimestampList.indices) {
-                val tap = tapTimestampList[idx]
+            for (idx in arcTapTimestamps.indices) {
+                val tap = arcTapTimestamps[idx]
                 sb.append("arctap(${tap})")
-                if (idx < tapTimestampList.size - 1) {
+                if (idx < arcTapTimestamps.size - 1) {
                     sb.append(",")
                 }
             }
@@ -479,6 +490,8 @@ data class ArcNote(
         val data: MutableList<Long>,
     ) {
 
+        internal var arcNote: ArcNote? = null
+
         fun tap(vararg tap: Long) {
             tap.forEach { data.add(it) }
         }
@@ -489,6 +502,13 @@ data class ArcNote(
         fun arctap(vararg tap: Long) {
             tap(*tap)
         }
+
+        val parent: ArcNote
+            get() {
+                if (arcNote == null) throw IllegalStateException("The parent arcNote is null")
+                return arcNote!!
+            }
+
     }
 }
 
