@@ -12,6 +12,23 @@ This fork is intended to make special effects instead of composing playable char
 the [Bar api](https://github.com/Arcaea-Infinity/aff-compose/blob/master/src/commonMain/kotlin/com/tairitsu/compose/arcaea/dsl/Bar.kt) is
 deprecated
 
+## Installation
+
+[![](https://jitpack.io/v/freeze-dolphin/aff-compose.svg)](https://jitpack.io/#freeze-dolphin/aff-compose)
+
+```kotlin
+
+val affComposeVersion = "eed8e2ad78" // the hash / tag
+
+repositories {
+    maven(url = "https://jitpack.io")
+}
+
+dependencies {
+    implementation("com.github.freeze-dolphin:aff-compose:${affComposeVersion}")
+}
+```
+
 ## Examples
 
 1. [DemoMap](src/test/kotlin/com/tairitsu/compose/arcaea/DemoMap.kt).
