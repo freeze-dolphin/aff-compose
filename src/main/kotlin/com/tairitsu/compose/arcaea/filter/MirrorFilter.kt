@@ -27,7 +27,7 @@ object MirrorFilter : NoteFilter() {
             isGuidingLine = note.isGuidingLine,
         )
 
-        ret.tapList.tap(*note.tapList.data.toLongArray())
+        ret.arcTapList.tap(*note.arcTapList.data.toLongArray())
 
         return ret
     }
