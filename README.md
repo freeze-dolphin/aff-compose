@@ -9,9 +9,14 @@ Compose your [Arcaea](https://arcaea.lowiro.com/) chart by Kotlin DSL.
 2. milliseconds based mapping API.
 
 This fork is intended to make special effects instead of composing playable chart completely using kotlin. So
-the [Bar api](src/main/kotlin/com/tairitsu/compose/arcaea/dsl/Bar.kt) is deprecated
+the [Bar api](https://github.com/Arcaea-Infinity/aff-compose/blob/master/src/commonMain/kotlin/com/tairitsu/compose/arcaea/dsl/Bar.kt) is
+deprecated
 
-## Example
+## Examples
 
-1. Example map: [ZZM - Composing Dream](src/test/kotlin/com/tairitsu/compose/arcaea/DemoMap.kt).
-   This file shows how to use bar and beat based mapping API to create a chart.
+1. [DemoMap](src/test/kotlin/com/tairitsu/compose/arcaea/DemoMap.kt).
+   This file shows simple usage of the apis and how to serialize the chart into String and Json.
+
+2. [ZZM - Composing Dream](https://github.com/Arcaea-Infinity/aff-compose/blob/master/src/jvmTest/kotlin/com/tairitsu/compose/arcaea/DemoMap.kt)
+   This is the original DemoMap made by [@Eric_Lian](https://github.com/ExerciseBook), which uses the deprecated Bar dsl.  
+   It's currently unavailable in this fork because a lot breaking changes have been made. But you can still refer to it and see more usages. 
