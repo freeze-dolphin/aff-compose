@@ -70,7 +70,10 @@ object DemoMap {
                         // use `parent` field to access arcNote object
                         arctap(parent.time) // => arctap(17140)
                     }
-                    arcNote(17140, 18569, 0 to 1, siso, 0.5 to 0) {
+
+                    // You can use infix function `pos` to get a [Position] object, which is also a proper way to represent the coordination
+                    // The [Position] uses `x` and `y` as field, which is more clearly and is preferred
+                    arcNote(17140, 18569, 0 pos 1, siso, 0.5 pos 0) {
                         arctap(parent.endTime)
                     }
                     arcNote(17140, 18093, 0 to 1, siso, 0.25 to 0.25) {
@@ -79,13 +82,13 @@ object DemoMap {
                     arcNote(17140, 17616, 0 to 1, siso, 0 to 0.5)
 
                     // arcNotes with color becomes a arc,
-                    arcNote(19045, 20712, 1.25 to 1.0, b, -0.5 to 0, red)
+                    arcNote(19045, 20712, 1.25 pos 1.0, b, -0.5 pos 0, red)
                     mirror {
                         // but you can still manually set it to a trace
-                        arcNote(19045, 20712, 1.25 to 1.0, b, -0.5 to 0, red, true)
+                        arcNote(19045, 20712, 1.25 pos 1.0, b, -0.5 pos 0, red, true)
                     }
 
-                    holdNote(19045, 20712, 1)
+                    holdNote(19045, 20712, 4)
                 }
 
                 // Here's how to create a var-len arcTap (added in 5.5.6)
