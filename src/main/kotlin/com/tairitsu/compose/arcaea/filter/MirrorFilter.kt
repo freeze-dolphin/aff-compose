@@ -3,7 +3,7 @@ package com.tairitsu.compose.arcaea.filter
 import com.tairitsu.compose.arcaea.*
 
 object MirrorFilter : NoteFilter() {
-    override fun filterKeyboardNote(note: NormalNote): Note {
+    override fun filterNormalNote(note: NormalNote): Note {
         return NormalNote(note.time, 5 - note.column)
     }
 
@@ -27,7 +27,7 @@ object MirrorFilter : NoteFilter() {
             isGuidingLine = note.isGuidingLine,
         )
 
-        ret.tapList.tap(*note.tapList.data.toIntArray())
+        ret.tapList.tap(*note.tapList.data.toLongArray())
 
         return ret
     }
