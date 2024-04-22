@@ -47,9 +47,15 @@ class Difficulties : List<Difficulty> {
     var future: Difficulty? by DifficultyGetting
 
     /**
-     * The [past] difficulty of the song.
+     * The [beyond] difficulty of the song.
      */
     var beyond: Difficulty? by DifficultyGetting
+
+
+    /**
+     * The [eternal] difficulty of the song.
+     */
+    var eternal: Difficulty? by DifficultyGetting
 
     // Query Operations
     override val size: Int = storage.size
@@ -126,7 +132,8 @@ class Difficulties : List<Difficulty> {
                 "present" -> Difficulty.RatingClass.PRESENT
                 "future" -> Difficulty.RatingClass.FUTURE
                 "beyond" -> Difficulty.RatingClass.BEYOND
-                else -> throw IllegalArgumentException("Property name must be one of past, present, future, or beyond")
+                "eternal" -> Difficulty.RatingClass.ETERNAL
+                else -> throw IllegalArgumentException("Property name must be one of past, present, future, beyond, or eternal")
             }
             obj.storage.add(value)
         }

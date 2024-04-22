@@ -65,8 +65,10 @@ fun MapSet.writeToFile(outputDirectory: String) {
 /**
  * Get the existing or creating a new past [Difficulty] of the [MapSet]
  */
-fun Difficulties.past(closure: Difficulty.() -> Unit) {
-    val difficulty = this.past ?: Difficulty()
+fun Difficulties.past(offset: Long = 0, closure: Difficulty.() -> Unit) {
+    val difficulty = (this.past ?: Difficulty()).apply {
+        chart.configuration.tuneOffset(offset)
+    }
     difficulty.closure()
     this.past = difficulty
 }
@@ -74,8 +76,10 @@ fun Difficulties.past(closure: Difficulty.() -> Unit) {
 /**
  * Get the existing or creating a new present [Difficulty] of the [MapSet]
  */
-fun Difficulties.present(closure: Difficulty.() -> Unit) {
-    val difficulty = this.present ?: Difficulty()
+fun Difficulties.present(offset: Long = 0, closure: Difficulty.() -> Unit) {
+    val difficulty = (this.present ?: Difficulty()).apply {
+        chart.configuration.tuneOffset(offset)
+    }
     difficulty.closure()
     this.present = difficulty
 }
@@ -83,8 +87,10 @@ fun Difficulties.present(closure: Difficulty.() -> Unit) {
 /**
  * Get the existing or creating a new future [Difficulty] of the [MapSet]
  */
-fun Difficulties.future(closure: Difficulty.() -> Unit) {
-    val difficulty = this.future ?: Difficulty()
+fun Difficulties.future(offset: Long = 0, closure: Difficulty.() -> Unit) {
+    val difficulty = (this.future ?: Difficulty()).apply {
+        chart.configuration.tuneOffset(offset)
+    }
     difficulty.closure()
     this.future = difficulty
 }
@@ -92,10 +98,23 @@ fun Difficulties.future(closure: Difficulty.() -> Unit) {
 /**
  * Get the existing or creating a new past [Difficulty] of the [MapSet]
  */
-fun Difficulties.beyond(closure: Difficulty.() -> Unit) {
-    val difficulty = this.beyond ?: Difficulty()
+fun Difficulties.beyond(offset: Long = 0, closure: Difficulty.() -> Unit) {
+    val difficulty = (this.beyond ?: Difficulty()).apply {
+        chart.configuration.tuneOffset(offset)
+    }
     difficulty.closure()
     this.beyond = difficulty
+}
+
+/**
+ * Get the existing or creating a new past [Difficulty] of the [MapSet]
+ */
+fun Difficulties.eternal(offset: Long = 0, closure: Difficulty.() -> Unit) {
+    val difficulty = (this.eternal ?: Difficulty()).apply {
+        chart.configuration.tuneOffset(offset)
+    }
+    difficulty.closure()
+    this.eternal = difficulty
 }
 
 // Timing

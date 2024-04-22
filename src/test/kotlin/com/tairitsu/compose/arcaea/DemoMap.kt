@@ -2,7 +2,6 @@ package com.tairitsu.compose.arcaea
 
 import com.tairitsu.compose.arcaea.serializer.generateChartJson
 import com.tairitsu.compose.arcaea.serializer.generateTimingGroupJson
-import kotlinx.serialization.Serializable
 import java.io.File
 import kotlin.test.Test
 
@@ -25,8 +24,18 @@ object DemoMap {
             audioPreviewEnd = 51340L
             side = MapSet.Side.LIGHT
 
-            difficulties.future {
-                chart.configuration.tuneOffset(-660)
+            difficulties.future(-320) {
+                timing(
+                    offset = 0,
+                    bpm = 126,
+                    beats = 4,
+                )
+
+                println(generateChartJson())
+            }
+
+            difficulties.eternal(-600) {
+                chart.configuration.addItem("Version", 1.0)
 
                 timing(
                     offset = 0,
