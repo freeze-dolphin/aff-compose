@@ -3,6 +3,7 @@ package com.tairitsu.compose.arcaea
 import com.tairitsu.compose.arcaea.serializer.ArcNoteColorSerializer
 import com.tairitsu.compose.arcaea.serializer.ArcNoteCurveTypeSerializer
 import com.tairitsu.compose.arcaea.serializer.ArcTapListSerializer
+import com.tairitsu.compose.arcaea.serializer.PositionSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -512,7 +513,7 @@ data class ArcNote(
     }
 }
 
-@Serializable
+@Serializable(PositionSerializer::class)
 data class Position(
     var x: Double,
     var y: Double,
