@@ -132,9 +132,21 @@ fun <TOffset : Number, TBpm : Number, TBeat : Number> Difficulty.timing(
 // Timing group
 
 /**
+ * Get the main [TimingGroup] of the [Difficulty]
+ */
+fun Difficulty.mainTimingGroup(closure: TimingGroup.() -> Unit) {
+    closure.invoke(chart.mainTiming)
+}
+
+/**
  * Get the existing or creating a new [TimingGroup] of the [Difficulty]
  */
 fun Difficulty.timingGroup(name: String = uuid4().toString(), closure: TimingGroup.() -> Unit): TimingGroup {
+    if (name == "main") {
+        mainTimingGroup(closure)
+        return chart.mainTiming
+    }
+
     val newTimingGroup = chart.subTiming.getOrPut(name) { TimingGroup(name) }
     context.timingGroupStack.addLast(newTimingGroup)
     closure(newTimingGroup)
@@ -267,6 +279,30 @@ fun <TTime : Number, TEndTime : Number, TStartPositionX : Number, TStartPosition
         startPosition.first.toDouble() to startPosition.second.toDouble(),
         curveType,
         endPosition.first.toDouble() to endPosition.second.toDouble(),
+        color ?: ArcNote.Color.BLUE,
+        isGuidingLine,
+        arcTapClosure
+    )
+    return ctx.addArcNote(note)
+}
+
+fun <TTime : Number, TEndTime : Number> Difficulty.arcNoteLegacy(
+    time: TTime,
+    endTime: TEndTime,
+    x1: Double, x2: Double,
+    curveType: ArcNote.CurveType,
+    y1: Double, y2: Double,
+    color: ArcNote.Color? = null,
+    isGuidingLine: Boolean = color == null,
+    arcTapClosure: (ArcNote.ArcTapList.() -> Unit) = { },
+): Note {
+    val ctx = this.currentTimingGroup
+    val note = ArcNote(
+        time.toLong(),
+        endTime.toLong(),
+        x1 pos y1,
+        curveType,
+        x2 pos y2,
         color ?: ArcNote.Color.BLUE,
         isGuidingLine,
         arcTapClosure

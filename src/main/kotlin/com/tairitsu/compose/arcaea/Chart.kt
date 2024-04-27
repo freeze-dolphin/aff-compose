@@ -29,13 +29,11 @@ class Chart {
 
         sb.append(mainTiming.serialize(0))
         for (timing in subTiming.values) {
-            sb.append(
-                "timinggroup(${
-                    timing.specialEffects.joinToString("_") {
-                        it.serialize()
-                    }
-                }){\r\n"
-            )
+            sb.append("timinggroup(${
+                timing.specialEffects.joinToString("_") {
+                    it.serialize()
+                }
+            }){\r\n")
             sb.append(timing.serialize(padding = 4))
             sb.append("};\r\n")
         }
@@ -43,6 +41,223 @@ class Chart {
         return sb.toString().trim { it <= ' ' }
     }
 
+    companion object {
+
+        class FailedToParseAffToChartException(s: String) : Exception(s)
+
+        private enum class AffProcedure {
+            NORMAL_NOTE, HOLD_NOTE, ARC_NOTE, TIMING, TIMING_GROUP_START, TIMING_GROUP_END, SCENECONTROL;
+
+            companion object {
+                fun fromString(procedure: String): AffProcedure = when (procedure) {
+                    "hold" -> HOLD_NOTE
+                    "arc" -> ARC_NOTE
+                    "timing" -> TIMING
+                    "timinggroup" -> TIMING_GROUP_START
+                    "};" -> TIMING_GROUP_END
+                    "scenecontrol" -> SCENECONTROL
+                    else -> NORMAL_NOTE
+                }
+            }
+        }
+
+        private fun extractIntFromString(s: String): Int = s.filter {
+            it.isDigit()
+        }.toInt()
+
+        fun fromAff(aff: String): Chart {
+            var result = Chart()
+            mapSet {
+                difficulties.future {
+                    val lines = aff.split("\r\n")
+                    val metaIdx = lines.indexOf("-")
+
+                    // set headers
+                    if (metaIdx != -1) {
+                        lines.subList(0, metaIdx).forEach {
+                            parseHeaders(it).let { header ->
+                                if (header.first == "AudioOffset") {
+                                    chart.configuration.tuneOffset(header.second.toLong())
+                                } else {
+                                    chart.configuration.addItem(header.first, header.second)
+                                }
+                            }
+                        }
+                    }
+
+                    val commands = lines.subList(metaIdx + 1, lines.size)
+
+                    val mgr = TimingGroupManager(this.chart)
+
+                    commands.forEach { cmd ->
+                        try {
+                            val parser = ParamParser(cmd)
+
+                            when (parser.affProcedure) {
+                                AffProcedure.NORMAL_NOTE -> parser.parse {
+                                    timingGroup(mgr.currentTimingGroup.name) {
+                                        normalNote(nextParam().toInt(), nextParam().toInt())
+                                    }
+                                }
+
+                                AffProcedure.HOLD_NOTE -> parser.parse {
+                                    timingGroup(mgr.currentTimingGroup.name) {
+                                        holdNote(
+                                            nextParam().toInt(), nextParam().toInt(), nextParam().toInt()
+                                        )
+                                    }
+                                }
+
+                                AffProcedure.ARC_NOTE -> parser.parse {
+                                    timingGroup(mgr.currentTimingGroup.name) {
+                                        if (this@parse.data[9].toBoolean().not()) {
+                                            arcNoteLegacy(
+                                                nextParam().toInt(),
+                                                nextParam().toInt(),
+                                                nextParam().toDouble(),
+                                                nextParam().toDouble(),
+                                                ArcNote.CurveType(nextParam()),
+                                                nextParam().toDouble(),
+                                                nextParam().toDouble(),
+                                                ArcNote.Color(nextParam().toInt()),
+                                                false
+                                            )
+                                        } else {
+                                            arcNoteLegacy(
+                                                nextParam().toInt(),
+                                                nextParam().toInt(),
+                                                nextParam().toDouble(),
+                                                nextParam().toDouble(),
+                                                ArcNote.CurveType(nextParam()),
+                                                nextParam().toDouble(),
+                                                nextParam().toDouble(),
+                                                ArcNote.Color(nextParam().toInt()),
+                                                true
+                                            ) {
+                                                parser.arctapList.forEach {
+                                                    tap(it)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                AffProcedure.TIMING -> parser.parse {
+                                    timingGroup(mgr.currentTimingGroup.name) {
+                                        timing(nextParam().toLong(), nextParam().toDouble(), nextParam().toDouble())
+                                    }
+                                }
+
+                                AffProcedure.SCENECONTROL -> parser.parse {
+                                    timingGroup(mgr.currentTimingGroup.name) {
+                                        val extended = paramSize() == 4
+                                        if (extended) {
+                                            scenecontrol(
+                                                nextParam().toLong(),
+                                                ScenecontrolType.fromId(nextParam()),
+                                                nextParam().toDouble(),
+                                                nextParam().toInt()
+                                            )
+                                        } else {
+                                            scenecontrol(
+                                                nextParam().toLong(), ScenecontrolType.fromId(nextParam())
+                                            )
+                                        }
+                                    }
+                                }
+
+                                AffProcedure.TIMING_GROUP_START -> parser.parse {
+                                    mgr.notifyTimingGroup(timingGroup {
+                                        val effects = nextParam().split("_")
+
+                                        run outer@{
+                                            effects.forEach {
+                                                when (it) {
+                                                    "noinput" -> addSpecialEffect(TimingGroupSpecialEffectType.NO_INPUT)
+                                                    "fadingholds" -> addSpecialEffect(TimingGroupSpecialEffectType.FADING_HOLDS)
+                                                    else -> {
+                                                        if (it.startsWith("anglex")) {
+                                                            addSpecialEffect(TimingGroupSpecialEffectType.ANGLEX, extractIntFromString(it))
+                                                            return@outer
+                                                        }
+                                                        if (it.startsWith("angley")) {
+                                                            addSpecialEffect(TimingGroupSpecialEffectType.ANGLEY, extractIntFromString(it))
+                                                            return@outer
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    })
+                                }
+
+                                AffProcedure.TIMING_GROUP_END -> {
+                                    mgr.notifyTimingGroup(null)
+                                }
+                            }
+                        } catch (e: Exception) {
+                            throw FailedToParseAffToChartException(e.message + "\n\twhile parsing line: `$cmd`\n").apply {
+                                this.stackTrace = e.stackTrace
+                            }
+                        }
+                    }
+                    result = this.chart
+                }
+            }
+            return result
+        }
+
+        private fun parseHeaders(header: String): Pair<String, String> = header.split(":").let {
+            it[0] to it[1]
+        }
+
+        private class TimingGroupManager(private val chart: Chart) {
+            var currentTimingGroup: TimingGroup = chart.mainTiming
+
+            fun notifyTimingGroup(tg: TimingGroup?) {
+                currentTimingGroup = tg ?: chart.mainTiming
+            }
+        }
+
+        private class ParamParser(private val cmd: String) {
+            val regex = "([a-zA-Z]*)\\(([^)]+)\\)".toRegex()
+            val matchRsts: Sequence<MatchResult> = regex.findAll(cmd)
+            val affProcedure: AffProcedure by lazy {
+                AffProcedure.fromString(cmd.let {
+                    if (it.trimIndent().startsWith("timinggroup")) {
+                        "timinggroup"
+                    } else if (it.trimIndent() == "};") {
+                        "};"
+                    } else {
+                        matchRsts.first().groups[1]?.value ?: " "
+                    }
+                })
+            }
+
+            val arctapList: List<Long> by lazy {
+                matchRsts.drop(1).map {
+                    it.groups[2]!!.value.toLong()
+                }.toList()
+            }
+
+            val params: String? by lazy {
+                if (!matchRsts.iterator().hasNext()) "" else matchRsts.first().groups[2]?.value
+            }
+
+            fun parse(closure: ParamList.() -> Unit) {
+                ParamList(
+                    (params)!!.split(",")
+                ).let(closure)
+            }
+
+            class ParamList(val data: List<String>) {
+                val iter = data.iterator()
+
+                fun nextParam(): String = iter.next()
+                fun paramSize(): Int = data.size
+            }
+        }
+    }
 }
 
 
@@ -64,7 +279,9 @@ data class ChartConfiguration(var audioOffset: Long, val extra: MutableList<Conf
     }
 }
 
-interface TimedObject {
+interface ChartObject
+
+interface TimedObject : ChartObject {
     val time: Long
     fun serialize(): String
 
@@ -108,15 +325,27 @@ class Timing(val offset: Long, val bpm: Double, val beats: Double) : TimedObject
 
 @Suppress("unused")
 enum class ScenecontrolType(val id: String, val paramReq1: Boolean, val paramReq2: Boolean) {
-    TRACK_HIDE("trackhide", false, false),
-    TRACK_SHOW("trackshow", false, false),
-    TRACK_DISPLAY("trackdisplay", true, true),
-    RED_LINE("redline", true, false),
-    ARCAHV_DISTORT("arcahvdistort", true, true),
-    ARCAHV_DEBRIS("arcahvdebris", true, true),
-    HIDE_GROUP("hidegroup", false, true),
-    ENWIDEN_CAMERA("enwidencamera", true, true),
-    ENWIDEN_LANES("enwidenlanes", true, true)
+    TRACK_HIDE("trackhide", false, false), TRACK_SHOW("trackshow", false, false), TRACK_DISPLAY(
+        "trackdisplay",
+        true,
+        true
+    ),
+    RED_LINE("redline", true, false), ARCAHV_DISTORT("arcahvdistort", true, true), ARCAHV_DEBRIS(
+        "arcahvdebris",
+        true,
+        true
+    ),
+    HIDE_GROUP("hidegroup", false, true), ENWIDEN_CAMERA("enwidencamera", true, true), ENWIDEN_LANES("enwidenlanes", true, true);
+
+    companion object {
+        fun fromId(id: String): ScenecontrolType {
+            entries.forEach {
+                if (it.id == id) return it
+            }
+            throw IllegalArgumentException("Unknown scenecontrol type: $id")
+        }
+    }
+
 }
 
 @Serializable
@@ -151,10 +380,7 @@ class Scenecontrol(
 
 @Serializable
 enum class TimingGroupSpecialEffectType(val codeName: String) {
-    NO_INPUT("noinput"),
-    FADING_HOLDS("fadingholds"),
-    ANGLEX("anglex"),
-    ANGLEY("angley"),
+    NO_INPUT("noinput"), FADING_HOLDS("fadingholds"), ANGLEX("anglex"), ANGLEY("angley"),
 }
 
 @Serializable
@@ -167,7 +393,7 @@ data class TimingGroupSpecialEffect(val effect: TimingGroupSpecialEffectType, va
 }
 
 @Serializable
-class TimingGroup {
+class TimingGroup : ChartObject {
 
     @Transient
     var name: String = ""
@@ -267,9 +493,10 @@ class TimingGroup {
 
     fun addSpecialEffect(effect: TimingGroupSpecialEffectType, extraParam: Int?) {
         if (effect == TimingGroupSpecialEffectType.ANGLEX || effect == TimingGroupSpecialEffectType.ANGLEY) {
+            if (extraParam!! % 3600 == 0) return
             specialEffects.add(
                 TimingGroupSpecialEffect(
-                    effect, if (extraParam!! <= 0) {
+                    effect, if (extraParam <= 0) {
                         extraParam + (3600 - (extraParam % 3600))
                     } else {
                         extraParam % 3600
@@ -382,9 +609,7 @@ data class ArcNote(
     var hitSound: String,
     var isGuidingLine: Boolean,
 
-    @Serializable(ArcTapListSerializer::class)
-    @SerialName("tapList")
-    val arcTapList: ArcTapList,
+    @Serializable(ArcTapListSerializer::class) @SerialName("tapList") val arcTapList: ArcTapList,
 ) : Note() {
 
     constructor(
@@ -424,15 +649,7 @@ data class ArcNote(
         isGuidingLine: Boolean,
         arcTapClosure: (ArcTapList.() -> Unit) = {},
     ) : this(
-        time,
-        endTime,
-        startPosition,
-        curveType,
-        endPosition,
-        color,
-        "none",
-        isGuidingLine,
-        ArcTapList(mutableListOf())
+        time, endTime, startPosition, curveType, endPosition, color, "none", isGuidingLine, ArcTapList(mutableListOf())
     ) {
         arcTapList.arcNote = this
         arcTapClosure.invoke(arcTapList)
