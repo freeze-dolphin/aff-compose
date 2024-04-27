@@ -331,6 +331,7 @@ class Timing(val offset: Long, val bpm: Double, val beats: Double) : TimedObject
 
 @Suppress("unused")
 enum class ScenecontrolType(val id: String, val paramReq1: Boolean, val paramReq2: Boolean) {
+    // @formatter:off
     TRACK_HIDE("trackhide", false, false),
     TRACK_SHOW("trackshow", false, false),
     TRACK_DISPLAY("trackdisplay", true, true),
@@ -340,6 +341,7 @@ enum class ScenecontrolType(val id: String, val paramReq1: Boolean, val paramReq
     HIDE_GROUP("hidegroup", false, true),
     ENWIDEN_CAMERA("enwidencamera", true, true),
     ENWIDEN_LANES("enwidenlanes", true, true);
+    // @formatter:on
 
     companion object {
         fun fromId(id: String): ScenecontrolType {
@@ -384,7 +386,12 @@ class Scenecontrol(
 
 @Serializable
 enum class TimingGroupSpecialEffectType(val codeName: String) {
-    NO_INPUT("noinput"), FADING_HOLDS("fadingholds"), ANGLEX("anglex"), ANGLEY("angley"),
+    // @formatter:off
+    NO_INPUT("noinput"),
+    FADING_HOLDS("fadingholds"),
+    ANGLEX("anglex"),
+    ANGLEY("angley"),
+    // @formatter:on
 }
 
 @Serializable
