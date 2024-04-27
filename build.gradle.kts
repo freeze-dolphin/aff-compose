@@ -1,10 +1,15 @@
 plugins {
     alias(libs.plugins.jvm)
+
     kotlin("plugin.serialization") version "1.9.23"
-    id("com.autonomousapps.dependency-analysis") version "1.31.0"
-    `java-library`
     java
+
+    antlr
+
+    `java-library`
     `maven-publish`
+
+    id("com.autonomousapps.dependency-analysis") version "1.31.0"
 }
 
 group = "com.tairitsu"
@@ -21,8 +26,9 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-
     implementation("com.benasher44:uuid:0.8.2")
+
+    antlr("org.antlr:antlr4:4.13.1")
 
     api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3")
 }
@@ -30,6 +36,23 @@ dependencies {
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+tasks.generateGrammarSource {
+    arguments = listOf("-package", "com.tairitsu.compose.arcaea.antlr")
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir(tasks.generateGrammarSource)
+        }
+    }
+    test {
+        java {
+            srcDir(tasks.generateGrammarSource)
+        }
     }
 }
 
