@@ -277,6 +277,12 @@ data class ChartConfiguration(var audioOffset: Long, val extra: MutableList<Conf
     fun addItem(name: String, value: Number) {
         extra.add(ConfigurationItem(name, value.toString()))
     }
+
+    fun sync(other: ChartConfiguration) {
+        audioOffset = other.audioOffset
+        extra.addAll(other.extra)
+    }
+
 }
 
 interface ChartObject
@@ -418,6 +424,13 @@ class TimingGroup : ChartObject {
      */
     fun getNotes(): List<Note> {
         return notes.toList()
+    }
+
+    /**
+     * get a copy of all [Timing]
+     */
+    fun getTimings(): List<Timing> {
+        return timing.toList()
     }
 
     private fun applyFilterImpl(note: Note): Note {
