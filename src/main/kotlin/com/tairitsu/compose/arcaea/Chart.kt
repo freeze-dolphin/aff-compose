@@ -331,17 +331,15 @@ class Timing(val offset: Long, val bpm: Double, val beats: Double) : TimedObject
 
 @Suppress("unused")
 enum class ScenecontrolType(val id: String, val paramReq1: Boolean, val paramReq2: Boolean) {
-    TRACK_HIDE("trackhide", false, false), TRACK_SHOW("trackshow", false, false), TRACK_DISPLAY(
-        "trackdisplay",
-        true,
-        true
-    ),
-    RED_LINE("redline", true, false), ARCAHV_DISTORT("arcahvdistort", true, true), ARCAHV_DEBRIS(
-        "arcahvdebris",
-        true,
-        true
-    ),
-    HIDE_GROUP("hidegroup", false, true), ENWIDEN_CAMERA("enwidencamera", true, true), ENWIDEN_LANES("enwidenlanes", true, true);
+    TRACK_HIDE("trackhide", false, false),
+    TRACK_SHOW("trackshow", false, false),
+    TRACK_DISPLAY("trackdisplay", true, true),
+    RED_LINE("redline", true, false),
+    ARCAHV_DISTORT("arcahvdistort", true, true),
+    ARCAHV_DEBRIS("arcahvdebris", true, true),
+    HIDE_GROUP("hidegroup", false, true),
+    ENWIDEN_CAMERA("enwidencamera", true, true),
+    ENWIDEN_LANES("enwidenlanes", true, true);
 
     companion object {
         fun fromId(id: String): ScenecontrolType {
