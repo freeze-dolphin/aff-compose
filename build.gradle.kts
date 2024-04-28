@@ -26,11 +26,10 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3")
     implementation("com.benasher44:uuid:0.8.2")
 
     antlr("org.antlr:antlr4:4.13.1")
-
-    api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3")
 }
 
 java {
@@ -40,7 +39,25 @@ java {
 }
 
 tasks.generateGrammarSource {
-    arguments = listOf("-package", "com.tairitsu.compose.arcaea.antlr")
+    val antlrPath = sourceSets.main.get().antlr.srcDirs.first()
+    arguments = listOf(
+        "-package", "com.tairitsu.compose.arcaea.antlr",
+        "-lib", file(antlrPath.path, "com", "tairitsu", "compose", "arcaea", "antlr").path
+    )
+}
+
+tasks.generateTestGrammarSource {
+    arguments = listOf(
+        "-package", "com.tairitsu.compose.arcaea.antlr"
+    )
+}
+
+tasks.compileKotlin {
+    dependsOn(tasks.generateGrammarSource)
+}
+
+tasks.compileTestKotlin {
+    dependsOn(tasks.generateTestGrammarSource)
 }
 
 sourceSets {
@@ -69,4 +86,10 @@ publishing {
             version = project.version.toString()
         }
     }
+}
+
+fun file(vararg dirs: String): File = dirs.reduce { acc, next ->
+    File(acc, next).path
+}.let {
+    File(it)
 }
