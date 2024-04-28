@@ -1,6 +1,7 @@
 package com.tairitsu.compose.arcaea
 
-object RawAffParser {
+@Deprecated("Refactor to use ANTLR instead")
+object RawChartParser {
 
     class FailedToParseAffToChartException(s: String) : Exception(s)
 
@@ -24,7 +25,7 @@ object RawAffParser {
         it.isDigit()
     }.toInt()
 
-    fun fromAff(aff: String): Chart {
+    internal fun rawFromAff(aff: String): Chart {
         var result = Chart()
         mapSet {
             difficulties.future {
