@@ -1,16 +1,15 @@
 package com.tairitsu.compose.arcaea
 
-import com.tairitsu.compose.arcaea.antlr.PropertiesLexer
-import com.tairitsu.compose.arcaea.antlr.PropertiesParser
+import com.tairitsu.compose.arcaea.antlr.*
 import org.antlr.v4.runtime.CharStream
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import kotlin.test.Test
 
-class AntlrTest {
+class AntlrUsageTest {
 
     @Test
-    fun `test antlr`() {
+    fun `antlr playground`() {
         val stream = readSampleFile()
         val lexer = PropertiesLexer(stream)
         val tokens = CommonTokenStream(lexer)
