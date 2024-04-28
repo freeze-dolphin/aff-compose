@@ -6,7 +6,6 @@ abstract class NoteFilter {
             is NormalNote -> filterNormalNote(note)
             is HoldNote -> filterHoldNote(note)
             is ArcNote -> filterArcNote(note)
-            else -> throw IllegalArgumentException()
         }
     }
 
