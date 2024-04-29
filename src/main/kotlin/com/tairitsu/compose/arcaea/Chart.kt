@@ -42,7 +42,11 @@ class Chart {
     }
 
     companion object {
-        fun fromAff(aff: String): Chart = RawAffParser.fromAff(aff)
+
+        fun fromAff(aff: String): Chart = ANTLRChartParser.fromAff(aff)
+
+        @Deprecated("use ANTLRChartParser#fromAff instead", ReplaceWith("com.tairitsu.compose.arcaea.ANTLRChartParser.fromAff(aff)"))
+        fun fromAffRaw(aff: String): Chart = RawChartParser.fromAff(aff)
     }
 
 }
@@ -172,20 +176,29 @@ class Scenecontrol(
 }
 
 @Serializable
-enum class TimingGroupSpecialEffectType(val codeName: String) {
+enum class TimingGroupSpecialEffectType(val codename: String) {
     // @formatter:off
     NO_INPUT("noinput"),
     FADING_HOLDS("fadingholds"),
     ANGLEX("anglex"),
-    ANGLEY("angley"),
+    ANGLEY("angley");
     // @formatter:on
+
+    companion object {
+        fun fromCodename(codename: String): TimingGroupSpecialEffectType {
+            TimingGroupSpecialEffectType.entries.forEach {
+                if (it.codename == codename) return it
+            }
+            throw IllegalArgumentException("Unknown timing group special effect type: $codename")
+        }
+    }
 }
 
 @Serializable
 data class TimingGroupSpecialEffect(val effect: TimingGroupSpecialEffectType, val extraParam: Int?) {
 
     fun serialize(): String {
-        return "${effect.codeName}${extraParam ?: ""}"
+        return "${effect.codename}${extraParam ?: ""}"
     }
 
 }
@@ -315,7 +328,7 @@ class TimingGroup : ChartObject {
 
     fun addSpecialEffect(effect: TimingGroupSpecialEffectType) {
         if (effect == TimingGroupSpecialEffectType.ANGLEX || effect == TimingGroupSpecialEffectType.ANGLEY) {
-            throw IllegalArgumentException("Effect `${effect.codeName}` needs a parameter")
+            throw IllegalArgumentException("Effect `${effect.codename}` needs a parameter")
         }
         specialEffects.add(TimingGroupSpecialEffect(effect, null))
     }
@@ -558,8 +571,12 @@ fun Pair<Double, Double>.toPosition(): Position {
 }
 
 fun Note.withHitsound(hitsound: String): ArcNote {
+    return withRawHitsound("${hitsound}_wav")
+}
+
+internal fun Note.withRawHitsound(rawHitsound: String): ArcNote {
     if (this !is ArcNote) throw IllegalStateException("Hitsound is only available for ArcNotes")
     if (this.isGuidingLine) return this
-    this.hitSound = "${hitsound}_wav"
+    this.hitSound = rawHitsound
     return this
 }
