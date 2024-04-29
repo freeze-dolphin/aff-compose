@@ -156,6 +156,17 @@ fun Difficulty.timingGroup(name: String = uuid4().toString(), closure: TimingGro
 
 // Scenecontrol
 
+internal fun <TTime : Number> Difficulty.rawScenecontrol(
+    time: TTime,
+    type: ScenecontrolType,
+    param1: Double?,
+    param2: Int?,
+) {
+    val ctx = this.currentTimingGroup
+    val sc = Scenecontrol(time.toLong(), type, param1, param2)
+    return ctx.addScenecontrol(sc)
+}
+
 fun <TTime : Number> Difficulty.scenecontrol(
     time: TTime,
     type: ScenecontrolType,
