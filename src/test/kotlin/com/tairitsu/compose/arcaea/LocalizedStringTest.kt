@@ -8,7 +8,7 @@ import kotlin.test.assertEquals
 class LocalizedStringTest {
     @Test
     fun `test for serialization`() {
-        val a = LocalizedString("Test").apply {
+        val a = LocalizedString("Test") {
             ja = "テスト"
             ko = "테스트"
             zhHans = "测试"

@@ -35,6 +35,16 @@ class LocalizedString : Map<String, String> {
     }
 
     /**
+     * Create a new localized string. English locale is required.
+     * Use a closure to specific other languages
+     */
+    constructor(enLocale: String, closure: LocalizedString.() -> Unit) {
+        storage = LinkedHashMap()
+        storage["en"] = enLocale
+        closure.invoke(this)
+    }
+
+    /**
      * Localized string in English locale.
      */
     var en by LocaleGetting
