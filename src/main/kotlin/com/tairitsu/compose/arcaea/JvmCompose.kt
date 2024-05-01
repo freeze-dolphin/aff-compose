@@ -13,35 +13,6 @@ fun MapSet.writeToFolder(outputPath: File) {
     writeToFile(outputPath.path)
 }
 
-fun Difficulty.generateString(containHeaders: Boolean = true, containBaseTiming: Boolean = true): String {
-    val sb = StringBuilder()
-    var headerOver = false
-    var baseTimingOver = false
-    this.chart.serialize().split("\r\n").forEach {
-        if (it.startsWith("-")) {
-            headerOver = true
-            if (containHeaders) {
-                sb.append("-\r\n")
-            }
-            return@forEach
-        }
-
-        if (!headerOver && containHeaders) {
-            println(it)
-            return@forEach
-        }
-
-        if (it.startsWith("timing") && !baseTimingOver) {
-            baseTimingOver = true
-            if (containBaseTiming) {
-                sb.append("$it\r\n")
-            }
-            return@forEach
-        }
-
-        if (headerOver) sb.append("$it\r\n")
-
-    }
-
-    return sb.toString()
+fun Difficulty.generateString(): String {
+    return this.chart.serialize()
 }
