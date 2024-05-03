@@ -195,10 +195,30 @@ enum class TimingGroupSpecialEffectType(val codename: String) {
 }
 
 @Serializable
-data class TimingGroupSpecialEffect(val effect: TimingGroupSpecialEffectType, val extraParam: Int?) {
+data class TimingGroupSpecialEffect(val type: TimingGroupSpecialEffectType, var extraParam: Int?) {
 
     fun serialize(): String {
-        return "${effect.codename}${extraParam ?: ""}"
+        return "${type.codename}${extraParam ?: ""}"
+    }
+
+    private fun validate() {
+        if (type == TimingGroupSpecialEffectType.ANGLEX || type == TimingGroupSpecialEffectType.ANGLEY) {
+            if (extraParam == null) throw IllegalArgumentException("Effect `${type.codename}` needs a parameter")
+            else {
+                if (extraParam!! % 3600 == 0) return
+                extraParam = if (extraParam!! <= 0) {
+                    (3600 + (extraParam!! % 3600))
+                } else {
+                    extraParam!! % 3600
+                }
+            }
+        }
+    }
+
+    constructor(effect: TimingGroupSpecialEffectType) : this(effect, null)
+
+    init {
+        validate()
     }
 
 }
@@ -309,28 +329,16 @@ class TimingGroup : ChartObject {
         return commitNote
     }
 
-    fun addSpecialEffect(effect: TimingGroupSpecialEffectType, extraParam: Int?) {
-        if (effect == TimingGroupSpecialEffectType.ANGLEX || effect == TimingGroupSpecialEffectType.ANGLEY) {
-            if (extraParam!! % 3600 == 0) return
-            specialEffects.add(
-                TimingGroupSpecialEffect(
-                    effect, if (extraParam <= 0) {
-                        extraParam + (3600 - (extraParam % 3600))
-                    } else {
-                        extraParam % 3600
-                    }
-                )
-            )
-            return
-        }
-        specialEffects.add(TimingGroupSpecialEffect(effect, extraParam))
+    fun addSpecialEffect(type: TimingGroupSpecialEffectType, extraParam: Int) {
+        specialEffects.add(TimingGroupSpecialEffect(type, extraParam))
     }
 
-    fun addSpecialEffect(effect: TimingGroupSpecialEffectType) {
-        if (effect == TimingGroupSpecialEffectType.ANGLEX || effect == TimingGroupSpecialEffectType.ANGLEY) {
-            throw IllegalArgumentException("Effect `${effect.codename}` needs a parameter")
-        }
-        specialEffects.add(TimingGroupSpecialEffect(effect, null))
+    fun addSpecialEffect(type: TimingGroupSpecialEffectType) {
+        specialEffects.add(TimingGroupSpecialEffect(type, null))
+    }
+
+    internal fun addRawSpecialEffect(effect: TimingGroupSpecialEffect) {
+        specialEffects.add(effect)
     }
 
     fun serialize(padding: Int): String {

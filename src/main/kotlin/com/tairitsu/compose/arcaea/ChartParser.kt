@@ -147,7 +147,11 @@ object ANTLRChartParser {
                                         effect = Pair(type, null)
                                     }
                                 }
-                            tg.addSpecialEffect(effect.first, effect.second)
+                            if (effect.second == null) {
+                                tg.addSpecialEffect(effect.first)
+                            } else {
+                                tg.addSpecialEffect(effect.first, effect.second!!)
+                            }
                         }
 
                         // handle command invocations inside a timing group

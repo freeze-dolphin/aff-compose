@@ -154,6 +154,22 @@ fun Difficulty.timingGroup(name: String = uuid4().toString(), closure: TimingGro
     return newTimingGroup
 }
 
+fun Difficulty.timingGroup(vararg specialEffects: TimingGroupSpecialEffect, closure: TimingGroup.() -> Unit): TimingGroup {
+    val tg = timingGroup(uuid4().toString(), closure)
+    specialEffects.forEach {
+        tg.addRawSpecialEffect(it)
+    }
+    return tg
+}
+
+fun Difficulty.timingGroup(name: String, vararg specialEffects: TimingGroupSpecialEffect, closure: TimingGroup.() -> Unit): TimingGroup {
+    val tg = timingGroup(name, closure)
+    specialEffects.forEach {
+        tg.addRawSpecialEffect(it)
+    }
+    return tg
+}
+
 // Scenecontrol
 
 internal fun <TTime : Number> Difficulty.rawScenecontrol(

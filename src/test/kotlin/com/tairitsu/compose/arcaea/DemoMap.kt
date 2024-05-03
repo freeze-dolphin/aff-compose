@@ -32,7 +32,7 @@ object DemoMap {
                     beats = 4,
                 )
 
-                println(generateChartJson())
+                println("Chart Configuration [FTR] : " + generateChartJson())
             }
 
             difficulties.eternal(-600) {
@@ -50,11 +50,15 @@ object DemoMap {
                     beats = 4,
                 )
 
-                val tg = timingGroup {
+                val tg = timingGroup(
+                    "SpecialTG",
+                    TimingGroupSpecialEffect(TimingGroupSpecialEffectType.FADING_HOLDS),
+                    TimingGroupSpecialEffect(TimingGroupSpecialEffectType.ANGLEX, -100)
+                ) {
 
-                    // Here's how to add special effects to a timing group
-                    addSpecialEffect(TimingGroupSpecialEffectType.FADING_HOLDS)
-                    addSpecialEffect(TimingGroupSpecialEffectType.ANGLEX, -100)
+                    // Here's how to add special effects to a timing group using the legacy way
+                    // addSpecialEffect(TimingGroupSpecialEffectType.FADING_HOLDS)
+                    // addSpecialEffect(TimingGroupSpecialEffectType.ANGLEX, -100)
 
                     timing(
                         offset = 0,
@@ -103,13 +107,13 @@ object DemoMap {
                 scenecontrol(19045, ScenecontrolType.TRACK_HIDE)
 
                 // Serialize the whole chart as json (containing metadata and every ratingClass)
-                println(generateChartJson())
+                println("Chart : " + generateChartJson())
 
                 // Serialize the specific timing group as json
-                println(generateTimingGroupJson(tg.name))
+                println(tg.name + " : " + generateTimingGroupJson(tg.name))
 
                 // Serialize to aff
-                println(generateString())
+                println("Chart [ETR] : \r\n" + generateString())
             }
         }.writeToFolder(File(File("."), "result"))
     }
