@@ -52,8 +52,8 @@ object DemoMap {
 
                 val tg = timingGroup(
                     "SpecialTG",
-                    TimingGroupSpecialEffect.fadingholds,
-                    TimingGroupSpecialEffect.anglex(-100)
+                    fadingholds,
+                    anglex(-100)
                 ) {
 
                     // Here's how to add special effects to a timing group using the legacy way
@@ -104,10 +104,10 @@ object DemoMap {
                 // The effects of all these three var-len arcTap are exactly the same
 
                 // Adding a scenecontrol
-                scenecontrol(19045, ScenecontrolType.TRACK_HIDE)
+                trackhide(19045)
 
                 // Serialize the whole chart as json (containing metadata and every ratingClass)
-                println("Chart : " + generateChartJson())
+                println("Chart Json [ETR] : " + generateChartJson())
 
                 // Serialize the specific timing group as json
                 println(tg.name + " : " + generateTimingGroupJson(tg.name))

@@ -170,6 +170,15 @@ fun Difficulty.timingGroup(name: String, vararg specialEffects: TimingGroupSpeci
     return tg
 }
 
+val Difficulty.noinput: TimingGroupSpecialEffect
+    get() = TimingGroupSpecialEffect(TimingGroupSpecialEffectType.NO_INPUT)
+val Difficulty.fadingholds: TimingGroupSpecialEffect
+    get() = TimingGroupSpecialEffect(TimingGroupSpecialEffectType.FADING_HOLDS)
+
+fun Difficulty.anglex(extraParam: Int): TimingGroupSpecialEffect = TimingGroupSpecialEffect(TimingGroupSpecialEffectType.ANGLEX, extraParam)
+fun Difficulty.angley(extraParam: Int): TimingGroupSpecialEffect = TimingGroupSpecialEffect(TimingGroupSpecialEffectType.ANGLEX, extraParam)
+
+
 // Scenecontrol
 
 internal fun <TTime : Number> Difficulty.rawScenecontrol(
@@ -223,6 +232,31 @@ fun <TTime : Number> Difficulty.scenecontrol(
     return ctx.addScenecontrol(sc)
 }
 
+
+fun <TTime : Number> Difficulty.trackhide(time: TTime) = scenecontrol(time.toLong(), ScenecontrolType.TRACK_HIDE)
+fun <TTime : Number> Difficulty.trackshow(time: TTime) = scenecontrol(time.toLong(), ScenecontrolType.TRACK_SHOW)
+fun <TTime : Number> Difficulty.trackdisplay(time: TTime, param1: Double, param2: Int) =
+    scenecontrol(time.toLong(), ScenecontrolType.TRACK_DISPLAY, param1, param2)
+
+fun <TTime : Number> Difficulty.redline(time: TTime, param1: Double) =
+    scenecontrol(time.toLong(), ScenecontrolType.RED_LINE, param1)
+
+fun <TTime : Number> Difficulty.arcahvdistort(time: TTime, param1: Double, param2: Int) =
+    scenecontrol(time.toLong(), ScenecontrolType.ARCAHV_DISTORT, param1, param2)
+
+fun <TTime : Number> Difficulty.arcahvdebris(time: TTime, param1: Double, param2: Int) =
+    scenecontrol(time.toLong(), ScenecontrolType.ARCAHV_DEBRIS, param1, param2)
+
+fun <TTime : Number> Difficulty.hidegroup(time: TTime, param2: Int) =
+    scenecontrol(time.toLong(), ScenecontrolType.HIDE_GROUP, param2)
+
+fun <TTime : Number> Difficulty.enwidencamera(time: TTime, param1: Double, param2: Int) =
+    scenecontrol(time.toLong(), ScenecontrolType.ENWIDEN_CAMERA, param1, param2)
+
+fun <TTime : Number> Difficulty.enwidenlanes(time: TTime, param1: Double, param2: Int) =
+    scenecontrol(time.toLong(), ScenecontrolType.ENWIDEN_LANES, param1, param2)
+
+
 // Normal Note
 
 fun <TTime : Number> Difficulty.normalNote(time: TTime, column: Int): Note {
@@ -264,6 +298,7 @@ val Difficulty.red: ArcNote.Color
     get() = ArcNote.Color.RED
 val Difficulty.green: ArcNote.Color
     get() = ArcNote.Color.GREEN
+
 
 fun <TTime : Number, TEndTime : Number> Difficulty.arcNote(
     time: TTime,

@@ -221,13 +221,6 @@ data class TimingGroupSpecialEffect(val type: TimingGroupSpecialEffectType, var 
         validate()
     }
 
-    companion object {
-        val noinput = TimingGroupSpecialEffect(TimingGroupSpecialEffectType.NO_INPUT)
-        val fadingholds = TimingGroupSpecialEffect(TimingGroupSpecialEffectType.FADING_HOLDS)
-        fun anglex(extraParam: Int): TimingGroupSpecialEffect = TimingGroupSpecialEffect(TimingGroupSpecialEffectType.ANGLEX, extraParam)
-        fun angley(extraParam: Int): TimingGroupSpecialEffect = TimingGroupSpecialEffect(TimingGroupSpecialEffectType.ANGLEX, extraParam)
-    }
-
 }
 
 @Serializable
