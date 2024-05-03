@@ -52,8 +52,8 @@ object DemoMap {
 
                 val tg = timingGroup(
                     "SpecialTG",
-                    TimingGroupSpecialEffect(TimingGroupSpecialEffectType.FADING_HOLDS),
-                    TimingGroupSpecialEffect(TimingGroupSpecialEffectType.ANGLEX, -100)
+                    TimingGroupSpecialEffect.fadingholds,
+                    TimingGroupSpecialEffect.anglex(-100)
                 ) {
 
                     // Here's how to add special effects to a timing group using the legacy way
