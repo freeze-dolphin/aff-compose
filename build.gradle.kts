@@ -1,9 +1,9 @@
+val kotlinxSerializationVersion: String by project
+
 plugins {
     alias(libs.plugins.jvm)
-
     kotlin("plugin.serialization") version "1.9.23"
     java
-
     antlr
 
     `java-library`
@@ -25,8 +25,9 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:$kotlinxSerializationVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$kotlinxSerializationVersion")
     implementation("com.benasher44:uuid:0.8.2")
 
     antlr("org.antlr:antlr4:4.13.1")
