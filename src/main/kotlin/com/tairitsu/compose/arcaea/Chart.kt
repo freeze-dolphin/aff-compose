@@ -45,7 +45,7 @@ class Chart {
 
         fun fromAff(aff: String): Chart = ANTLRChartParser.fromAff(aff)
 
-        @Deprecated("use ANTLRChartParser#fromAff instead", ReplaceWith("com.tairitsu.compose.arcaea.ANTLRChartParser.fromAff(aff)"))
+        @Deprecated("use ANTLRChartParser#fromAff instead", ReplaceWith("com.tairitsu.compose.arcaea.Chart.fromAff(aff)"))
         fun fromAffRaw(aff: String): Chart = RawChartParser.fromAff(aff)
     }
 
