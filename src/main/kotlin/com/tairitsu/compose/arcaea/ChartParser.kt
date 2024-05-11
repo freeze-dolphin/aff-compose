@@ -82,7 +82,7 @@ object ANTLRChartParser {
                 if (pchart.header().isEmpty.not()) {
                     pchart.header().header_item().forEach {
                         val conditioner = ContextConditioner(it)
-                        conditioner.notNull { K_timingpointdensityfactor() }.exec {
+                        conditioner.notNull { K_audiooffset() }.exec {
                             chart.configuration.tuneOffset(it.Int().text.toLong())
                         }
                         conditioner.notNull { K_timingpointdensityfactor() }.exec {
@@ -131,9 +131,10 @@ object ANTLRChartParser {
 
                         // make sure the `single_timinggroup_argument` list is not empty
                         cdr.ruleNotNull { cmd_timinggroup().compound_timinggroup_argument().single_timinggroup_argument(0) }.exec {
-                            lateinit var effect: Pair<TimingGroupSpecialEffectType, Int?>
+
                             it.cmd_timinggroup().compound_timinggroup_argument().single_timinggroup_argument()
                                 .forEachIndexed { idx, ctx ->
+                                    lateinit var effect: Pair<TimingGroupSpecialEffectType, Int?>
                                     val type = TimingGroupSpecialEffectType.fromCodename(ctx.enum_timinggroup_effects().text)
                                     cdr.notNull {
                                         cmd_timinggroup().compound_timinggroup_argument().single_timinggroup_argument(idx).Int()
@@ -146,12 +147,13 @@ object ANTLRChartParser {
                                     }.onElse {
                                         effect = Pair(type, null)
                                     }
+                                    if (effect.second == null) {
+                                        tg.addSpecialEffect(effect.first)
+                                    } else {
+                                        tg.addSpecialEffect(effect.first, effect.second!!)
+                                    }
                                 }
-                            if (effect.second == null) {
-                                tg.addSpecialEffect(effect.first)
-                            } else {
-                                tg.addSpecialEffect(effect.first, effect.second!!)
-                            }
+
                         }
 
                         // handle command invocations inside a timing group
