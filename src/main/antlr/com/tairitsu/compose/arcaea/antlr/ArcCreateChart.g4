@@ -1,4 +1,4 @@
-grammar ArcaeaChart;
+grammar ArcCreateChart;
 
 // $antlr-format alignTrailingComments true, columnLimit 150, minEmptyLines 0, maxEmptyLinesToKeep 1, reflowComments false, useTab false
 // $antlr-format allowShortRulesOnASingleLine true, allowShortBlocksOnASingleLine true, minEmptyLines 0, alignSemicolons ownLine
@@ -17,24 +17,16 @@ LCURL     : '{';
 RCURL     : '}';
 SEMICOLON : ';';
 COLON     : ':';
+EQL_SGN   : '=';
 
 // Keywords
-K_timing           : 'timing';
-K_hold             : 'hold';
-K_timinggroup      : 'timinggroup';
-K_arc              : 'arc';
-K_scenecontrol     : 'scenecontrol';
-K_camera           : 'camera';
-K_arctap           : 'arctap';
-K_sc_trackhide     : 'trackhide';
-K_sc_trackshow     : 'trackshow';
-K_sc_trackdisplay  : 'trackdisplay';
-K_sc_redline       : 'redline';
-K_sc_arcahvdistort : 'arcahvdistort';
-K_sc_arcahvdebris  : 'arcahvdebris';
-K_sc_hidegroup     : 'hidegroup';
-K_sc_enwidencamera : 'enwidencamera';
-K_sc_enwidenlanes  : 'enwidenlanes';
+K_timing       : 'timing';
+K_hold         : 'hold';
+K_timinggroup  : 'timinggroup';
+K_arc          : 'arc';
+K_scenecontrol : 'scenecontrol';
+K_camera       : 'camera';
+K_arctap       : 'arctap';
 
 K_curve_s    : 's';
 K_curve_b    : 'b';
@@ -49,11 +41,6 @@ K_curve_l      : 'l';
 K_curve_qi     : 'qi';
 K_curve_qo     : 'qo';
 K_camera_reset : 'reset';
-
-K_tg_noinput     : 'noinput';
-K_tg_fadingholds : 'fadingholds';
-K_tg_anglex      : 'anglex';
-K_tg_angley      : 'angley';
 
 K_audiooffset              : 'AudioOffset';
 K_timingpointdensityfactor : 'TimingPointDensityFactor';
@@ -80,7 +67,7 @@ chart_
     ;
 
 hitsound
-    : Alphas UNDERLINE 'wav'
+    : Alphas
     | 'none'
     ;
 
@@ -114,18 +101,6 @@ command_invocation
     | cmd_camera
     ;
 
-enum_scenecontrol_type_argument
-    : K_sc_trackhide
-    | K_sc_trackshow
-    | K_sc_trackdisplay
-    | K_sc_redline
-    | K_sc_arcahvdistort
-    | K_sc_arcahvdebris
-    | K_sc_hidegroup
-    | K_sc_enwidencamera
-    | K_sc_enwidenlanes
-    ;
-
 enum_arcnote_curve_type
     : K_curve_s
     | K_curve_b
@@ -141,13 +116,6 @@ compound_arctap_argument
     : LSQUARE (arctap (COMMA | RSQUARE) | compound_arctap_argument)*
     ;
 
-enum_timinggroup_effects
-    : K_tg_noinput
-    | K_tg_fadingholds
-    | K_tg_anglex
-    | K_tg_angley
-    ;
-
 enum_camera_ease_type
     : K_curve_l
     | K_curve_s
@@ -157,12 +125,12 @@ enum_camera_ease_type
     ;
 
 single_timinggroup_argument
-    : enum_timinggroup_effects Int?
+    : Lowers (EQL_SGN Float)?
     ;
 
 compound_timinggroup_argument
     : LPAREN RPAREN // no effect
-    | LPAREN (single_timinggroup_argument (UNDERLINE | RPAREN) | compound_timinggroup_argument)*
+    | LPAREN (single_timinggroup_argument (COMMA | RPAREN) | compound_timinggroup_argument)*
     ;
 
 cmd_timing
@@ -189,7 +157,7 @@ cmd_arc
     ;
 
 cmd_scenecontrol
-    : K_scenecontrol LPAREN (Int COMMA enum_scenecontrol_type_argument (COMMA Float)? (COMMA Int)?) RPAREN SEMICOLON
+    : K_scenecontrol LPAREN (Int (COMMA Lowers) ((COMMA (String | Int | Float | Alphas))+)?) RPAREN SEMICOLON
     ;
 
 cmd_timinggroup
@@ -206,7 +174,10 @@ cmd_camera
 // $antlr-format allowShortRulesOnASingleLine true, allowShortBlocksOnASingleLine true, minEmptyLines 0, alignSemicolons ownLine
 // $antlr-format alignColons trailing, singleLineOverrulesHangingColon true, alignLexerCommands true, alignLabels true, alignTrailers true
 
-Alphas: Alpha+;
+Lowers : Lower+;
+Alphas : Alpha+;
+
+String: '"' (Digit | Alpha | DOT | DASH | UNDERLINE)+ '"';
 
 NEWLINE: [\r\n] -> skip;
 

@@ -23,8 +23,33 @@ class ANTLRTest {
         } else {
             println(json.encodeToString(ANTLRChartParser.fromAff(crlfAff)).let {
                 val chart: Chart = json.decodeFromString(it)
-                chart.serialize()
+                chart.serializeForArcaea()
             })
+        }
+    }
+
+    private fun testAcfAndPrint(acf: String, printAsAff: Boolean = true) {
+        val crlfAcf = acf.replace(Regex(System.lineSeparator()), "\r\n")
+
+        val parsed = ANTLRChartParser.fromAcf(crlfAcf)
+
+        if (!printAsAff) {
+            println(json.encodeToString(parsed.first))
+        } else {
+            println(json.encodeToString(parsed.first).let {
+                val chart: Chart = json.decodeFromString(it)
+                chart.serializeForArcaea()
+            })
+        }
+
+        println("\n\nIgnored scenecontrols (${parsed.second.ignoredScenecontrols.size}):\n")
+        parsed.second.ignoredScenecontrols.forEach {
+            println("${it.first}, ${it.second}")
+        }
+
+        println("\nIgnored timinggroup effects (${parsed.second.ignoredTimingGroupEffects.size}):\n")
+        parsed.second.ignoredTimingGroupEffects.forEach {
+            println("${it.first}, ${it.second}")
         }
     }
 
@@ -56,6 +81,14 @@ class ANTLRTest {
         """.trimIndent().let {
             testAffAndPrint(it)
         }
+    }
+
+    @Test
+    fun `arccreate chart antlr test`() {
+        Thread.currentThread().contextClassLoader.getResource("distortedfate.acf")
+            ?.readText()?.trimIndent().let {
+                testAcfAndPrint(it!!)
+            }
     }
 
     @Test
