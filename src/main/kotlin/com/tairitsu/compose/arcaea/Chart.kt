@@ -28,14 +28,37 @@ class Chart {
         }
         sb.append("-\r\n")
 
-        sb.append(mainTiming.serialize(0))
+        sb.append(mainTiming.serializeForArcaea(0))
         for (timing in subTiming.values) {
             sb.append("timinggroup(${
                 timing.specialEffects.joinToString("_") {
-                    it.serialize()
+                    it.serializeForArcaea()
                 }
             }){\r\n")
-            sb.append(timing.serialize(padding = 4))
+            sb.append(timing.serializeForArcaea(padding = 4))
+            sb.append("};\r\n")
+        }
+
+        return sb.toString().trim { it <= ' ' }
+    }
+
+    fun serializeForArcCreate(): String {
+        val sb = StringBuilder()
+
+        sb.append("AudioOffset:${configuration.audioOffset}\r\n")
+        configuration.extra.forEach {
+            sb.append("${it.name}:${it.value}\r\n")
+        }
+        sb.append("-\r\n")
+
+        sb.append(mainTiming.serializeForArcCreate(0))
+        for (timing in subTiming.values) {
+            sb.append("timinggroup(${
+                timing.specialEffects.joinToString(",") {
+                    it.serializeForArcCreate()
+                }
+            }){\r\n")
+            sb.append(timing.serializeForArcCreate(padding = 4))
             sb.append("};\r\n")
         }
 
@@ -81,7 +104,10 @@ interface ChartObject
 
 interface TimedObject : ChartObject {
     val time: Long
+
     fun serialize(): String
+    fun serializeForArcaea() = serialize()
+    fun serializeForArcCreate() = serialize()
 
     object Comparator : kotlin.Comparator<TimedObject> {
         override fun compare(a: TimedObject, b: TimedObject): Int {
@@ -204,8 +230,15 @@ enum class TimingGroupSpecialEffectType(val codename: String) {
 @Serializable
 data class TimingGroupSpecialEffect(val type: TimingGroupSpecialEffectType, var extraParam: Int?) {
 
-    fun serialize(): String {
+    fun serializeForArcaea(): String {
         return "${type.codename}${extraParam ?: ""}"
+    }
+
+    fun serializeForArcCreate(): String {
+        if (type == TimingGroupSpecialEffectType.ANGLEX || type == TimingGroupSpecialEffectType.ANGLEY) {
+            extraParam = extraParam!! / 10
+        }
+        return "${type.codename}${if (extraParam != null) "=${extraParam!!.toDouble().affFormat}" else ""}"
     }
 
     private fun validate() {
@@ -353,7 +386,7 @@ class TimingGroup : ChartObject {
         specialEffects.add(effect)
     }
 
-    fun serialize(padding: Int): String {
+    private fun serializeGeneric(padding: Int, serializeClosure: TimedObject.() -> String): String {
         val `object` = mutableListOf<TimedObject>()
         `object`.addAll(notes)
         `object`.addAll(timing)
@@ -366,9 +399,26 @@ class TimingGroup : ChartObject {
             if (padding > 0) {
                 sb.append(" ".repeat(padding))
             }
-            sb.append(n.serialize()).append("\r\n")
+            sb.append(serializeClosure(n)).append("\r\n")
         }
         return sb.toString()
+    }
+
+    @Deprecated("please specify target", ReplaceWith("serializeGeneric(padding) { this.serializeForArcaea() }"))
+    fun serialize(padding: Int): String {
+        return serializeForArcaea(padding)
+    }
+
+    fun serializeForArcaea(padding: Int): String {
+        return serializeGeneric(padding) {
+            this.serializeForArcaea()
+        }
+    }
+
+    fun serializeForArcCreate(padding: Int): String {
+        return serializeGeneric(padding) {
+            this.serializeForArcCreate()
+        }
     }
 
     override fun toString(): String {
