@@ -24,6 +24,7 @@ K_hold             : 'hold';
 K_timinggroup      : 'timinggroup';
 K_arc              : 'arc';
 K_scenecontrol     : 'scenecontrol';
+K_camera           : 'camera';
 K_arctap           : 'arctap';
 K_sc_trackhide     : 'trackhide';
 K_sc_trackshow     : 'trackshow';
@@ -43,6 +44,11 @@ K_curve_sisi : 'sisi';
 K_curve_siso : 'siso';
 K_curve_sosi : 'sosi';
 K_curve_soso : 'soso';
+
+K_curve_l      : 'l';
+K_curve_qi     : 'qi';
+K_curve_qo     : 'qo';
+K_camera_reset : 'reset';
 
 K_tg_noinput     : 'noinput';
 K_tg_fadingholds : 'fadingholds';
@@ -105,6 +111,7 @@ command_invocation
     | cmd_arc
     | cmd_scenecontrol
     | cmd_timinggroup
+    | cmd_camera
     ;
 
 enum_scenecontrol_type_argument
@@ -139,6 +146,14 @@ enum_timinggroup_effects
     | K_tg_fadingholds
     | K_tg_anglex
     | K_tg_angley
+    ;
+
+enum_camera_ease_type
+    : K_curve_l
+    | K_curve_s
+    | K_curve_qi
+    | K_curve_qo
+    | K_camera_reset
     ;
 
 single_timinggroup_argument
@@ -179,6 +194,12 @@ cmd_scenecontrol
 
 cmd_timinggroup
     : K_timinggroup compound_timinggroup_argument LCURL cmd_timing command_invocation+ RCURL SEMICOLON
+    ;
+
+cmd_camera
+    : K_camera LPAREN (
+        Int COMMA Float COMMA Float COMMA Float COMMA Float COMMA Float COMMA Float COMMA enum_camera_ease_type COMMA Int
+    ) RPAREN SEMICOLON
     ;
 
 // $antlr-format alignTrailingComments true, columnLimit 150, minEmptyLines 0, maxEmptyLinesToKeep 1, reflowComments false, useTab false

@@ -291,6 +291,34 @@ object ANTLRChartParser {
                 }
             }
         }
+
+        // camera(Int, Float, Float, Float, Float, Float, Float, enum_camera_ease_type, Int);
+        cdr.ruleNotNull { cmd_camera() }.exec {
+            all(cdr.notNull { cmd_camera().Int(0) },
+                cdr.notNull { cmd_camera().Float(0) },
+                cdr.notNull { cmd_camera().Float(1) },
+                cdr.notNull { cmd_camera().Float(2) },
+                cdr.notNull { cmd_camera().Float(3) },
+                cdr.notNull { cmd_camera().Float(4) },
+                cdr.notNull { cmd_camera().Float(5) },
+                cdr.ruleNotNull { cmd_camera().enum_camera_ease_type() },
+                cdr.notNull { cmd_camera().Int(1) }
+            ).exec {
+                timingGroup(tgName) {
+                    camera(
+                        ctx.cmd_camera().Int(0).text.toInt(),
+                        ctx.cmd_camera().Float(0).text.toDouble(),
+                        ctx.cmd_camera().Float(1).text.toDouble(),
+                        ctx.cmd_camera().Float(2).text.toDouble(),
+                        ctx.cmd_camera().Float(3).text.toDouble(),
+                        ctx.cmd_camera().Float(4).text.toDouble(),
+                        ctx.cmd_camera().Float(5).text.toDouble(),
+                        Camera.CameraEaseType(ctx.cmd_camera().enum_camera_ease_type().text),
+                        ctx.cmd_camera().Int(1).text.toInt(),
+                    )
+                }
+            }
+        }
     }
 }
 

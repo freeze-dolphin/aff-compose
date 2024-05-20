@@ -299,7 +299,6 @@ val Difficulty.red: ArcNote.Color
 val Difficulty.green: ArcNote.Color
     get() = ArcNote.Color.GREEN
 
-
 fun <TTime : Number, TEndTime : Number> Difficulty.arcNote(
     time: TTime,
     endTime: TEndTime,
@@ -398,4 +397,55 @@ fun <TTime : Number> Difficulty.vlArctapWithDistance(
         centerPosition,
         distance / 2
     )
+}
+
+// Camera
+
+val Difficulty.l: Camera.CameraEaseType
+    get() = Camera.CameraEaseType.L
+val Difficulty.qi: Camera.CameraEaseType
+    get() = Camera.CameraEaseType.QI
+val Difficulty.qo: Camera.CameraEaseType
+    get() = Camera.CameraEaseType.QO
+val Difficulty.reset: Camera.CameraEaseType
+    get() = Camera.CameraEaseType.RESET
+
+fun <TTime : Number> Difficulty.camera(
+    time: TTime,
+    xOff: Double,
+    yOff: Double,
+    zOff: Double,
+    xozAng: Double,
+    yozAng: Double,
+    xoyAng: Double,
+    ease: Camera.CameraEaseType,
+    duration: TTime
+) {
+    val ctx = this.currentTimingGroup
+    val camera = Camera(
+        time.toLong(),
+        xOff, yOff, zOff,
+        xozAng, yozAng, xoyAng, ease, duration.toLong()
+    )
+    return ctx.addCamera(camera)
+}
+
+fun <TTime : Number> Difficulty.camera(
+    time: TTime,
+    xOff: Double,
+    yOff: Double,
+    zOff: Double,
+    xozAng: Double,
+    yozAng: Double,
+    xoyAng: Double,
+    ease: ArcNote.CurveType,
+    duration: TTime
+) {
+    val ctx = this.currentTimingGroup
+    val camera = Camera(
+        time.toLong(),
+        xOff, yOff, zOff,
+        xozAng, yozAng, xoyAng, ease, duration.toLong()
+    )
+    return ctx.addCamera(camera)
 }

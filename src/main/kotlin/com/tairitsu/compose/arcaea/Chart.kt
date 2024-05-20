@@ -1,9 +1,6 @@
 package com.tairitsu.compose.arcaea
 
-import com.tairitsu.compose.arcaea.serializer.ArcNoteColorSerializer
-import com.tairitsu.compose.arcaea.serializer.ArcNoteCurveTypeSerializer
-import com.tairitsu.compose.arcaea.serializer.ArcTapListSerializer
-import com.tairitsu.compose.arcaea.serializer.PositionSerializer
+import com.tairitsu.compose.arcaea.serializer.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -18,7 +15,11 @@ class Chart {
     val mainTiming: TimingGroup = TimingGroup("main")
     val subTiming: MutableMap<String, TimingGroup> = mutableMapOf()
 
-    fun serialize(): String {
+    @Deprecated("please specify the format", ReplaceWith("com.tairitsu.compose.arcaea.Chart.serializeForArcaea()"))
+    fun serialize() = serializeForArcaea()
+
+
+    fun serializeForArcaea(): String {
         val sb = StringBuilder()
 
         sb.append("AudioOffset:${configuration.audioOffset}\r\n")
@@ -87,6 +88,12 @@ interface TimedObject : ChartObject {
             // sort by time
             val timeCmp = a.time.compareTo(b.time)
             if (timeCmp != 0) return timeCmp
+
+            if (a is Camera && b !is Camera) {
+                return 1
+            } else if (a !is Camera && b is Camera) {
+                return -1
+            }
 
             if ((a is Timing && b is Timing) || (a is Scenecontrol && b is Scenecontrol)) {
                 return 0
@@ -243,6 +250,7 @@ class TimingGroup : ChartObject {
     private val notes = mutableListOf<Note>()
 
     private val scenecontrols = mutableListOf<Scenecontrol>()
+    private val cameras = mutableListOf<Camera>()
 
     /**
      * get a copy of all [Note]
@@ -337,6 +345,10 @@ class TimingGroup : ChartObject {
         specialEffects.add(TimingGroupSpecialEffect(type, null))
     }
 
+    fun addCamera(camera: Camera) {
+        cameras.add(camera)
+    }
+
     internal fun addRawSpecialEffect(effect: TimingGroupSpecialEffect) {
         specialEffects.add(effect)
     }
@@ -346,6 +358,7 @@ class TimingGroup : ChartObject {
         `object`.addAll(notes)
         `object`.addAll(timing)
         `object`.addAll(scenecontrols)
+        `object`.addAll(cameras)
         `object`.sortWith(TimedObject.Comparator)
 
         val sb = StringBuilder()
@@ -554,6 +567,48 @@ data class ArcNote(
             }
 
     }
+}
+
+@Serializable
+data class Camera(
+    override val time: Long,
+    val xOff: Double,
+    val yOff: Double,
+    val zOff: Double,
+    val xozAng: Double,
+    val yozAng: Double,
+    val xoyAng: Double,
+    val ease: CameraEaseType,
+    val duration: Long
+) : TimedObject {
+
+    internal constructor(
+        time: Long,
+        xOff: Double,
+        yOff: Double,
+        zOff: Double,
+        xozAng: Double,
+        yozAng: Double,
+        xoyAng: Double,
+        ease: ArcNote.CurveType,
+        duration: Long
+    ) : this(time, xOff, yOff, zOff, xozAng, yozAng, xoyAng, CameraEaseType(ease.value), duration) {
+        if (ease.value != "s") throw IllegalArgumentException("CurveType of ArcNote cannot be applied to Camera")
+    }
+
+    @Serializable(CameraEaseTypeSerializer::class)
+    data class CameraEaseType(val value: String) {
+        companion object {
+            val S = CameraEaseType("s")
+            val L = CameraEaseType("l")
+            val QI = CameraEaseType("qi")
+            val QO = CameraEaseType("qo")
+            val RESET = CameraEaseType("reset")
+        }
+    }
+
+    override fun serialize(): String =
+        "camera($time,${xOff.affFormat},${yOff.affFormat},${zOff.affFormat},${xozAng.affFormat},${yozAng.affFormat},${xoyAng.affFormat},${ease.value},$duration);"
 }
 
 @Serializable(PositionSerializer::class)
