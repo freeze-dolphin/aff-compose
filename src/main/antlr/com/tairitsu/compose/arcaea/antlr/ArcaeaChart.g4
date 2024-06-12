@@ -80,7 +80,7 @@ chart_
     ;
 
 hitsound
-    : Alphas UNDERLINE 'wav'
+    : Lowers UNDERLINE 'wav'
     | 'none'
     ;
 
@@ -206,7 +206,8 @@ cmd_camera
 // $antlr-format allowShortRulesOnASingleLine true, allowShortBlocksOnASingleLine true, minEmptyLines 0, alignSemicolons ownLine
 // $antlr-format alignColons trailing, singleLineOverrulesHangingColon true, alignLexerCommands true, alignLabels true, alignTrailers true
 
-Alphas: Alpha+;
+Lowers : Lower+;
+Alphas : Alpha+;
 
 NEWLINE: [\r\n] -> skip;
 

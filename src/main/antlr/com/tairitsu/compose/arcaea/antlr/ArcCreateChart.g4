@@ -67,7 +67,7 @@ chart_
     ;
 
 hitsound
-    : Alphas
+    : Lowers
     | 'none'
     ;
 
