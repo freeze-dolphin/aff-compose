@@ -20,6 +20,7 @@ COLON     : ':';
 EQL_SGN   : '=';
 SPACE     : ' ';
 DOLLAR    : '$';
+QUESTION  : '?';
 
 // Keywords
 K_timing       : 'timing';
@@ -184,9 +185,11 @@ cmd_camera
 Lowers : Lower+;
 Alphas : Alpha+;
 
-UnquottedString : (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR)+;
-String          : '"' (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR)+ '"';
-SpacedString    : '"' (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR | SPACE)+ '"';
+UnquottedString : (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR | QUESTION)+;
+String          : '"' (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR | QUESTION)+ '"';
+SpacedString    : '"' (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR | QUESTION | SPACE)+ '"';
+
+VISIBLE_SYMBOL: [\u0021-\u0023\u0024-\u0026\u0028-\u002F\u003A-\u0040\u005B-\u0060\u007B-\u007E];
 
 NEWLINE: [\r\n] -> skip;
 

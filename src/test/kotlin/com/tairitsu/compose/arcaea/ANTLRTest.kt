@@ -111,6 +111,9 @@ class ANTLRTest {
     fun `arccreate timing not first command test`() {
         testAcfAndPrint(
             """
+            AudioOffset:0
+            -
+            timing(0,186.00,4.00);
             timinggroup(name="glass"){
               scenecontrol(-10000,hidegroup,0,1);
               timing(0,0.00,4.00);
