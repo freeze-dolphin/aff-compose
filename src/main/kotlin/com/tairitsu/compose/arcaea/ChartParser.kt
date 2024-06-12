@@ -126,13 +126,7 @@ object ANTLRChartParser {
 
                     // parse timing groups
                     cdr.ruleNotNull { cmd_timinggroup() }.exec {
-                        val tg = timingGroup {
-                            timing(
-                                it.cmd_timinggroup().cmd_timing().Int().text.toInt(),
-                                it.cmd_timinggroup().cmd_timing().Float(0).text.toDouble(),
-                                it.cmd_timinggroup().cmd_timing().Float(1).text.toDouble()
-                            )
-                        }
+                        val tg = timingGroup {}
 
                         // handle special effects of the timing group
 
@@ -422,13 +416,7 @@ object ANTLRChartParser {
 
                     // parse timing groups
                     cdr.ruleNotNull { cmd_timinggroup() }.exec {
-                        val tg = timingGroup {
-                            timing(
-                                it.cmd_timinggroup().cmd_timing().Int().text.toInt(),
-                                it.cmd_timinggroup().cmd_timing().Float(0).text.toDouble(),
-                                it.cmd_timinggroup().cmd_timing().Float(1).text.toDouble()
-                            )
-                        }
+                        val tg = timingGroup { }
 
                         // handle special effects of the timing group
 

@@ -193,7 +193,7 @@ cmd_scenecontrol
     ;
 
 cmd_timinggroup
-    : K_timinggroup compound_timinggroup_argument LCURL cmd_timing command_invocation+ RCURL SEMICOLON
+    : K_timinggroup compound_timinggroup_argument LCURL command_invocation+ RCURL SEMICOLON
     ;
 
 cmd_camera
