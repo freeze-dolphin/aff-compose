@@ -560,7 +560,16 @@ data class ArcNote(
 
     override fun serialize(): String {
         val sb = StringBuilder()
-        sb.append("arc(${time},${endTime},${startPosition.x.affFormat},${endPosition.x.affFormat},${curveType.value},${startPosition.y.affFormat},${endPosition.y.affFormat},${color.value},${hitSound}_wav,$isGuidingLine)")
+        sb.append(
+            "arc(${time},${endTime},${startPosition.x.affFormat},${endPosition.x.affFormat},${curveType.value},${startPosition.y.affFormat},${endPosition.y.affFormat},${color.value},${
+                hitSound.let {
+                    if (it != "none" && !it.endsWith(
+                            "_wav"
+                        )
+                    ) "${it}_wav" else it
+                }
+            },$isGuidingLine)"
+        )
         if (arcTapTimestamps.isNotEmpty()) {
             arcTapTimestamps.sort()
             sb.append("[")
