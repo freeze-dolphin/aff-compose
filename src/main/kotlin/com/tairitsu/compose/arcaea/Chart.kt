@@ -554,7 +554,26 @@ data class ArcNote(
 
     override fun serialize(): String {
         val sb = StringBuilder()
-        sb.append("arc(${time},${endTime},${startPosition.x.affFormat},${endPosition.x.affFormat},${curveType.value},${startPosition.y.affFormat},${endPosition.y.affFormat},${color.value},$hitSound,$isGuidingLine)")
+        sb.append("arc(${time},${endTime},${startPosition.x.affFormat},${endPosition.x.affFormat},${curveType.value},${startPosition.y.affFormat},${endPosition.y.affFormat},${color.value},${hitSound}_wav,$isGuidingLine)")
+        if (arcTapTimestamps.isNotEmpty()) {
+            arcTapTimestamps.sort()
+            sb.append("[")
+            for (idx in arcTapTimestamps.indices) {
+                val tap = arcTapTimestamps[idx]
+                sb.append("arctap(${tap})")
+                if (idx < arcTapTimestamps.size - 1) {
+                    sb.append(",")
+                }
+            }
+            sb.append("]")
+        }
+        sb.append(";")
+        return sb.toString()
+    }
+
+    override fun serializeForArcCreate(): String {
+        val sb = StringBuilder()
+        sb.append("arc(${time},${endTime},${startPosition.x.affFormat},${endPosition.x.affFormat},${curveType.value},${startPosition.y.affFormat},${endPosition.y.affFormat},${color.value},${hitSound},$isGuidingLine)")
         if (arcTapTimestamps.isNotEmpty()) {
             arcTapTimestamps.sort()
             sb.append("[")

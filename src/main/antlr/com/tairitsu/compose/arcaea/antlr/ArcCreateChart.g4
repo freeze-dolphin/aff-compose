@@ -42,6 +42,8 @@ K_curve_qi     : 'qi';
 K_curve_qo     : 'qo';
 K_camera_reset : 'reset';
 
+K_timinggroup_name: 'name';
+
 K_audiooffset              : 'AudioOffset';
 K_timingpointdensityfactor : 'TimingPointDensityFactor';
 K_version                  : 'Version';
@@ -125,7 +127,7 @@ enum_camera_ease_type
     ;
 
 single_timinggroup_argument
-    : 'name' EQL_SGN String
+    : K_timinggroup_name EQL_SGN String
     | Lowers (EQL_SGN Float)?
     ;
 

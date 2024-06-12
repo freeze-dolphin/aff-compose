@@ -141,28 +141,34 @@ object ANTLRChartParser {
 
                             it.cmd_timinggroup().compound_timinggroup_argument().single_timinggroup_argument()
                                 .forEachIndexed { idx, ctx ->
-                                    lateinit var effect: Pair<TimingGroupSpecialEffectType, Int?>
-                                    try {
-                                        val type = TimingGroupSpecialEffectType.fromCodename(ctx.Lowers().text)
-                                        cdr.notNull {
-                                            cmd_timinggroup().compound_timinggroup_argument().single_timinggroup_argument(idx).Float()
-                                        }.exec {
-                                            effect = Pair(
-                                                type,
-                                                (it.cmd_timinggroup().compound_timinggroup_argument().single_timinggroup_argument(idx)
-                                                    .Float().text.toDouble() * 10).toInt()
-                                            )
-                                        }.onElse {
-                                            effect = Pair(type, null)
+                                    cdr.notNull {
+                                        cmd_timinggroup().compound_timinggroup_argument().single_timinggroup_argument(idx)
+                                            .K_timinggroup_name()
+                                    }.exec {
+                                        // ignored
+                                    }.onElse {
+                                        lateinit var effect: Pair<TimingGroupSpecialEffectType, Int?>
+                                        try {
+                                            val type = TimingGroupSpecialEffectType.fromCodename(ctx.Lowers().text)
+                                            cdr.notNull {
+                                                cmd_timinggroup().compound_timinggroup_argument().single_timinggroup_argument(idx).Float()
+                                            }.exec {
+                                                effect = Pair(
+                                                    type,
+                                                    (it.cmd_timinggroup().compound_timinggroup_argument().single_timinggroup_argument(idx)
+                                                        .Float().text.toDouble() * 10).toInt()
+                                                )
+                                            }.onElse {
+                                                effect = Pair(type, null)
+                                            }
+                                            if (effect.second == null) {
+                                                tg.addSpecialEffect(effect.first)
+                                            } else {
+                                                tg.addSpecialEffect(effect.first, effect.second!!)
+                                            }
+                                        } catch (ex: IllegalArgumentException) {
+                                            reporter.ignoredTimingGroupEffects.add(Pair(ctx.Lowers().text, ctx.Float().text))
                                         }
-                                        if (effect.second == null) {
-                                            tg.addSpecialEffect(effect.first)
-                                        } else {
-                                            tg.addSpecialEffect(effect.first, effect.second!!)
-                                        }
-                                    } catch (ex: IllegalArgumentException) {
-                                        reporter.ignoredTimingGroupEffects.add(Pair(ctx.Lowers().text, ctx.Float().text))
-                                        return@forEachIndexed
                                     }
                                 }
 

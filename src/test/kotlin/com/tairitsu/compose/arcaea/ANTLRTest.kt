@@ -38,7 +38,7 @@ class ANTLRTest {
         } else {
             println(json.encodeToString(parsed.first).let {
                 val chart: Chart = json.decodeFromString(it)
-                chart.serializeForArcaea()
+                chart.serializeForArcCreate()
             })
         }
 
@@ -89,6 +89,22 @@ class ANTLRTest {
             ?.readText()?.trimIndent().let {
                 testAcfAndPrint(it!!)
             }
+    }
+
+    @Test
+    fun `arccreate timinggroup name test`() {
+        testAcfAndPrint(
+            """
+            AudioOffset:0
+            -
+            timing(0,186.00,4.00);
+            timinggroup(name="glass"){
+              timing(0,0.00,4.00);
+              scenecontrol(-10000,hidegroup,0,1);
+              arc(45161,45565,0.00,1.00,si,1.00,1.00,0,a,false);
+            };
+        """.trimIndent()
+        )
     }
 
     @Test
