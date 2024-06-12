@@ -129,10 +129,16 @@ interface TimedObject : ChartObject {
             if (a is Note && b is Note) {
                 return Note.Comparator.compare(a, b)
             }
-            if (a is Timing || a is Scenecontrol) {
+            if (a is Timing) {
                 return -1
             }
-            if (b is Timing || b is Scenecontrol) {
+            if (b is Timing) {
+                return 1
+            }
+            if (a is Scenecontrol) {
+                return -1
+            }
+            if (b is Scenecontrol) {
                 return 1
             }
             return 0

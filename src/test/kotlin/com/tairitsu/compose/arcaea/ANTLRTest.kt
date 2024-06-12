@@ -84,8 +84,16 @@ class ANTLRTest {
     }
 
     @Test
-    fun `arccreate chart antlr test`() {
+    fun `arccreate chart antlr test distortedfate`() {
         Thread.currentThread().contextClassLoader.getResource("distortedfate.acf")
+            ?.readText()?.trimIndent().let {
+                testAcfAndPrint(it!!)
+            }
+    }
+
+    @Test
+    fun `arccreate chart antlr test avantgarde`() {
+        Thread.currentThread().contextClassLoader.getResource("avantgarde.acf")
             ?.readText()?.trimIndent().let {
                 testAcfAndPrint(it!!)
             }
