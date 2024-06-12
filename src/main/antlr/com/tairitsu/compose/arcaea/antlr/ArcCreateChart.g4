@@ -18,6 +18,7 @@ RCURL     : '}';
 SEMICOLON : ';';
 COLON     : ':';
 EQL_SGN   : '=';
+SPACE     : ' ';
 
 // Keywords
 K_timing       : 'timing';
@@ -127,7 +128,7 @@ enum_camera_ease_type
     ;
 
 single_timinggroup_argument
-    : K_timinggroup_name EQL_SGN String
+    : K_timinggroup_name EQL_SGN SpacedString
     | Lowers (EQL_SGN Float)?
     ;
 
@@ -180,7 +181,8 @@ cmd_camera
 Lowers : Lower+;
 Alphas : Alpha+;
 
-String: '"' (Digit | Alpha | DOT | DASH | UNDERLINE)+ '"';
+SpacedString : '"' (Digit | Alpha | DOT | DASH | UNDERLINE | SPACE)+ '"';
+String       : '"' (Digit | Alpha | DOT | DASH | UNDERLINE)+ '"';
 
 NEWLINE: [\r\n] -> skip;
 
