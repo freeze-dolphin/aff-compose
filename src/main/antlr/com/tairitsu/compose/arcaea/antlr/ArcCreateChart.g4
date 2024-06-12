@@ -70,7 +70,8 @@ chart_
     ;
 
 hitsound
-    : Lowers
+    : UnquottedString
+    | Lowers
     | 'none'
     ;
 
@@ -181,8 +182,9 @@ cmd_camera
 Lowers : Lower+;
 Alphas : Alpha+;
 
-SpacedString : '"' (Digit | Alpha | DOT | DASH | UNDERLINE | SPACE)+ '"';
-String       : '"' (Digit | Alpha | DOT | DASH | UNDERLINE)+ '"';
+UnquottedString : (Digit | Alpha | DOT | DASH | UNDERLINE)+;
+SpacedString    : '"' (Digit | Alpha | DOT | DASH | UNDERLINE | SPACE)+ '"';
+String          : '"' (Digit | Alpha | DOT | DASH | UNDERLINE)+ '"';
 
 NEWLINE: [\r\n] -> skip;
 
