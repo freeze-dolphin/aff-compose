@@ -125,7 +125,8 @@ enum_camera_ease_type
     ;
 
 single_timinggroup_argument
-    : Lowers (EQL_SGN Float)?
+    : 'name' EQL_SGN String
+    | Lowers (EQL_SGN Float)?
     ;
 
 compound_timinggroup_argument
