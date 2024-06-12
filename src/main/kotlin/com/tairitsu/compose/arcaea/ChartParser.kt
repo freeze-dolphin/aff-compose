@@ -93,7 +93,10 @@ object ANTLRChartParser {
                             chart.configuration.tuneOffset(it.Int().text.toLong())
                         }
                         conditioner.notNull { K_timingpointdensityfactor() }.exec {
-                            chart.configuration.addItem("TimingPointDensityFactor", it.Int().text)
+                            conditioner.notNull { K_timingpointdensityfactor() }
+                            chart.configuration.addItem("TimingPointDensityFactor", it.let {
+                                it.Int() ?: it.Float()!!
+                            }.text)
                         }
                         conditioner.notNull { K_version() }.exec {
                             lateinit var itemValue: String
@@ -383,7 +386,9 @@ object ANTLRChartParser {
                             chart.configuration.tuneOffset(it.Int().text.toLong())
                         }
                         conditioner.notNull { K_timingpointdensityfactor() }.exec {
-                            chart.configuration.addItem("TimingPointDensityFactor", it.Int().text)
+                            chart.configuration.addItem("TimingPointDensityFactor", it.let {
+                                it.Int() ?: it.Float()!!
+                            }.text)
                         }
                         conditioner.notNull { K_version() }.exec {
                             lateinit var itemValue: String

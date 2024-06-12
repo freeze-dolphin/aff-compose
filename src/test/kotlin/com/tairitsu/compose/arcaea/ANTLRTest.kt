@@ -104,6 +104,7 @@ class ANTLRTest {
         testAcfAndPrint(
             """
             AudioOffset:0
+            TimingPointDensityFactor:1.2
             -
             timing(0,186.00,4.00);
             timinggroup(name="glass"){

@@ -87,7 +87,7 @@ header
 
 header_item
     : K_audiooffset COLON Int
-    | K_timingpointdensityfactor COLON Int
+    | K_timingpointdensityfactor COLON (Float | Int)
     | K_version COLON Version
     | K_version COLON (Float | Int)
     | HeaderIdentifier COLON Int
