@@ -38,7 +38,7 @@ class ANTLRTest {
         } else {
             println(json.encodeToString(parsed.first).let {
                 val chart: Chart = json.decodeFromString(it)
-                chart.serializeForArcCreate()
+                chart.serializeForArcaea()
             })
         }
 
@@ -107,6 +107,7 @@ class ANTLRTest {
             TimingPointDensityFactor:1.2
             -
             timing(0,186.00,4.00);
+            timing(1333,180.00,0.00);
             timinggroup(name="glass"){
               timing(0,0.00,4.00);
               scenecontrol(-10000,hidegroup,0,1);

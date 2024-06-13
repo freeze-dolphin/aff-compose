@@ -208,7 +208,9 @@ object ANTLRChartParser {
                     timing(
                         ctx.cmd_timing().Int().text.toInt(),
                         ctx.cmd_timing().Float(0).text.toDouble(),
-                        ctx.cmd_timing().Float(1).text.toDouble()
+                        ctx.cmd_timing().Float(1).text.toDouble().let {
+                            if (it == 0.0) 4.0 else it
+                        }
                     )
                 }
             }
