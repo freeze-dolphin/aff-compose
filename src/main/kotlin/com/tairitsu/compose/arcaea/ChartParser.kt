@@ -313,13 +313,13 @@ object ANTLRChartParser {
                     timingGroup(tgName) {
                         if (extraParams == null) {
                             rawScenecontrol(
-                                ctx.cmd_scenecontrol().Int(0).text.toInt(),
+                                ctx.cmd_scenecontrol().Int(0).text.toInt().coerceAtLeast(0),
                                 ScenecontrolType.fromId(ctx.cmd_scenecontrol().Lowers().text),
                                 null, null
                             )
                         } else {
                             rawScenecontrol(
-                                ctx.cmd_scenecontrol().Int(0).text.toInt(),
+                                ctx.cmd_scenecontrol().Int(0).text.toInt().coerceAtLeast(0),
                                 ScenecontrolType.fromId(ctx.cmd_scenecontrol().Lowers().text),
                                 extraParams!!.first, extraParams!!.second
                             )
