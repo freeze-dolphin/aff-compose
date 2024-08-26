@@ -184,6 +184,10 @@ enum class ScenecontrolType(val id: String, val paramReq1: Boolean, val paramReq
         }
     }
 
+    fun needTimeConversion(): Boolean {
+        return this.id in listOf("trackdisplay", "arcahvdistort", "arcahvdebris")
+    }
+
 }
 
 @Serializable

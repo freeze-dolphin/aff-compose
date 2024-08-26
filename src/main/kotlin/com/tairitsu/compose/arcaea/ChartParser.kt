@@ -299,7 +299,7 @@ object ANTLRChartParser {
                     { cmd_scenecontrol().Int(1) },
                     { cmd_scenecontrol().Int(2) }
                 ).exec {
-                    extraParams = Pair(ctx.cmd_scenecontrol().Int(1).text.toDouble() / 1000, ctx.cmd_scenecontrol().Int(2).text.toInt())
+                    extraParams = Pair(ctx.cmd_scenecontrol().Int(1).text.toDouble(), ctx.cmd_scenecontrol().Int(2).text.toInt())
                 }
 
                 cdr.allNotNull(
@@ -318,10 +318,16 @@ object ANTLRChartParser {
                                 null, null
                             )
                         } else {
+                            val timeConverted = if (ScenecontrolType.fromId(ctx.cmd_scenecontrol().Lowers().text).needTimeConversion()) {
+                                extraParams!!.first / 1000
+                            } else {
+                                extraParams!!.first
+                            }
+
                             rawScenecontrol(
                                 ctx.cmd_scenecontrol().Int(0).text.toInt().coerceAtLeast(0),
                                 ScenecontrolType.fromId(ctx.cmd_scenecontrol().Lowers().text),
-                                extraParams!!.first, extraParams!!.second
+                                timeConverted, extraParams!!.second
                             )
                         }
 
