@@ -142,29 +142,53 @@ object ANTLRChartParser {
                                         cmd_timinggroup().compound_timinggroup_argument().single_timinggroup_argument(idx)
                                             .K_timinggroup_name()
                                     }.exec {
-                                        // ignored
+                                        // ignored, named timingGroups is not supported
                                     }.onElse {
-                                        lateinit var effect: Pair<TimingGroupSpecialEffectType, Int?>
-                                        try {
-                                            val type = TimingGroupSpecialEffectType.fromCodename(ctx.Lowers().text)
-                                            cdr.notNull {
-                                                cmd_timinggroup().compound_timinggroup_argument().single_timinggroup_argument(idx).Float()
-                                            }.exec {
-                                                effect = Pair(
-                                                    type,
-                                                    (it.cmd_timinggroup().compound_timinggroup_argument().single_timinggroup_argument(idx)
-                                                        .Float().text.toDouble() * 10).toInt()
+                                        cdr.ruleNotNull {
+                                            cmd_timinggroup().compound_timinggroup_argument().single_timinggroup_argument(idx)
+                                                .enum_timinggroup_jremap(0)
+                                        }.exec {
+                                            // judgement remapping is not supported
+                                            // apply noinput instead
+                                            if (tg.specialEffects.none { tgse ->
+                                                    tgse.type == TimingGroupSpecialEffectType.NO_INPUT
+                                                } // haven't applied noinput
+                                            ) {
+                                                tg.addSpecialEffect(TimingGroupSpecialEffectType.NO_INPUT)
+                                            }
+                                            reporter.ignoredTimingGroupEffects.add(
+                                                Pair(
+                                                    it.cmd_timinggroup().compound_timinggroup_argument().single_timinggroup_argument(idx)
+                                                        .enum_timinggroup_jremap(0).text,
+                                                    it.cmd_timinggroup().compound_timinggroup_argument().single_timinggroup_argument(idx)
+                                                        .enum_timinggroup_jremap(1).text
                                                 )
-                                            }.onElse {
-                                                effect = Pair(type, null)
+                                            )
+                                        }.onElse {
+                                            lateinit var effect: Pair<TimingGroupSpecialEffectType, Int?>
+                                            try {
+                                                val type = TimingGroupSpecialEffectType.fromCodename(ctx.Lowers().text)
+                                                cdr.notNull {
+                                                    cmd_timinggroup().compound_timinggroup_argument().single_timinggroup_argument(idx)
+                                                        .Float()
+                                                }.exec {
+                                                    effect = Pair(
+                                                        type,
+                                                        (it.cmd_timinggroup().compound_timinggroup_argument()
+                                                            .single_timinggroup_argument(idx)
+                                                            .Float().text.toDouble() * 10).toInt()
+                                                    )
+                                                }.onElse {
+                                                    effect = Pair(type, null)
+                                                }
+                                                if (effect.second == null) {
+                                                    tg.addSpecialEffect(effect.first)
+                                                } else {
+                                                    tg.addSpecialEffect(effect.first, effect.second!!)
+                                                }
+                                            } catch (ex: IllegalArgumentException) {
+                                                reporter.ignoredTimingGroupEffects.add(Pair(ctx.Lowers().text, ctx.Float().text))
                                             }
-                                            if (effect.second == null) {
-                                                tg.addSpecialEffect(effect.first)
-                                            } else {
-                                                tg.addSpecialEffect(effect.first, effect.second!!)
-                                            }
-                                        } catch (ex: IllegalArgumentException) {
-                                            reporter.ignoredTimingGroupEffects.add(Pair(ctx.Lowers().text, ctx.Float().text))
                                         }
                                     }
                                 }
@@ -293,7 +317,7 @@ object ANTLRChartParser {
             all(
                 cdr.notNull { cmd_scenecontrol().Int(0) },
                 cdr.notNull { cmd_scenecontrol().Lowers() }
-            ).exec {
+            ).exec outer@{
                 var extraParams: Pair<Double, Int>? = null
                 cdr.allNotNull(
                     { cmd_scenecontrol().Int(1) },
@@ -334,7 +358,7 @@ object ANTLRChartParser {
                     }
                 } catch (ex: IllegalArgumentException) {
                     reporter.ignoredScenecontrols.add(Pair(ctx.cmd_scenecontrol().Lowers().text, ctx.cmd_scenecontrol().Int(0).text))
-                    return@exec
+                    return@outer
                 }
             }
         }

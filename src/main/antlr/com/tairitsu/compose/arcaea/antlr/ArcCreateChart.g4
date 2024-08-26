@@ -130,9 +130,23 @@ enum_camera_ease_type
     | K_camera_reset
     ;
 
+enum_timinggroup_jremap
+    : 'max'
+    | 'perfect'
+    | 'perfectearly'
+    | 'perfectlate'
+    | 'good'
+    | 'goodearly'
+    | 'goodlate'
+    | 'miss'
+    | 'missearly'
+    | 'misslate'
+    ;
+
 single_timinggroup_argument
     : K_timinggroup_name EQL_SGN SpacedString
     | K_timinggroup_name EQL_SGN String
+    | enum_timinggroup_jremap EQL_SGN enum_timinggroup_jremap
     | Lowers (EQL_SGN Float)?
     ;
 
