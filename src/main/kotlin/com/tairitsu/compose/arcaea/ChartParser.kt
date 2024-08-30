@@ -371,26 +371,40 @@ object ANTLRChartParser {
 
                 try {
                     timingGroup(tgName) {
-                        if (extraParams == null) {
-                            rawScenecontrol(
-                                ctx.cmd_scenecontrol().Int(0).text.toInt().coerceAtLeast(0),
-                                ScenecontrolType.fromId(ctx.cmd_scenecontrol().Lowers().text),
-                                null, null
-                            )
-                        } else {
-                            val timeConverted = if (ScenecontrolType.fromId(ctx.cmd_scenecontrol().Lowers().text).needTimeConversion()) {
-                                extraParams!!.first / 1000
-                            } else {
-                                extraParams!!.first
+                        val time = ctx.cmd_scenecontrol().Int(0).text.toInt().coerceAtLeast(0)
+                        when (val scId = ctx.cmd_scenecontrol().Lowers().text) { // special scenecontrols
+                            "groupalpha" -> {
+                                val alpha = ctx.cmd_scenecontrol().Int(2).text.toInt()
+                                if (alpha > 0) {
+                                    rawScenecontrol(time, ScenecontrolType.HIDE_GROUP, 0.0, 0)
+                                } else {
+                                    rawScenecontrol(time, ScenecontrolType.HIDE_GROUP, 0.0, 1)
+                                }
                             }
 
-                            rawScenecontrol(
-                                ctx.cmd_scenecontrol().Int(0).text.toInt().coerceAtLeast(0),
-                                ScenecontrolType.fromId(ctx.cmd_scenecontrol().Lowers().text),
-                                timeConverted, extraParams!!.second
-                            )
-                        }
+                            else -> {
+                                if (extraParams == null) {
+                                    rawScenecontrol(
+                                        time,
+                                        ScenecontrolType.fromId(scId),
+                                        null, null
+                                    )
+                                } else {
+                                    val timeConverted =
+                                        if (ScenecontrolType.fromId(scId).needTimeConversion()) {
+                                            extraParams!!.first / 1000
+                                        } else {
+                                            extraParams!!.first
+                                        }
 
+                                    rawScenecontrol(
+                                        time,
+                                        ScenecontrolType.fromId(scId),
+                                        timeConverted, extraParams!!.second
+                                    )
+                                }
+                            }
+                        }
                     }
                 } catch (ex: IllegalArgumentException) {
                     reporter.ignoredScenecontrols.add(Pair(ctx.cmd_scenecontrol().Lowers().text, ctx.cmd_scenecontrol().Int(0).text))
