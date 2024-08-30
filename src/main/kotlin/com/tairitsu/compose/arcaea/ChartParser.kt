@@ -285,10 +285,38 @@ object ANTLRChartParser {
                 )
             ).exec {
                 val arcTapList: ArcNote.ArcTapList = ArcNote.ArcTapList(mutableListOf())
+                val vlArcTapList = mutableListOf<Triple<Long, Position, Double>>()
 
                 cdr.ruleNotNull { cmd_arc().compound_arctap_argument() }.exec {
                     ctx.cmd_arc().compound_arctap_argument().arctap().forEach { arcTapTiming ->
-                        arcTapList.tap(arcTapTiming.Int().text.toLong())
+                        cdr.notNull { arcTapTiming.Float() }.exec {
+                            // var-len arctaps
+                            val arcTapTime = arcTapTiming.Int().text.toLong()
+                            val arcTime = ctx.cmd_arc().Int(0).text.toLong()
+                            val arcEndTime = ctx.cmd_arc().Int(1).text.toLong()
+                            val arcStartPosition = Position(
+                                ctx.cmd_arc().Float(0).text.toDouble(),
+                                ctx.cmd_arc().Float(2).text.toDouble()
+                            )
+                            val arcEndPosition = Position(
+                                ctx.cmd_arc().Float(1).text.toDouble(),
+                                ctx.cmd_arc().Float(3).text.toDouble()
+                            )
+
+                            val ease = ArcNote.CurveType(ctx.cmd_arc().enum_arcnote_curve_type().text)
+                            vlArcTapList.add(
+                                Triple(
+                                    arcTapTime,
+                                    ArcNote.getEasingFunction3D(arcTime, arcEndTime, arcStartPosition, arcEndPosition, ease)
+                                        .invoke((arcTapTime.toDouble() - arcTime) / (arcEndTime - arcTime)),
+                                    arcTapTiming.Float().text.toDouble()
+                                )
+                            )
+
+                        }.onElse {
+                            // fixed arctaps
+                            arcTapList.tap(arcTapTiming.Int().text.toLong())
+                        }
                     }
                 }
 
@@ -308,6 +336,10 @@ object ANTLRChartParser {
                             this.tap(arcTapTiming)
                         }
                     }.withRawHitsound(ctx.cmd_arc().hitsound().text)
+
+                    vlArcTapList.forEach { data ->
+                        vlArctapWithDistance(data.first, data.second.toPair(), data.third)
+                    }
                 }
             }
         }

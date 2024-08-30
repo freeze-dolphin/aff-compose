@@ -1,6 +1,7 @@
 package com.tairitsu.compose.arcaea
 
 import com.tairitsu.compose.arcaea.serializer.*
+import io.sn.aetherium.utils.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -512,6 +513,24 @@ data class ArcNote(
 
     @Serializable(ArcTapListSerializer::class) @SerialName("tapList") val arcTapList: ArcTapList,
 ) : Note() {
+
+    companion object {
+        fun getEasingFunction3D(time: Long, endTime: Long, startPosition: Position, endPosition: Position, curveType: CurveType) =
+            when (curveType) {
+                CurveType.S -> buildEasingFunction3D(linear)
+                CurveType.B -> cubicBezier3D(endTime - time, startPosition, endPosition, startPosition, endPosition)
+                CurveType.SO -> buildEasingFunction3D(easeOutSine, linear)
+                CurveType.SI -> buildEasingFunction3D(easeInSine, linear)
+                CurveType.SISO -> buildEasingFunction3D(easeInSine, easeOutSine)
+                CurveType.SOSI -> buildEasingFunction3D(easeOutSine, easeInSine)
+                CurveType.SISI -> buildEasingFunction3D(easeInSine)
+                CurveType.SOSO -> buildEasingFunction3D(easeOutSine)
+
+                else -> {
+                    throw IllegalArgumentException("Invalid curve type: $curveType")
+                }
+            }
+    }
 
     constructor(
         time: Long,

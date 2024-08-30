@@ -79,6 +79,7 @@ hitsound
 
 arctap
     : K_arctap LPAREN Int RPAREN
+    | K_arctap LPAREN Int COMMA Float RPAREN
     ;
 
 header
