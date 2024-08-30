@@ -307,7 +307,7 @@ object ANTLRChartParser {
                             vlArcTapList.add(
                                 Triple(
                                     arcTapTime, // arctap time
-                                    ArcNote.getEasingFunction3D(arcTime, arcEndTime, arcStartPosition, arcEndPosition, ease)
+                                    ArcNote.getEasingFunction3D(arcStartPosition, arcEndPosition, ease)
                                         .invoke(
                                             (arcTapTime.toDouble() - arcTime) / (arcEndTime - arcTime),
                                             arcStartPosition,

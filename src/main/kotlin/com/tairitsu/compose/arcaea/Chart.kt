@@ -515,10 +515,13 @@ data class ArcNote(
 ) : Note() {
 
     companion object {
-        fun getEasingFunction3D(time: Long, endTime: Long, startPosition: Position, endPosition: Position, curveType: CurveType) =
+        fun getEasingFunction3D(startPosition: Position, endPosition: Position, curveType: CurveType) =
             when (curveType) {
                 CurveType.S -> buildEasingFunction3D(linear)
-                CurveType.B -> cubicBezier3D(endTime - time, startPosition, endPosition, startPosition, endPosition)
+                CurveType.B -> buildBezierEasingFunction3D(
+                    startPosition.x, startPosition.x, endPosition.x, endPosition.x
+                )
+
                 CurveType.SO -> buildEasingFunction3D(easeInSine, linear) // revert sIn and sOut
                 CurveType.SI -> buildEasingFunction3D(easeOutSine, linear)
                 CurveType.SISO -> buildEasingFunction3D(easeOutSine, easeInSine)

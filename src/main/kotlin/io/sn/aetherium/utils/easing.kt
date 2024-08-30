@@ -24,20 +24,23 @@ const val c3 = c1 + 1
 const val c4 = (2 * PI) / 3
 const val c5 = (2 * PI) / 4.5
 
-fun cubicBezier3D(deltaTime: Long, p0: Position, p1: Position, p2: Position, p3: Position): EasingFunction3D {
-    return { progress, _, _ ->
-        val u = 1 - progress
-        val tt = progress * progress
-        val uu = u * u
-        val ttt = tt * progress
-        val uuu = uu * u
-
-        val x = uuu * p0.x + 3 * uu * progress * p1.x + 3 * u * tt * p2.x + ttt * p3.x
-        val y = uuu * p0.y + 3 * uu * progress * p1.y + 3 * u * tt * p2.y + ttt * p3.y
-
-        Position(x, y)
+private fun bezier(t: Double, controlPoints: List<Double>): Double {
+    if (controlPoints.size == 1) {
+        return controlPoints[0]
     }
+
+    val newPoints = mutableListOf<Double>()
+    for (i in 0 until controlPoints.size - 1) {
+        val point = (1 - t) * controlPoints[i] + t * controlPoints[i + 1]
+        newPoints.add(point)
+    }
+
+    return bezier(t, newPoints)
 }
+
+fun buildBezierEasingFunction3D(vararg p: Double): EasingFunction3D = buildEasingFunction3D({ progress ->
+    bezier(progress, p.toList())
+}, linear)
 
 val bounceOut: EasingFunction = { x ->
     val n1 = 7.5625
