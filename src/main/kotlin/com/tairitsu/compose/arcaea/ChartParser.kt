@@ -306,10 +306,14 @@ object ANTLRChartParser {
                             val ease = ArcNote.CurveType(ctx.cmd_arc().enum_arcnote_curve_type().text)
                             vlArcTapList.add(
                                 Triple(
-                                    arcTapTime,
+                                    arcTapTime, // arctap time
                                     ArcNote.getEasingFunction3D(arcTime, arcEndTime, arcStartPosition, arcEndPosition, ease)
-                                        .invoke((arcTapTime.toDouble() - arcTime) / (arcEndTime - arcTime)),
-                                    arcTapTiming.Float().text.toDouble()
+                                        .invoke(
+                                            (arcTapTime.toDouble() - arcTime) / (arcEndTime - arcTime),
+                                            arcStartPosition,
+                                            arcEndPosition
+                                        ), // calc position
+                                    arcTapTiming.Float().text.toDouble() // arctap length
                                 )
                             )
 
@@ -338,7 +342,7 @@ object ANTLRChartParser {
                     }.withRawHitsound(ctx.cmd_arc().hitsound().text)
 
                     vlArcTapList.forEach { data ->
-                        vlArctapWithDistance(data.first, data.second.toPair(), data.third)
+                        vlArctapWithDistance(data.first, data.second.toPair(), data.third / 2) // conversion
                     }
                 }
             }

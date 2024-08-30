@@ -7,10 +7,13 @@ import kotlin.math.*
 
 typealias EasingFunction = (progress: Double) -> Double
 
-typealias EasingFunction3D = (progress: Double) -> Position
+typealias EasingFunction3D = (progress: Double, startPosition: Position, endPosition: Position) -> Position
 
-fun buildEasingFunction3D(xAxis: EasingFunction, yAxis: EasingFunction): EasingFunction3D = { progress ->
-    Position(xAxis(progress), yAxis(progress))
+fun buildEasingFunction3D(xAxis: EasingFunction, yAxis: EasingFunction): EasingFunction3D = { progress, startPosition, endPosition ->
+    Position(
+        (endPosition.x - startPosition.x) * xAxis(progress) + startPosition.x,
+        (endPosition.y - startPosition.y) * yAxis(progress) + startPosition.y
+    )
 }
 
 fun buildEasingFunction3D(xyAxis: EasingFunction): EasingFunction3D = buildEasingFunction3D(xyAxis, xyAxis)
@@ -22,7 +25,7 @@ const val c4 = (2 * PI) / 3
 const val c5 = (2 * PI) / 4.5
 
 fun cubicBezier3D(deltaTime: Long, p0: Position, p1: Position, p2: Position, p3: Position): EasingFunction3D {
-    return { progress ->
+    return { progress, _, _ ->
         val u = 1 - progress
         val tt = progress * progress
         val uu = u * u

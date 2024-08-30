@@ -519,12 +519,12 @@ data class ArcNote(
             when (curveType) {
                 CurveType.S -> buildEasingFunction3D(linear)
                 CurveType.B -> cubicBezier3D(endTime - time, startPosition, endPosition, startPosition, endPosition)
-                CurveType.SO -> buildEasingFunction3D(easeOutSine, linear)
-                CurveType.SI -> buildEasingFunction3D(easeInSine, linear)
-                CurveType.SISO -> buildEasingFunction3D(easeInSine, easeOutSine)
-                CurveType.SOSI -> buildEasingFunction3D(easeOutSine, easeInSine)
-                CurveType.SISI -> buildEasingFunction3D(easeInSine)
-                CurveType.SOSO -> buildEasingFunction3D(easeOutSine)
+                CurveType.SO -> buildEasingFunction3D(easeInSine, linear) // revert sIn and sOut
+                CurveType.SI -> buildEasingFunction3D(easeOutSine, linear)
+                CurveType.SISO -> buildEasingFunction3D(easeOutSine, easeInSine)
+                CurveType.SOSI -> buildEasingFunction3D(easeInSine, easeOutSine)
+                CurveType.SISI -> buildEasingFunction3D(easeOutSine)
+                CurveType.SOSO -> buildEasingFunction3D(easeInSine)
 
                 else -> {
                     throw IllegalArgumentException("Invalid curve type: $curveType")
@@ -734,6 +734,23 @@ data class Position(
     fun toList(): List<Double> = listOf(x, y)
 
     fun toPair(): Pair<Double, Double> = x to y
+
+    operator fun times(n: Double): Position {
+        return Position(x * n, y * n)
+    }
+
+    operator fun plus(n: Double): Position {
+        return Position(x + n, y + n)
+    }
+
+    operator fun dec(n: Double): Position {
+        return Position(x - n, y - n)
+    }
+
+    operator fun div(n: Double): Position {
+        return Position(x / n, y / n)
+    }
+
 }
 
 infix fun <A : Number, B : Number> A.pos(that: B): Position = Position(this.toDouble(), that.toDouble())
