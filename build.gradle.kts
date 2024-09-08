@@ -2,7 +2,7 @@ val kotlinxSerializationVersion: String by project
 
 plugins {
     alias(libs.plugins.jvm)
-    kotlin("plugin.serialization") version "1.9.23"
+    kotlin("plugin.serialization") version "1.9.25"
     java
     antlr
 
@@ -35,7 +35,7 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(11)
     }
 }
 
