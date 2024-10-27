@@ -63,7 +63,7 @@ object ANTLRChartParser {
 
     data class ArcCreateChartParseReport(
         val ignoredScenecontrols: MutableList<Pair<String, String>>,
-        val ignoredTimingGroupEffects: MutableList<Pair<String, String>>
+        val ignoredTimingGroupEffects: MutableList<Pair<String, String?>>
     )
 
     fun fromAcf(acf: String): Pair<Chart, ArcCreateChartParseReport> {
@@ -187,7 +187,10 @@ object ANTLRChartParser {
                                                     tg.addSpecialEffect(effect.first, effect.second!!)
                                                 }
                                             } catch (ex: IllegalArgumentException) {
-                                                reporter.ignoredTimingGroupEffects.add(Pair(ctx.Lowers().text, ctx.Float().text))
+                                                val value = if (ctx.Float() == null) {
+                                                    null
+                                                } else ctx.Float().text
+                                                reporter.ignoredTimingGroupEffects.add(Pair(ctx.Lowers().text, value))
                                             }
                                         }
                                     }

@@ -49,7 +49,12 @@ class ANTLRTest {
 
         println("\nIgnored timinggroup effects (${parsed.second.ignoredTimingGroupEffects.size}):\n")
         parsed.second.ignoredTimingGroupEffects.forEach {
-            println("${it.first}, ${it.second}")
+            val sec = if (it.second == null) {
+                ""
+            } else {
+                ", ${it.second}"
+            }
+            println("${it.first}$sec")
         }
     }
 
