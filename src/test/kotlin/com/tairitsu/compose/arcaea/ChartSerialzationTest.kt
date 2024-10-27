@@ -62,4 +62,19 @@ class ChartSerialzationTest {
         }
     }
 
+    @Test
+    fun `test deserialze hitsound`() {
+        val affString = """
+        AudioOffset:0
+        -
+        timing(0,120.00,4.00);
+        arc(36375,36376,1.00,1.00,s,1.00,1.00,0,budui_wav,true)[arctap(36375)];
+        """.trimIndent()
+
+        val acf = affString.split("\n").joinToString("\r\n")
+
+        val chart = Chart.fromAcf(acf).first
+        println(chart.serializeForArcaea())
+    }
+
 }

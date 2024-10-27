@@ -589,10 +589,9 @@ data class ArcNote(
         sb.append(
             "arc(${time},${endTime},${startPosition.x.affFormat},${endPosition.x.affFormat},${curveType.value},${startPosition.y.affFormat},${endPosition.y.affFormat},${color.value},${
                 hitSound.let {
-                    if (it != "none" && !it.endsWith(
-                            "_wav"
-                        )
-                    ) "${it}_wav" else it
+                    if (it == "none") "none" else {
+                        if (!it.endsWith("_wav") && !it.endsWith(".wav")) "${it}_wav" else it.replace(".wav", "_wav")
+                    }
                 }
             },$isGuidingLine)"
         )
@@ -768,7 +767,7 @@ fun Note.withHitsound(hitsound: String): ArcNote {
 
 internal fun Note.withRawHitsound(rawHitsound: String): ArcNote {
     if (this !is ArcNote) throw IllegalStateException("Hitsound is only available for ArcNotes")
-    if (this.isGuidingLine) return this
+    // if (!this.isGuidingLine) return this
     this.hitSound = rawHitsound
     return this
 }
