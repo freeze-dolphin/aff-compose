@@ -294,7 +294,6 @@ class TimingGroup : ChartObject {
     private val noteFilters: ArrayDeque<NoteFilter> = ArrayDeque()
 
     private val notes = mutableListOf<Note>()
-
     private val scenecontrols = mutableListOf<Scenecontrol>()
     private val cameras = mutableListOf<Camera>()
 
@@ -311,6 +310,21 @@ class TimingGroup : ChartObject {
     fun getTimings(): List<Timing> {
         return timing.toList()
     }
+
+    /**
+     * get a copy of all [Scenecontrol]
+     */
+    fun getScenecontrols(): List<Scenecontrol> {
+        return scenecontrols.toList()
+    }
+
+    /**
+     * get a copy of all [Camera]
+     */
+    fun getCameras(): List<Camera> {
+        return cameras.toList()
+    }
+
 
     private fun applyFilterImpl(note: Note): Note {
         var ret = note
