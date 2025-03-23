@@ -180,7 +180,7 @@ cmd_arc
     ;
 
 cmd_scenecontrol
-    : K_scenecontrol LPAREN (Int (COMMA Lowers) ((COMMA (String | Int | Float | Alphas))+)?) RPAREN SEMICOLON
+    : K_scenecontrol LPAREN (Int (COMMA Alphas) ((COMMA (String | Int | Float | Alphas))+)?) RPAREN SEMICOLON
     ;
 
 cmd_timinggroup
