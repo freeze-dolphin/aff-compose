@@ -206,8 +206,8 @@ cmd_camera
 // $antlr-format allowShortRulesOnASingleLine true, allowShortBlocksOnASingleLine true, minEmptyLines 0, alignSemicolons ownLine
 // $antlr-format alignColons trailing, singleLineOverrulesHangingColon true, alignLexerCommands true, alignLabels true, alignTrailers true
 
-Lowers : Lower+;
 Alphas : Alpha+;
+Lowers : Lower+;
 
 NEWLINE: [\r\n] -> skip;
 

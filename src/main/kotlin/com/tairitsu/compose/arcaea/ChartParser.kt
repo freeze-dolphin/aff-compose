@@ -351,11 +351,11 @@ object ANTLRChartParser {
             }
         }
 
-        // scenecontrol(Int, enum_scenecontrol_type_argument, Float?, Int?);
+        // scenecontrol(Int, Alphas, Float?, Int?);
         cdr.ruleNotNull { cmd_scenecontrol() }.exec {
             all(
                 cdr.notNull { cmd_scenecontrol().Int(0) },
-                cdr.notNull { cmd_scenecontrol().Lowers() }
+                cdr.notNull { cmd_scenecontrol().Alphas(0) }
             ).exec outer@{
                 var extraParams: Pair<Double, Int>? = null
                 cdr.allNotNull(
@@ -375,7 +375,7 @@ object ANTLRChartParser {
                 try {
                     timingGroup(tgName) {
                         val time = ctx.cmd_scenecontrol().Int(0).text.toInt().coerceAtLeast(0)
-                        when (val scId = ctx.cmd_scenecontrol().Lowers().text) { // special scenecontrols
+                        when (val scId = ctx.cmd_scenecontrol().Alphas(0).text) { // special scenecontrols
                             "groupalpha" -> {
                                 val alpha = ctx.cmd_scenecontrol().Int(2).text.toInt()
                                 if (alpha > 0) {
@@ -410,7 +410,7 @@ object ANTLRChartParser {
                         }
                     }
                 } catch (ex: IllegalArgumentException) {
-                    reporter.ignoredScenecontrols.add(Pair(ctx.cmd_scenecontrol().Lowers().text, ctx.cmd_scenecontrol().Int(0).text))
+                    reporter.ignoredScenecontrols.add(Pair(ctx.cmd_scenecontrol().Alphas(0).text, ctx.cmd_scenecontrol().Int(0).text))
                     return@outer
                 }
             }
@@ -418,7 +418,8 @@ object ANTLRChartParser {
 
         // camera(Int, Float, Float, Float, Float, Float, Float, enum_camera_ease_type, Int);
         cdr.ruleNotNull { cmd_camera() }.exec {
-            all(cdr.notNull { cmd_camera().Int(0) },
+            all(
+                cdr.notNull { cmd_camera().Int(0) },
                 cdr.notNull { cmd_camera().Float(0) },
                 cdr.notNull { cmd_camera().Float(1) },
                 cdr.notNull { cmd_camera().Float(2) },
@@ -685,7 +686,8 @@ object ANTLRChartParser {
 
         // camera(Int, Float, Float, Float, Float, Float, Float, enum_camera_ease_type, Int);
         cdr.ruleNotNull { cmd_camera() }.exec {
-            all(cdr.notNull { cmd_camera().Int(0) },
+            all(
+                cdr.notNull { cmd_camera().Int(0) },
                 cdr.notNull { cmd_camera().Float(0) },
                 cdr.notNull { cmd_camera().Float(1) },
                 cdr.notNull { cmd_camera().Float(2) },

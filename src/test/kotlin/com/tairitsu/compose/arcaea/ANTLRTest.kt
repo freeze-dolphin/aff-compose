@@ -141,6 +141,22 @@ class ANTLRTest {
     }
 
     @Test
+    fun `arccreate antlr test`() {
+        testAcfAndPrint(
+            """
+            AudioOffset:0
+            -
+            timing(0,186.00,4.00);
+            scenecontrol(-10000,hidegroup,0,1);
+            timing(0,0.00,4.00);
+            scenecontrol(0,hideImage,0,1);
+            scenecontrol(66461,hidegroup,0,0);
+            arc(112500,112501,0.50,0.50,s,0.50,0.50,0,empty.wav,true)[arctap(112500)];
+            """.trimIndent()
+        )
+    }
+
+    @Test
     fun `antlr playground`() {
         val properties = """
             key1=1
