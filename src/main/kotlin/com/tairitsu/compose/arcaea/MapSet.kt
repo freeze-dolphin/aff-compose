@@ -110,6 +110,8 @@ class MapSet {
         override fun deserialize(decoder: Decoder): Side = when (decoder.decodeInt()) {
             0 -> Side.LIGHT
             1 -> Side.CONFLICT
+            2 -> Side.COLORLESS
+            3 -> Side.LEPHON
             else -> throw IllegalArgumentException("Invalid side id")
         }
 
