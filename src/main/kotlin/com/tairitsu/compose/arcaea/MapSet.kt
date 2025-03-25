@@ -83,7 +83,9 @@ class MapSet {
 
     enum class Side(val id: Int) {
         LIGHT(0),
-        CONFLICT(1)
+        CONFLICT(1),
+        COLORLESS(2),
+        LEPHON(3),
     }
 
     /**
