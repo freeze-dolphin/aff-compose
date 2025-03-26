@@ -355,6 +355,7 @@ fun <TTime : Number, TEndTime : Number> Difficulty.arcNoteLegacy(
     y1: Double, y2: Double,
     color: ArcNote.Color? = null,
     isGuidingLine: Boolean = color == null,
+    isDesignant: Boolean? = null,
     arcTapClosure: (ArcNote.ArcTapList.() -> Unit) = { },
 ): Note {
     val ctx = this.currentTimingGroup
@@ -366,6 +367,7 @@ fun <TTime : Number, TEndTime : Number> Difficulty.arcNoteLegacy(
         x2 pos y2,
         color ?: ArcNote.Color.BLUE,
         isGuidingLine,
+        isDesignant,
         arcTapClosure
     )
     return ctx.addArcNote(note)

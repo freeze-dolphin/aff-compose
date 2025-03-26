@@ -55,6 +55,8 @@ K_tg_fadingholds : 'fadingholds';
 K_tg_anglex      : 'anglex';
 K_tg_angley      : 'angley';
 
+K_designant : 'designant';
+
 K_audiooffset              : 'AudioOffset';
 K_timingpointdensityfactor : 'TimingPointDensityFactor';
 K_version                  : 'Version';
@@ -180,11 +182,11 @@ cmd_hold
 cmd_arc
     // without arctap
     : K_arc LPAREN (
-        Int COMMA Int COMMA Float COMMA Float COMMA enum_arcnote_curve_type COMMA Float COMMA Float COMMA Int COMMA hitsound COMMA Boolean
+        Int COMMA Int COMMA Float COMMA Float COMMA enum_arcnote_curve_type COMMA Float COMMA Float COMMA Int COMMA hitsound COMMA (Boolean | K_designant)
     ) RPAREN SEMICOLON
     // with arctap(s)
     | K_arc LPAREN (
-        Int COMMA Int COMMA Float COMMA Float COMMA enum_arcnote_curve_type COMMA Float COMMA Float COMMA Int COMMA hitsound COMMA Boolean
+        Int COMMA Int COMMA Float COMMA Float COMMA enum_arcnote_curve_type COMMA Float COMMA Float COMMA Int COMMA hitsound COMMA (Boolean | K_designant)
     ) RPAREN compound_arctap_argument SEMICOLON
     ;
 

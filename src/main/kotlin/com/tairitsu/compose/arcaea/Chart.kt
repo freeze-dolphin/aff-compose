@@ -31,11 +31,12 @@ class Chart {
 
         sb.append(mainTiming.serializeForArcaea(0))
         for (timing in subTiming.values) {
-            sb.append("timinggroup(${
-                timing.specialEffects.joinToString("_") {
-                    it.serializeForArcaea()
-                }
-            }){\r\n")
+            sb.append(
+                "timinggroup(${
+                    timing.specialEffects.joinToString("_") {
+                        it.serializeForArcaea()
+                    }
+                }){\r\n")
             sb.append(timing.serializeForArcaea(padding = 4))
             sb.append("};\r\n")
         }
@@ -54,11 +55,12 @@ class Chart {
 
         sb.append(mainTiming.serializeForArcCreate(0))
         for (timing in subTiming.values) {
-            sb.append("timinggroup(${
-                timing.specialEffects.joinToString(",") {
-                    it.serializeForArcCreate()
-                }
-            }){\r\n")
+            sb.append(
+                "timinggroup(${
+                    timing.specialEffects.joinToString(",") {
+                        it.serializeForArcCreate()
+                    }
+                }){\r\n")
             sb.append(timing.serializeForArcCreate(padding = 4))
             sb.append("};\r\n")
         }
@@ -524,8 +526,11 @@ data class ArcNote(
     val color: Color,
     var hitSound: String,
     var isGuidingLine: Boolean,
+    val isDesignant: Boolean? = null,
 
-    @Serializable(ArcTapListSerializer::class) @SerialName("tapList") val arcTapList: ArcTapList,
+    @Serializable(ArcTapListSerializer::class)
+    @SerialName("tapList")
+    val arcTapList: ArcTapList,
 ) : Note() {
 
     companion object {
@@ -557,6 +562,7 @@ data class ArcNote(
         endPosition: Pair<Double, Double>,
         color: Color,
         isGuidingLine: Boolean,
+        isDesignant: Boolean? = null,
         arcTapClosure: (ArcTapList.() -> Unit) = {},
     ) : this(
         time,
@@ -567,6 +573,7 @@ data class ArcNote(
         color,
         "none",
         isGuidingLine,
+        isDesignant,
         ArcTapList(mutableListOf())
     ) {
         arcTapList.arcNote = this
@@ -584,9 +591,10 @@ data class ArcNote(
         endPosition: Position,
         color: Color,
         isGuidingLine: Boolean,
+        isDesignant: Boolean? = null,
         arcTapClosure: (ArcTapList.() -> Unit) = {},
     ) : this(
-        time, endTime, startPosition, curveType, endPosition, color, "none", isGuidingLine, ArcTapList(mutableListOf())
+        time, endTime, startPosition, curveType, endPosition, color, "none", isGuidingLine, isDesignant, ArcTapList(mutableListOf())
     ) {
         arcTapList.arcNote = this
         arcTapClosure.invoke(arcTapList)
@@ -607,7 +615,7 @@ data class ArcNote(
                         if (!it.endsWith("_wav") && !it.endsWith(".wav")) "${it}_wav" else it.replace(".wav", "_wav")
                     }
                 }
-            },$isGuidingLine)"
+            },${if (isDesignant == true) "designant" else isGuidingLine})"
         )
         if (arcTapTimestamps.isNotEmpty()) {
             arcTapTimestamps.sort()

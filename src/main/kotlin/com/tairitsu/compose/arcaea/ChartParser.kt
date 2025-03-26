@@ -600,8 +600,8 @@ object ANTLRChartParser {
             }
         }
 
-        // arc(Int, Int,    Float,  Float,  enum_arcnote_curve_type,    Float,  Float,  Int,    hitsound,   Boolean         )[...];
-        // arc(t1,  t2,     x1,     x2,     easing,                     y1,     y2,     color,  hitsound,   skylineBoolean  )[...];
+        // arc(Int, Int,    Float,  Float,  enum_arcnote_curve_type,    Float,  Float,  Int,    hitsound,   Boolean / designant         )[...];
+        // arc(t1,  t2,     x1,     x2,     easing,                     y1,     y2,     color,  hitsound,   skylineBoolean / designant  )[...];
         cdr.ruleNotNull { cmd_arc() }.exec {
             all(
                 cdr.allNotNull(
@@ -612,7 +612,7 @@ object ANTLRChartParser {
                     { cmd_arc().Float(2) },
                     { cmd_arc().Float(3) },
                     { cmd_arc().Int(2) },
-                    { cmd_arc().Boolean() }
+                    // { cmd_arc().Boolean() }
                 ),
                 cdr.ruleAllNotNull(
                     { cmd_arc().enum_arcnote_curve_type() },
@@ -627,22 +627,43 @@ object ANTLRChartParser {
                     }
                 }
 
-                timingGroup(tgName) {
-                    arcNoteLegacy(
-                        ctx.cmd_arc().Int(0).text.toLong(),
-                        ctx.cmd_arc().Int(1).text.toLong(),
-                        ctx.cmd_arc().Float(0).text.toDouble(),
-                        ctx.cmd_arc().Float(1).text.toDouble(),
-                        ArcNote.CurveType(ctx.cmd_arc().enum_arcnote_curve_type().text),
-                        ctx.cmd_arc().Float(2).text.toDouble(),
-                        ctx.cmd_arc().Float(3).text.toDouble(),
-                        ArcNote.Color(ctx.cmd_arc().Int(2).text.toInt()),
-                        ctx.cmd_arc().Boolean().text.toBoolean()
-                    ) {
-                        arcTapList.data.forEach { arcTapTiming ->
-                            this.tap(arcTapTiming)
-                        }
-                    }.withRawHitsound(ctx.cmd_arc().hitsound().text)
+                cdr.notNull { cmd_arc().K_designant() }.exec {
+                    timingGroup(tgName) {
+                        arcNoteLegacy(
+                            ctx.cmd_arc().Int(0).text.toLong(),
+                            ctx.cmd_arc().Int(1).text.toLong(),
+                            ctx.cmd_arc().Float(0).text.toDouble(),
+                            ctx.cmd_arc().Float(1).text.toDouble(),
+                            ArcNote.CurveType(ctx.cmd_arc().enum_arcnote_curve_type().text),
+                            ctx.cmd_arc().Float(2).text.toDouble(),
+                            ctx.cmd_arc().Float(3).text.toDouble(),
+                            ArcNote.Color(ctx.cmd_arc().Int(2).text.toInt()),
+                            ctx.cmd_arc().Boolean().text.toBoolean(),
+                            true
+                        ) {
+                            arcTapList.data.forEach { arcTapTiming ->
+                                this.tap(arcTapTiming)
+                            }
+                        }.withRawHitsound(ctx.cmd_arc().hitsound().text)
+                    }
+                }.onElse {
+                    timingGroup(tgName) {
+                        arcNoteLegacy(
+                            ctx.cmd_arc().Int(0).text.toLong(),
+                            ctx.cmd_arc().Int(1).text.toLong(),
+                            ctx.cmd_arc().Float(0).text.toDouble(),
+                            ctx.cmd_arc().Float(1).text.toDouble(),
+                            ArcNote.CurveType(ctx.cmd_arc().enum_arcnote_curve_type().text),
+                            ctx.cmd_arc().Float(2).text.toDouble(),
+                            ctx.cmd_arc().Float(3).text.toDouble(),
+                            ArcNote.Color(ctx.cmd_arc().Int(2).text.toInt()),
+                            ctx.cmd_arc().Boolean().text.toBoolean(),
+                        ) {
+                            arcTapList.data.forEach { arcTapTiming ->
+                                this.tap(arcTapTiming)
+                            }
+                        }.withRawHitsound(ctx.cmd_arc().hitsound().text)
+                    }
                 }
             }
         }
