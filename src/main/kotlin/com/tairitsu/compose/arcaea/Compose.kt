@@ -318,6 +318,7 @@ fun <TTime : Number, TEndTime : Number> Difficulty.arcNote(
         endPosition,
         color ?: ArcNote.Color.BLUE,
         isGuidingLine,
+        false,
         arcTapClosure
     )
     return ctx.addArcNote(note)
@@ -342,6 +343,7 @@ fun <TTime : Number, TEndTime : Number, TStartPositionX : Number, TStartPosition
         endPosition.first.toDouble() to endPosition.second.toDouble(),
         color ?: ArcNote.Color.BLUE,
         isGuidingLine,
+        false,
         arcTapClosure
     )
     return ctx.addArcNote(note)
