@@ -81,11 +81,6 @@ chart_
     : header command_invocation+
     ;
 
-hitsound
-    : Lowers UNDERLINE 'wav'
-    | 'none'
-    ;
-
 arctap
     : K_arctap LPAREN Int RPAREN
     ;
@@ -182,11 +177,11 @@ cmd_hold
 cmd_arc
     // without arctap
     : K_arc LPAREN (
-        Int COMMA Int COMMA Float COMMA Float COMMA enum_arcnote_curve_type COMMA Float COMMA Float COMMA Int COMMA hitsound COMMA (Boolean | K_designant)
+        Int COMMA Int COMMA Float COMMA Float COMMA enum_arcnote_curve_type COMMA Float COMMA Float COMMA Int COMMA Key COMMA (Boolean | K_designant)
     ) RPAREN SEMICOLON
     // with arctap(s)
     | K_arc LPAREN (
-        Int COMMA Int COMMA Float COMMA Float COMMA enum_arcnote_curve_type COMMA Float COMMA Float COMMA Int COMMA hitsound COMMA (Boolean | K_designant)
+        Int COMMA Int COMMA Float COMMA Float COMMA enum_arcnote_curve_type COMMA Float COMMA Float COMMA Int COMMA Key COMMA (Boolean | K_designant)
     ) RPAREN compound_arctap_argument SEMICOLON
     ;
 
@@ -208,8 +203,9 @@ cmd_camera
 // $antlr-format allowShortRulesOnASingleLine true, allowShortBlocksOnASingleLine true, minEmptyLines 0, alignSemicolons ownLine
 // $antlr-format alignColons trailing, singleLineOverrulesHangingColon true, alignLexerCommands true, alignLabels true, alignTrailers true
 
-Alphas : Alpha+;
-Lowers : Lower+;
+Key : (Lower | UNDERLINE)+;
+Alphas   : Alpha+;
+Lowers   : Lower+;
 
 NEWLINE: [\r\n] -> skip;
 

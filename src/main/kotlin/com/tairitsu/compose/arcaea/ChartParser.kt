@@ -612,11 +612,11 @@ object ANTLRChartParser {
                     { cmd_arc().Float(2) },
                     { cmd_arc().Float(3) },
                     { cmd_arc().Int(2) },
+                    { cmd_arc().Key() }
                     // { cmd_arc().Boolean() }
                 ),
                 cdr.ruleAllNotNull(
                     { cmd_arc().enum_arcnote_curve_type() },
-                    { cmd_arc().hitsound() }
                 )
             ).exec {
                 val arcTapList: ArcNote.ArcTapList = ArcNote.ArcTapList(mutableListOf())
@@ -644,7 +644,7 @@ object ANTLRChartParser {
                             arcTapList.data.forEach { arcTapTiming ->
                                 this.tap(arcTapTiming)
                             }
-                        }.withRawHitsound(ctx.cmd_arc().hitsound().text)
+                        }.withRawHitsound(ctx.cmd_arc().Key().text)
                     }
                 }.onElse {
                     timingGroup(tgName) {
@@ -662,7 +662,7 @@ object ANTLRChartParser {
                             arcTapList.data.forEach { arcTapTiming ->
                                 this.tap(arcTapTiming)
                             }
-                        }.withRawHitsound(ctx.cmd_arc().hitsound().text)
+                        }.withRawHitsound(ctx.cmd_arc().Key().text)
                     }
                 }
             }
