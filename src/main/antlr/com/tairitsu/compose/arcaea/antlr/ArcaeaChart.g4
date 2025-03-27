@@ -62,14 +62,16 @@ K_timingpointdensityfactor : 'TimingPointDensityFactor';
 K_version                  : 'Version';
 
 // Vocabularies
-fragment Digit : '0' .. '9';
-fragment Lower : 'a' .. 'z';
-fragment Upper : 'A' .. 'Z';
-fragment Alpha : (Lower | Upper);
-Int            : [-]? Digit+;
-Float          : [-]? Digit+ DOT Digit+;
-Boolean        : ('true' | 'false');
-Version        : Digit (DOT Digit)+;
+fragment Digit      : '0' .. '9';
+fragment Lower      : 'a' .. 'z';
+fragment Upper      : 'A' .. 'Z';
+fragment Alpha      : (Lower | Upper);
+fragment StringPart : (Lower | Upper | Digit);
+
+Int     : [-]? Digit+;
+Float   : [-]? Digit+ DOT Digit+;
+Boolean : ('true' | 'false');
+Version : Digit (DOT Digit)+;
 
 HeaderIdentifier : (Upper) (Lower)+;
 LaneOrd          : '0' ..'5';
@@ -91,7 +93,7 @@ header
 
 header_item
     : K_audiooffset COLON Int
-    | K_timingpointdensityfactor COLON Float
+    | K_timingpointdensityfactor COLON (Float | Int)
     | K_version COLON Version
     | K_version COLON (Float | Int)
     | HeaderIdentifier COLON Int
@@ -177,11 +179,11 @@ cmd_hold
 cmd_arc
     // without arctap
     : K_arc LPAREN (
-        Int COMMA Int COMMA Float COMMA Float COMMA enum_arcnote_curve_type COMMA Float COMMA Float COMMA Int COMMA Key COMMA (Boolean | K_designant)
+        Int COMMA Int COMMA Float COMMA Float COMMA enum_arcnote_curve_type COMMA Float COMMA Float COMMA Int COMMA (Hitsound | Alphas) COMMA (Boolean | K_designant)
     ) RPAREN SEMICOLON
     // with arctap(s)
     | K_arc LPAREN (
-        Int COMMA Int COMMA Float COMMA Float COMMA enum_arcnote_curve_type COMMA Float COMMA Float COMMA Int COMMA Key COMMA (Boolean | K_designant)
+        Int COMMA Int COMMA Float COMMA Float COMMA enum_arcnote_curve_type COMMA Float COMMA Float COMMA Int COMMA (Hitsound | Alphas) COMMA (Boolean | K_designant)
     ) RPAREN compound_arctap_argument SEMICOLON
     ;
 
@@ -203,10 +205,9 @@ cmd_camera
 // $antlr-format allowShortRulesOnASingleLine true, allowShortBlocksOnASingleLine true, minEmptyLines 0, alignSemicolons ownLine
 // $antlr-format alignColons trailing, singleLineOverrulesHangingColon true, alignLexerCommands true, alignLabels true, alignTrailers true
 
-Key : (Lower | UNDERLINE)+;
-Alphas   : Alpha+;
-Lowers   : Lower+;
+Hitsound : StringPart+ '_wav';
+Alphas : Alpha+;
 
 NEWLINE: [\r\n] -> skip;
-
 WS: [ \t\r\n]+ -> skip;
+

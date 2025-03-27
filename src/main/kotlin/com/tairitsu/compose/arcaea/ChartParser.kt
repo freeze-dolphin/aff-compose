@@ -93,7 +93,7 @@ object ANTLRChartParser {
                             chart.configuration.tuneOffset(it.Int().text.toLong())
                         }
                         conditioner.notNull { K_timingpointdensityfactor() }.exec {
-                            chart.configuration.addItem("TimingPointDensityFactor", it.Float().text)
+                            chart.configuration.addItem("TimingPointDensityFactor", it.Float()?.text ?: it.Int().text)
                         }
                         conditioner.notNull { K_version() }.exec {
                             lateinit var itemValue: String
@@ -164,7 +164,7 @@ object ANTLRChartParser {
                                         }.onElse {
                                             lateinit var effect: Pair<TimingGroupSpecialEffectType, Int?>
                                             try {
-                                                val type = TimingGroupSpecialEffectType.fromCodename(ctx.Lowers().text)
+                                                val type = TimingGroupSpecialEffectType.fromCodename(ctx.Alphas().text)
                                                 cdr.notNull {
                                                     cmd_timinggroup().compound_timinggroup_argument().single_timinggroup_argument(idx)
                                                         .Float()
@@ -187,7 +187,7 @@ object ANTLRChartParser {
                                                 val value = if (ctx.Float() == null) {
                                                     null
                                                 } else ctx.Float().text
-                                                reporter.ignoredTimingGroupEffects.add(Pair(ctx.Lowers().text, value))
+                                                reporter.ignoredTimingGroupEffects.add(Pair(ctx.Alphas().text, value))
                                             }
                                         }
                                     }
@@ -469,7 +469,7 @@ object ANTLRChartParser {
                             chart.configuration.tuneOffset(it.Int().text.toLong())
                         }
                         conditioner.notNull { K_timingpointdensityfactor() }.exec {
-                            chart.configuration.addItem("TimingPointDensityFactor", it.Float().text)
+                            chart.configuration.addItem("TimingPointDensityFactor", it.Float()?.text ?: it.Int().text)
                         }
                         conditioner.notNull { K_version() }.exec {
                             lateinit var itemValue: String
@@ -612,7 +612,7 @@ object ANTLRChartParser {
                     { cmd_arc().Float(2) },
                     { cmd_arc().Float(3) },
                     { cmd_arc().Int(2) },
-                    { cmd_arc().Key() }
+                    // { cmd_arc().Hitsound() }
                     // { cmd_arc().Boolean() }
                 ),
                 cdr.ruleAllNotNull(
@@ -638,13 +638,13 @@ object ANTLRChartParser {
                             ctx.cmd_arc().Float(2).text.toDouble(),
                             ctx.cmd_arc().Float(3).text.toDouble(),
                             ArcNote.Color(ctx.cmd_arc().Int(2).text.toInt()),
-                            ctx.cmd_arc().Boolean().text.toBoolean(),
-                            true
+                            isGuidingLine = false,
+                            isDesignant = true
                         ) {
                             arcTapList.data.forEach { arcTapTiming ->
                                 this.tap(arcTapTiming)
                             }
-                        }.withRawHitsound(ctx.cmd_arc().Key().text)
+                        }.withRawHitsound(ctx.cmd_arc().Hitsound()?.text ?: ctx.cmd_arc().Alphas().text)
                     }
                 }.onElse {
                     timingGroup(tgName) {
@@ -662,7 +662,7 @@ object ANTLRChartParser {
                             arcTapList.data.forEach { arcTapTiming ->
                                 this.tap(arcTapTiming)
                             }
-                        }.withRawHitsound(ctx.cmd_arc().Key().text)
+                        }.withRawHitsound(ctx.cmd_arc().Hitsound()?.text ?: ctx.cmd_arc().Alphas().text)
                     }
                 }
             }

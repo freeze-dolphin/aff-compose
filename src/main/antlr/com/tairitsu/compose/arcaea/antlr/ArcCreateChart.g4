@@ -73,7 +73,7 @@ chart_
 
 hitsound
     : UnquottedString
-    | Lowers
+    | Alphas
     | 'none'
     ;
 
@@ -88,7 +88,7 @@ header
 
 header_item
     : K_audiooffset COLON Int
-    | K_timingpointdensityfactor COLON Float
+    | K_timingpointdensityfactor COLON (Float | Int)
     | K_version COLON Version
     | K_version COLON (Float | Int)
     | HeaderIdentifier COLON Int
@@ -147,8 +147,8 @@ enum_timinggroup_jremap
 single_timinggroup_argument
     : K_timinggroup_name EQL_SGN SpacedString
     | K_timinggroup_name EQL_SGN String
+    | Alphas (EQL_SGN Float)?
     | enum_timinggroup_jremap EQL_SGN enum_timinggroup_jremap
-    | Lowers (EQL_SGN Float)?
     ;
 
 compound_timinggroup_argument

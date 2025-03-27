@@ -74,3 +74,6 @@ build
 # Ignore ANTLR generate
 src/main/gen
 src/test/gen
+
+# Ignore official chart files
+**/*.aff

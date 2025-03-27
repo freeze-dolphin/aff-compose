@@ -788,7 +788,7 @@ fun Note.withHitsound(hitsound: String): ArcNote {
 }
 
 internal fun Note.withRawHitsound(rawHitsound: String): ArcNote {
-    if (this !is ArcNote) throw IllegalStateException("Hitsound is only available for ArcNotes")
+    if (this !is ArcNote) throw IllegalArgumentException("Hitsound is only available for ArcNotes")
     // if (!this.isGuidingLine) return this
     this.hitSound = rawHitsound
     return this
