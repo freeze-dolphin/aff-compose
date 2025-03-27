@@ -4,10 +4,14 @@ import com.tairitsu.compose.arcaea.antlr.PropertiesLexer
 import com.tairitsu.compose.arcaea.antlr.PropertiesParser
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import org.junit.jupiter.api.Assumptions.*
+import java.io.File
+import kotlin.test.*
 
 class ANTLRTest {
 
@@ -15,16 +19,18 @@ class ANTLRTest {
         prettyPrint = true
     }
 
-    private fun testAffAndPrint(aff: String, printAsAff: Boolean = true) {
+    private fun testAffAndPrint(aff: String, printAsAff: Boolean = true, doPrint: Boolean = true) {
         val crlfAff = aff.replace(Regex(System.lineSeparator()), "\r\n")
 
         if (!printAsAff) {
-            println(json.encodeToString(ANTLRChartParser.fromAff(crlfAff)))
+            val content = json.encodeToString(ANTLRChartParser.fromAff(crlfAff))
+            if (doPrint) println(content)
         } else {
-            println(json.encodeToString(ANTLRChartParser.fromAff(crlfAff)).let {
+            val content = json.encodeToString(ANTLRChartParser.fromAff(crlfAff)).let {
                 val chart: Chart = json.decodeFromString(it)
                 chart.serializeForArcaea()
-            })
+            }
+            if (doPrint) println(content)
         }
     }
 
@@ -58,25 +64,39 @@ class ANTLRTest {
         }
     }
 
+    private fun affToAcfTest(aff: String, print: Boolean = true) {
+        val crlfAff = aff.replace(Regex(System.lineSeparator()), "\r\n")
+        val parsed = Chart.fromAff(crlfAff)
+
+        if (print) println(parsed.serializeForArcCreate())
+    }
+
+    private fun acfToAffTest(acf: String, print: Boolean = true) {
+        val crlfAcf = acf.replace(Regex(System.lineSeparator()), "\r\n")
+        val parsed = Chart.fromAcf(crlfAcf)
+
+        if (print) println(parsed.first.serializeForArcaea())
+    }
+
     @Test
-    fun `arcaea chart antlr test`() {
+    fun `acf to aff conversion test`() {
         """
         AudioOffset:-600
         TimingPointDensityFactor:1
         Version:1.0
         -
         timing(0,126.00,4.00);
-        scenecontrol(19045,trackhide);
         (1,2);
+        arc(17140,19045,0.00,1.00,s,1.00,1.00,3,none,true)[arctap(17140),arctap(19045)];
+        scenecontrol(19045,trackhide);
+        arc(19045,19045,0.00,1.00,s,1.00,1.00,3,none,false);
         arc(19045,19045,0.00,1.00,s,1.00,1.00,3,none,false);
         scenecontrol(40960,redline,1.88,0);
-        arc(17140,19045,0.00,1.00,s,1.00,1.00,3,none,false)[arctap(17140),arctap(19045)];
-        arc(19045,19045,0.00,1.00,s,1.00,1.00,3,none,false);
-        timinggroup(fadingholds_anglex3600){
+        timinggroup(fadingholds,anglex=360.00){
             timing(0,126.00,4.00);
             hold(17140,18807,4);
             arc(17140,19045,0.00,1.00,si,1.00,1.00,0,none,true)[arctap(17140),arctap(19045)];
-            arc(17140,18569,0.00,0.50,siso,1.00,0.00,0,none,true)[arctap(18569)];
+            arc(17140,18569,0.00,0.50,siso,1.00,0.00,0,kick_wav,true)[arctap(18569)];
             arc(17140,18093,0.00,0.25,siso,1.00,0.25,0,none,true)[arctap(18093)];
             arc(17140,17616,0.00,0.00,siso,1.00,0.50,0,none,true);
             hold(19045,20712,4);
@@ -84,8 +104,41 @@ class ANTLRTest {
             arc(19045,20712,1.25,-0.50,b,1.00,0.00,1,none,false);
         };
         """.trimIndent().let {
-            testAffAndPrint(it)
+            acfToAffTest(it)
         }
+    }
+
+    fun testAllSongsFromSonglist(slstFile: File) {
+        assumeTrue(slstFile.exists())
+
+        val songlist = json.parseToJsonElement(slstFile.readText(charset("UTF-8"))).jsonObject["songs"]!!.jsonArray
+        for (song in songlist) {
+            if (song.jsonObject["deleted"].toString() == "true") continue
+
+            val difficulties = song.jsonObject["difficulties"]!!.jsonArray
+            val songId = song.jsonObject["id"]!!.jsonPrimitive.content
+            for (difficulty in difficulties) {
+                val ratingClass = difficulty.jsonObject["ratingClass"]!!.jsonPrimitive.content.toInt()
+                val chartFile = slstFile.resolve("../$songId/$ratingClass.aff")
+                if (chartFile.exists() && chartFile.isFile) {
+                    println("Testing: $songId - $ratingClass.aff")
+                    val chartContent = chartFile.readText(charset("UTF-8"))
+                    testAffAndPrint(chartContent, true, false)
+                    affToAcfTest(chartContent, false)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `test official chart and conversion to acf`() {
+        val slstFile = File("Z:/Workspace/arc/fragments-category/songs/songlist")
+        assumeTrue(slstFile.exists())
+        testAllSongsFromSonglist(slstFile)
+
+        val aprilFoolsSlstFile = File("Z:/Workspace/arc/fragments-category/songs/songlist_aprilfools")
+        assumeTrue(aprilFoolsSlstFile.exists())
+        testAllSongsFromSonglist(aprilFoolsSlstFile)
     }
 
     @Test
@@ -118,7 +171,7 @@ class ANTLRTest {
               scenecontrol(-10000,hidegroup,0,1);
               arc(45161,45565,0.00,1.00,si,1.00,1.00,0,a,false);
             };
-        """.trimIndent()
+            """.trimIndent()
         )
     }
 
