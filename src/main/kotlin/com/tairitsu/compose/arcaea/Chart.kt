@@ -6,6 +6,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import java.text.DecimalFormat
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 
@@ -634,6 +635,16 @@ data class ArcNote(
     }
 
     override fun serializeForArcCreate(): String {
+        // var-len arc-taps exception
+        if (color == Color.GRAY && !isGuidingLine && time == endTime) {
+            val center = (startPosition.x + endPosition.x) / 2 pos startPosition.y
+            return "arc(${time},${endTime},${center.x.affFormat},${center.x.affFormat},s,${center.y.affFormat},${center.y.affFormat},0,${hitSound},true)[arctap(${time},${
+                abs(
+                    startPosition.x - endPosition.x
+                ) * 2
+            })];"
+        }
+
         val sb = StringBuilder()
         sb.append("arc(${time},${endTime},${startPosition.x.affFormat},${endPosition.x.affFormat},${curveType.value},${startPosition.y.affFormat},${endPosition.y.affFormat},${color.value},${hitSound},$isGuidingLine)")
         if (arcTapTimestamps.isNotEmpty()) {
@@ -672,6 +683,7 @@ data class ArcNote(
             val BLUE = Color(0)
             val RED = Color(1)
             val GREEN = Color(2)
+            val GRAY = Color(3)
         }
     }
 

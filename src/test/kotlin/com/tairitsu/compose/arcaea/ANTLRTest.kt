@@ -11,6 +11,9 @@ import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.junit.jupiter.api.Assumptions.*
 import java.io.File
+import kotlin.io.path.Path
+import kotlin.io.path.exists
+import kotlin.io.path.readText
 import kotlin.test.*
 
 class ANTLRTest {
@@ -128,6 +131,14 @@ class ANTLRTest {
                 }
             }
         }
+    }
+
+    @Test
+    fun `test varlen arc convertion`() {
+        val path = Path("Z:/Workspace/arc/fragments-category/songs/hivemindrmx/2.aff")
+        assumeTrue(path.exists())
+
+        affToAcfTest(path.readText(charset = Charsets.UTF_8), true)
     }
 
     @Test
