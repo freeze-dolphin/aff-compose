@@ -222,6 +222,21 @@ class Scenecontrol(
         }
         return "scenecontrol(${time.toBigDecimal()},${type.id}${params});"
     }
+
+    override fun serializeForArcCreate(): String {
+        return when (type) {
+            ScenecontrolType.TRACK_HIDE -> {
+                Scenecontrol(time, ScenecontrolType.TRACK_DISPLAY, 1.0, 0).serialize()
+            }
+
+            ScenecontrolType.TRACK_SHOW -> {
+                Scenecontrol(time, ScenecontrolType.TRACK_DISPLAY, 1.0, 255).serialize()
+            }
+
+            else ->
+                super.serializeForArcCreate()
+        }
+    }
 }
 
 @Serializable
