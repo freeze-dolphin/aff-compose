@@ -224,17 +224,22 @@ class Scenecontrol(
     }
 
     override fun serializeForArcCreate(): String {
-        return when (type) {
-            ScenecontrolType.TRACK_HIDE -> {
-                Scenecontrol(time, ScenecontrolType.TRACK_DISPLAY, 1.0, 0).serialize()
+        return when {
+            type == ScenecontrolType.TRACK_HIDE -> {
+                Scenecontrol(time, ScenecontrolType.TRACK_DISPLAY, 1000.0, 0).serialize()
             }
 
-            ScenecontrolType.TRACK_SHOW -> {
-                Scenecontrol(time, ScenecontrolType.TRACK_DISPLAY, 1.0, 255).serialize()
+            type == ScenecontrolType.TRACK_SHOW -> {
+                Scenecontrol(time, ScenecontrolType.TRACK_DISPLAY, 1000.0, 255).serialize()
             }
 
-            else ->
+            type.needTimeConversion() -> {
+                Scenecontrol(time, type, param1!!.times(1000), param2).serialize()
+            }
+
+            else -> {
                 super.serializeForArcCreate()
+            }
         }
     }
 }
