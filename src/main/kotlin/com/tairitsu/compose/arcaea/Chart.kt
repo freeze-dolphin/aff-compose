@@ -1,5 +1,6 @@
 package com.tairitsu.compose.arcaea
 
+import com.tairitsu.compose.arcaea.parser.*
 import com.tairitsu.compose.arcaea.serializer.*
 import io.sn.aetherium.utils.*
 import kotlinx.serialization.SerialName
@@ -13,7 +14,7 @@ import kotlin.math.roundToInt
 @Serializable
 class Chart {
 
-    val configuration: ChartConfiguration = ChartConfiguration(0, mutableListOf())
+    val configuration: ChartConfiguration = ChartConfiguration(0, mutableSetOf())
     val mainTiming: TimingGroup = TimingGroup("main")
     val subTiming: MutableMap<String, TimingGroup> = mutableMapOf()
 
@@ -70,20 +71,18 @@ class Chart {
     }
 
     companion object {
-
-        fun fromAff(aff: String): Chart = ANTLRChartParser.fromAff(aff)
-
-        fun fromAcf(acf: String): Pair<Chart, ANTLRChartParser.ArcCreateChartParseReport> = ANTLRChartParser.fromAcf(acf)
-
         @Deprecated("use ANTLRChartParser#fromAff instead", ReplaceWith("com.tairitsu.compose.arcaea.Chart.fromAff(aff)"))
         fun fromAffRaw(aff: String): Chart = RawChartParser.fromAff(aff)
+
+        fun fromAff(aff: String): Chart = ANTLRArcaeaChartParser(aff).parse()
+        fun fromAcf(acf: String): Pair<Chart, ArcCreateChartParseReport> = ANTLRArcCreateChartParser(acf).parse()
     }
 
 }
 
 
 @Serializable
-data class ChartConfiguration(var audioOffset: Long, val extra: MutableList<ConfigurationItem>) {
+data class ChartConfiguration(var audioOffset: Long, val extra: MutableSet<ConfigurationItem>) {
     @Serializable
     data class ConfigurationItem(val name: String, val value: String)
 
@@ -99,7 +98,7 @@ data class ChartConfiguration(var audioOffset: Long, val extra: MutableList<Conf
         extra.add(ConfigurationItem(name, value.toString()))
     }
 
-    fun sync(other: ChartConfiguration) {
+    fun syncWith(other: ChartConfiguration) {
         audioOffset = other.audioOffset
         extra.addAll(other.extra)
     }

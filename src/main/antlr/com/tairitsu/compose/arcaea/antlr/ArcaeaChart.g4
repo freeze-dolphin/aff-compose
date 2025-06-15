@@ -80,7 +80,7 @@ LaneOrd          : '0' ..'5';
 // $antlr-format allowShortRulesOnASingleLine false, allowShortBlocksOnASingleLine true, alignSemicolons hanging, alignColons hanging
 
 chart_
-    : header command_invocation+
+    : header command_invocation+ EOF
     ;
 
 arctap
