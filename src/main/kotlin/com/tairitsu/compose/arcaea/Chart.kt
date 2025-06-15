@@ -562,7 +562,7 @@ data class ArcNote(
                     startPosition.x, startPosition.x, endPosition.x, endPosition.x
                 )
 
-                CurveType.SO -> buildEasingFunction3D(easeInSine, linear) // revert sIn and sOut
+                CurveType.SO -> buildEasingFunction3D(easeInSine, linear) // invert sIn and sOut
                 CurveType.SI -> buildEasingFunction3D(easeOutSine, linear)
                 CurveType.SISO -> buildEasingFunction3D(easeOutSine, easeInSine)
                 CurveType.SOSI -> buildEasingFunction3D(easeInSine, easeOutSine)
