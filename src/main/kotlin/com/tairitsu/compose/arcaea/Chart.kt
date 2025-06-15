@@ -110,7 +110,7 @@ interface ChartObject
 interface TimedObject : ChartObject {
     val time: Long
 
-    fun serialize(): String
+    fun serialize(): String?
     fun serializeForArcaea() = serialize()
     fun serializeForArcCreate() = serialize()
 
@@ -222,7 +222,7 @@ class Scenecontrol(
         return "scenecontrol(${time.toBigDecimal()},${type.id}${params});"
     }
 
-    override fun serializeForArcCreate(): String {
+    override fun serializeForArcCreate(): String? {
         return when {
             type == ScenecontrolType.TRACK_HIDE -> {
                 Scenecontrol(time, ScenecontrolType.TRACK_DISPLAY, 1000.0, 0).serialize()
@@ -435,7 +435,7 @@ class TimingGroup : ChartObject {
         specialEffects.add(effect)
     }
 
-    private fun serializeGeneric(padding: Int, serializeClosure: TimedObject.() -> String): String {
+    private fun serializeGeneric(padding: Int, serializeClosure: TimedObject.() -> String?): String {
         val `object` = mutableListOf<TimedObject>()
         `object`.addAll(notes)
         `object`.addAll(timing)
@@ -448,12 +448,15 @@ class TimingGroup : ChartObject {
             if (padding > 0) {
                 sb.append(" ".repeat(padding))
             }
-            sb.append(serializeClosure(n)).append("\r\n")
+            val serializedObject = serializeClosure(n)
+            if (!serializedObject.isNullOrEmpty()) {
+                sb.append(serializedObject).append("\r\n")
+            }
         }
         return sb.toString()
     }
 
-    @Deprecated("please specify target", ReplaceWith("serializeGeneric(padding) { this.serializeForArcaea() }"))
+    @Deprecated("please specify target", ReplaceWith("serializeForArcaea() or serializeForArcCreate()"))
     fun serialize(padding: Int): String {
         return serializeForArcaea(padding)
     }
@@ -477,8 +480,6 @@ class TimingGroup : ChartObject {
 
 @Serializable
 sealed class Note : TimedObject {
-    override fun toString(): String = serialize()
-
     object Comparator : kotlin.Comparator<Note> {
         override fun compare(a: Note, b: Note): Int {
             // sort by time
@@ -653,7 +654,10 @@ data class ArcNote(
         return sb.toString()
     }
 
-    override fun serializeForArcCreate(): String {
+    override fun serializeForArcCreate(): String? {
+        // "designant" exception
+        if (isDesignant == true) return null
+
         // var-len arc-taps exception
         if (color == Color.GRAY && !isGuidingLine && time == endTime) {
             val center = (startPosition.x + endPosition.x) / 2 pos startPosition.y
@@ -743,7 +747,7 @@ data class Camera(
     val yozAng: Double,
     val xoyAng: Double,
     val ease: CameraEaseType,
-    val duration: Long
+    val duration: Long,
 ) : TimedObject {
 
     internal constructor(
@@ -755,7 +759,7 @@ data class Camera(
         yozAng: Double,
         xoyAng: Double,
         ease: ArcNote.CurveType,
-        duration: Long
+        duration: Long,
     ) : this(time, xOff, yOff, zOff, xozAng, yozAng, xoyAng, CameraEaseType(ease.value), duration) {
         if (ease.value != "s") throw IllegalArgumentException("CurveType of ArcNote cannot be applied to Camera")
     }
