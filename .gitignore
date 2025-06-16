@@ -1,5 +1,6 @@
 # IntelliJ IDEA
 .idea
+.kotlin
 
 # CMake
 cmake-build-*/
