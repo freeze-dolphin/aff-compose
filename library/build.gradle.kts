@@ -35,8 +35,34 @@ val generateKotlinGrammarSource = tasks.register<AntlrKotlinTask>("generateKotli
     outputDirectory = layout.buildDirectory.dir(outDir).get().asFile
 }
 
+fun getCheckedOutGitCommitHash(takeFromHash: Int = 7): String {
+    val gitFolder = file(rootProject.projectDir.absolutePath, ".git")
+    require(gitFolder.exists()) { "Not a Git repository (missing .git directory)" }
+
+    val headFile = File(gitFolder, "HEAD")
+    val headContent = headFile.readText().trim()
+
+    return when {
+        ':' !in headContent -> headContent.take(takeFromHash)
+        else -> {
+            val refPath = headContent.substringAfter(": ").trim()
+            File(gitFolder, refPath).let { refFile ->
+                require(refFile.exists()) { "Git reference file not found: $refFile" }
+                refFile.readText().trim().take(takeFromHash)
+            }
+        }
+    }
+}
+
+version = getCheckedOutGitCommitHash()
+
 kotlin {
     jvm()
+    wasmJs {
+        browser()
+        nodejs()
+        binaries.executable()
+    }
 
     val hostOs = System.getProperty("os.name")
     val isArm64 = System.getProperty("os.arch") == "aarch64"
@@ -53,8 +79,8 @@ kotlin {
     nativeTarget.apply {
         binaries {
             sharedLib {
-                baseName = "${rootProject.name}-native"
-                version = getGitHash()
+                baseName = "${rootProject.name}-native_${project.version}"
+                version = project.version.toString()
             }
         }
     }
@@ -81,7 +107,6 @@ kotlin {
                 implementation(libs.kotlinx.serialization.cbor)
                 implementation(libs.uuid)
             }
-            kotlin.srcDir(generateKotlinGrammarSource)
         }
     }
 }
@@ -97,16 +122,8 @@ publishing {
     }
 }
 
-fun getGitHash(): String {
-    val process = ProcessBuilder("git", "rev-parse", "--short", "HEAD")
-        .directory(project.rootDir)
-        .start()
-
-    val exitCode = process.waitFor()
-    if (exitCode != 0) {
-        logger.warn("Command 'git rev-parse --short HEAD' exited with $exitCode")
-        return ""
-    }
-
-    return process.inputStream.bufferedReader().use { it.readText().trim() }
+fun file(vararg dirs: String): File = dirs.reduce { acc, next ->
+    File(acc, next).path
+}.let {
+    File(it)
 }

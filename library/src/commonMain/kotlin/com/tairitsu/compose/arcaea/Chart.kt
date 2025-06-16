@@ -147,7 +147,17 @@ interface TimedObject : ChartObject {
     }
 }
 
-internal expect val Double.affFormat: String
+internal val Double.affFormat: String
+    get() {
+        val rounded = (this * 100.0).roundToInt() / 100.0
+        val str = rounded.toString()
+        return if (str.contains('.')) {
+            val (whole, decimal) = str.split('.')
+            "$whole.${decimal.take(2).padEnd(2, '0')}"
+        } else {
+            "$str.00"
+        }
+    }
 
 @Serializable
 class Timing(val offset: Long, val bpm: Double, val beats: Double) : TimedObject {
