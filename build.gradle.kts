@@ -59,7 +59,7 @@ version = getCheckedOutGitCommitHash()
 kotlin {
     jvm()
 
-    if (!System.getenv().getOrElse("BUILD_NATIVE") { null }.isNullOrEmpty()) {
+    if (File(rootProject.projectDir, ".buildNative").exists()) {
         val hostOs = System.getProperty("os.name")
         val isArm64 = System.getProperty("os.arch") == "aarch64"
         val isMingwX64 = hostOs.startsWith("Windows")
