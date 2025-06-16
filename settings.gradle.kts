@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AffCompose"
+rootProject.name = "aff-compose"
