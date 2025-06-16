@@ -72,9 +72,11 @@ result
 # Ignore Gradle build output directory
 build
 
-# Ignore ANTLR generate
-src/main/gen
-src/test/gen
-
-# Ignore official chart files
-**/*.aff
+captures
+.externalNativeBuild
+.cxx
+local.properties
+xcuserdata
+.kotlin
+#So we don't accidentally commit our private keys
+*.gpg
