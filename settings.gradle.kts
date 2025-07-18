@@ -13,5 +13,4 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AffCompose"
-include(":library")
+rootProject.name = "aff-compose"
