@@ -62,7 +62,7 @@ kotlin {
     jvm()
 
     val buildNativeFilename =
-        arrayOf("build", "native", System.getenv().getOrElse("__BUILD_NATIVE_TARGET") { null }, "properties").filterNotNull()
+        arrayOf("build", "native", System.getenv().getOrElse("__AFF_COMPOSE_NATIVE_BUILD_TARGET") { null }, "properties").filterNotNull()
             .joinToString(separator = ".")
 
     val buildNativeFile = File(rootProject.projectDir, buildNativeFilename);
