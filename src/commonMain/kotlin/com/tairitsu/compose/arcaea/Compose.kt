@@ -242,56 +242,55 @@ fun <TTime : Number> Difficulty.trackhide(time: TTime) = scenecontrol(time.toLon
 fun <TTime : Number> Difficulty.trackshow(time: TTime) = scenecontrol(time.toLong(), ScenecontrolType.TRACK_SHOW)
 
 /**
- * param1：轨道从当前 alpha 变换到目标 alpha(param2) 所要花费的时间，数字为小数，单位为秒，填 0.00 等价于填 1.00
- * param2：轨道需要变换到的目标 alpha 值，可以填非负整数；<255 时有黑色背景特效，否则没有；=0 为轨道完全透明，=255 为轨道不透明，>=256 时透明度溢出（可看作透明度对 256 取余数计算）。
- * 使用例：scenecontrol(20480,trackdisplay,6.00,0);
+ * @param timeInSec 轨道从当前 alpha 变换到目标 alpha(param2) 所要花费的时间，数字为小数，单位为秒，填 0.00 等价于填 1.00
+ * @param alpha 轨道需要变换到的目标 alpha 值，可以填非负整数；<255 时有黑色背景特效，否则没有；=0 为轨道完全透明，=255 为轨道不透明，>=256 时透明度溢出（可看作透明度对 256 取余数计算）。
+ * @sample trackdisplay(20480,6.00,0);
  */
 fun <TTime : Number> Difficulty.trackdisplay(time: TTime, timeInSec: Double, alpha: Int) =
     scenecontrol(time.toLong(), ScenecontrolType.TRACK_DISPLAY, timeInSec, alpha)
 
 /**
- * param1：红线存在的时间，数字为小数，单位为秒
- * 使用例： scenecontrol(40960,redline,1.88,0);
+ * @param timeInSec 红线存在的时间，数字为小数，单位为秒
+ * @sample redline(40960,1.88);
  */
 fun <TTime : Number> Difficulty.redline(time: TTime, timeInSec: Double) =
     scenecontrol(time.toLong(), ScenecontrolType.RED_LINE, timeInSec)
 
 /**
- * param1：从当前 alpha 变换为指定 alpha 的持续时间，数字为小数，单位为秒
- * param2：目标 alpha 值
- * 使用例：scenecontrol(1000,arcahvdebris,1.00,128);
+ * @param timeInSec 从当前 alpha 变换为指定 alpha 的持续时间，数字为小数，单位为秒
+ * @param alpha 目标 alpha 值
+ * @sample arcahvdebris(1000,1.00,128);
  */
 fun <TTime : Number> Difficulty.arcahvdistort(time: TTime, timeInSec: Double, alpha: Int) =
     scenecontrol(time.toLong(), ScenecontrolType.ARCAHV_DISTORT, timeInSec, alpha)
 
 /**
- * param1：从当前 alpha 变换为指定 alpha 的持续时间，数字为小数，单位为秒
- * param2：目标 alpha 值
- * 使用例：scenecontrol(1000,arcahvdebris,1.00,128);
+ * @param timeInSec 从当前 alpha 变换为指定 alpha 的持续时间，数字为小数，单位为秒
+ * @param alpha 目标 alpha 值（0~255）
+ * @sample arcahvdebris(1000,1.00,128);
  */
 fun <TTime : Number> Difficulty.arcahvdebris(time: TTime, timeInSec: Double, alpha: Int) =
     scenecontrol(time.toLong(), ScenecontrolType.ARCAHV_DEBRIS, timeInSec, alpha)
 
 /**
- * param1：未使用
- * param2：隐藏或显示该时间组的 note（1/0）
- * 使用例：scenecontrol(81920,hidegroup,0.00,1);
+ * @param isHidden 隐藏或显示该时间组的 note（1/0）
+ * @sample hidegroup(81920,true);
  */
-fun <TTime : Number> Difficulty.hidegroup(time: TTime, isShown: Boolean) =
-    scenecontrol(time.toLong(), ScenecontrolType.HIDE_GROUP, if (isShown) 1 else 0)
+fun <TTime : Number> Difficulty.hidegroup(time: TTime, isHidden: Boolean) =
+    scenecontrol(time.toLong(), ScenecontrolType.HIDE_GROUP, if (isHidden) 1 else 0)
 
 /**
- * param1：持续时长（ms）
- * param2：淡入或淡出该事件展示的效果（1/0）
- * 使用例：scenecontrol(1000,enwidencamera,1000.00,1);
+ * @param durationInMs 持续时长（ms）
+ * @param isActive 淡入或淡出该事件展示的效果（1/0）
+ * @sample enwidencamera(1000,1000.00,true);
  */
 fun <TTime : Number> Difficulty.enwidencamera(time: TTime, durationInMs: Double, isActive: Boolean) =
     scenecontrol(time.toLong(), ScenecontrolType.ENWIDEN_CAMERA, durationInMs, if (isActive) 1 else 0)
 
 /**
- * param1：持续时长（ms）
- * param2：淡入或淡出该事件展示的效果（1/0）
- * 使用例：scenecontrol(1000,enwidenlanes,1000.00,1);
+ * @param durationInMs 持续时长（ms）
+ * @param isActive 淡入或淡出该事件展示的效果（1/0）
+ * @sample enwidenlanes(1000,1000.00,1);
  */
 fun <TTime : Number> Difficulty.enwidenlanes(time: TTime, durationInMs: Double, isActive: Boolean) =
     scenecontrol(time.toLong(), ScenecontrolType.ENWIDEN_LANES, durationInMs, if (isActive) 1 else 0)
