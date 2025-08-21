@@ -181,8 +181,8 @@ val Difficulty.noinput: TimingGroupSpecialEffect
 val Difficulty.fadingholds: TimingGroupSpecialEffect
     get() = TimingGroupSpecialEffect(TimingGroupSpecialEffectType.FADING_HOLDS)
 
-fun Difficulty.anglex(extraParam: Int): TimingGroupSpecialEffect = TimingGroupSpecialEffect(TimingGroupSpecialEffectType.ANGLEX, extraParam)
-fun Difficulty.angley(extraParam: Int): TimingGroupSpecialEffect = TimingGroupSpecialEffect(TimingGroupSpecialEffectType.ANGLEX, extraParam)
+fun Difficulty.anglex(extraParam: Int): TimingGroupSpecialEffect = TimingGroupSpecialEffect(TimingGroupSpecialEffectType.ANGLEX, extraParam.toString())
+fun Difficulty.angley(extraParam: Int): TimingGroupSpecialEffect = TimingGroupSpecialEffect(TimingGroupSpecialEffectType.ANGLEX, extraParam.toString())
 
 
 // Scenecontrol
@@ -356,12 +356,13 @@ fun <TTime : Number, TEndTime : Number> Difficulty.arcNote(
         endPosition,
         color ?: ArcNote.Color.BLUE,
         isGuidingLine.toString(),
+        1.0,
         arcTapClosure
     )
     return ctx.addArcNote(note)
 }
 
-fun <TTime : Number, TEndTime : Number> Difficulty.arcNoteLegacy(
+fun <TTime : Number, TEndTime : Number> Difficulty.arcNoteDesignant(
     time: TTime,
     endTime: TEndTime,
     x1: Double, x2: Double,
@@ -381,12 +382,13 @@ fun <TTime : Number, TEndTime : Number> Difficulty.arcNoteLegacy(
         x2 pos y2,
         color ?: ArcNote.Color.BLUE,
         if (isDesignant == true) "designant" else isGuidingLine.toString(),
+        1.0,
         arcTapClosure
     )
     return ctx.addArcNote(note)
 }
 
-fun <TTime : Number, TEndTime : Number> Difficulty.arcNoteLegacy(
+fun <TTime : Number, TEndTime : Number> Difficulty.arcNoteCustom(
     time: TTime,
     endTime: TEndTime,
     x1: Double, x2: Double,
@@ -405,6 +407,7 @@ fun <TTime : Number, TEndTime : Number> Difficulty.arcNoteLegacy(
         x2 pos y2,
         color ?: ArcNote.Color.BLUE,
         arcType,
+        1.0,
         arcTapClosure
     )
     return ctx.addArcNote(note)

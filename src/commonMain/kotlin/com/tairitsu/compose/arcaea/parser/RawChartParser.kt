@@ -73,7 +73,7 @@ object RawChartParser {
                             AffProcedure.ARC_NOTE -> parser.parse {
                                 timingGroup(mgr.currentTimingGroup.name) {
                                     if (this@parse.data[9].toBoolean().not()) {
-                                        arcNoteLegacy(
+                                        arcNoteDesignant(
                                             nextParam().toInt(),
                                             nextParam().toInt(),
                                             nextParam().toDouble(),
@@ -85,7 +85,7 @@ object RawChartParser {
                                             false
                                         )
                                     } else {
-                                        arcNoteLegacy(
+                                        arcNoteDesignant(
                                             nextParam().toInt(),
                                             nextParam().toInt(),
                                             nextParam().toDouble(),

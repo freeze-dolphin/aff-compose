@@ -249,7 +249,12 @@ class Scenecontrol(
 }
 
 @Serializable
-enum class TimingGroupSpecialEffectType(val codename: String) {
+enum class TimingGroupSpecialEffectType(
+    /**
+     * @param lowercase id of the special effect, while the `name` field is the uppercase enum name
+     */
+    val codename: String,
+) {
     // @formatter:off
     NO_INPUT("noinput"),
     FADING_HOLDS("fadingholds"),
@@ -268,7 +273,7 @@ enum class TimingGroupSpecialEffectType(val codename: String) {
 }
 
 @Serializable
-data class TimingGroupSpecialEffect(val type: TimingGroupSpecialEffectType, var extraParam: Int?) {
+data class TimingGroupSpecialEffect(val type: TimingGroupSpecialEffectType, var extraParam: String?) {
 
     fun serializeForArcaea(): String {
         return "${type.codename}${extraParam ?: ""}"
@@ -276,7 +281,7 @@ data class TimingGroupSpecialEffect(val type: TimingGroupSpecialEffectType, var 
 
     fun serializeForArcCreate(): String {
         if (type == TimingGroupSpecialEffectType.ANGLEX || type == TimingGroupSpecialEffectType.ANGLEY) {
-            extraParam = extraParam!! / 10
+            extraParam = (extraParam!!.toDouble() / 10).toString()
         }
         return "${type.codename}${if (extraParam != null) "=${extraParam!!.toDouble().affFormat}" else ""}"
     }
@@ -285,12 +290,12 @@ data class TimingGroupSpecialEffect(val type: TimingGroupSpecialEffectType, var 
         if (type == TimingGroupSpecialEffectType.ANGLEX || type == TimingGroupSpecialEffectType.ANGLEY) {
             if (extraParam == null) throw IllegalArgumentException("Effect `${type.codename}` needs a parameter")
             else {
-                if (extraParam!! % 3600 == 0) return
-                extraParam = if (extraParam!! <= 0) {
-                    (3600 + (extraParam!! % 3600))
+                if ((extraParam!!.toDouble() % 3600).toInt() == 0) return
+                extraParam = (if (extraParam!!.toDouble() <= 0) {
+                    (3600 + (extraParam!!.toDouble() % 3600)).toInt()
                 } else {
-                    extraParam!! % 3600
-                }
+                    extraParam!!.toDouble() % 3600
+                }).toString()
             }
         }
     }
@@ -425,7 +430,7 @@ class TimingGroup : ChartObject {
     }
 
     fun addSpecialEffect(type: TimingGroupSpecialEffectType, extraParam: Int) {
-        specialEffects.add(TimingGroupSpecialEffect(type, extraParam))
+        specialEffects.add(TimingGroupSpecialEffect(type, extraParam.toString()))
     }
 
     fun addSpecialEffect(type: TimingGroupSpecialEffectType) {
@@ -552,6 +557,7 @@ data class ArcNote(
     val color: Color,
     var hitSound: String,
     var arcType: String,
+    var arcResolution: Double,
 
     @Serializable(ArcTapListSerializer::class)
     @SerialName("tapList")
@@ -591,9 +597,19 @@ data class ArcNote(
         endPosition: Position,
         color: Color,
         arcType: String,
+        arcResolution: Double = 1.0,
         arcTapClosure: (ArcTapList.() -> Unit) = {},
     ) : this(
-        time, endTime, startPosition, curveType, endPosition, color, "none", arcType, ArcTapList(mutableListOf())
+        time,
+        endTime,
+        startPosition,
+        curveType,
+        endPosition,
+        color,
+        "none",
+        arcType,
+        arcResolution,
+        ArcTapList(mutableListOf())
     ) {
         arcTapList.arcNote = this
         arcTapClosure.invoke(arcTapList)
@@ -804,5 +820,11 @@ internal fun Note.withRawHitsound(rawHitsound: String): ArcNote {
     if (this !is ArcNote) throw IllegalArgumentException("Hitsound is only available for ArcNotes")
     // if (!this.isGuidingLine) return this
     this.hitSound = rawHitsound
+    return this
+}
+
+fun Note.withArcResolution(res: Double): ArcNote {
+    if (this !is ArcNote) throw IllegalArgumentException("Hitsound is only available for ArcNotes")
+    this.arcResolution = res
     return this
 }

@@ -101,8 +101,12 @@ class ANTLRArcaeaChartParser(
                                     }.exec {
                                         effect = Pair(
                                             type,
-                                            it.cmd_timinggroup()!!.compound_timinggroup_argument().single_timinggroup_argument(idx)
-                                                !!.Int()!!.text.toInt()
+                                            it.cmd_timinggroup()!!
+                                                .compound_timinggroup_argument()
+                                                .single_timinggroup_argument(idx)!!
+                                                .Int()!!
+                                                .text
+                                                .toInt()
                                         )
                                     }.onElse {
                                         effect = Pair(type, null)
@@ -182,8 +186,8 @@ class ANTLRArcaeaChartParser(
             }
         }
 
-        // arc(Int, Int,    Float,  Float,  enum_arcnote_curve_type,    Float,  Float,  Int,    hitsound,   Boolean / designant         )[...];
-        // arc(t1,  t2,     x1,     x2,     easing,                     y1,     y2,     color,  hitsound,   skylineBoolean / designant  )[...];
+        // arc(Int, Int,    Float,  Float,  enum_arcnote_curve_type,    Float,  Float,  Int,    hitsound,   Boolean / designant,        Float?        )[...];
+        // arc(t1,  t2,     x1,     x2,     easing,                     y1,     y2,     color,  hitsound,   skylineBoolean / designant, arcResolution?)[...];
         cdr.ruleNotNull { cmd_arc() }.exec {
             all(
                 cdr.allNotNull(
@@ -203,6 +207,11 @@ class ANTLRArcaeaChartParser(
             ).exec {
                 val arcTapList: ArcNote.ArcTapList = ArcNote.ArcTapList(mutableListOf())
 
+                var arcResolution = 1.0
+                cdr.notNull { cmd_arc()!!.Float(4) }.exec {
+                    arcResolution = ctx.cmd_arc()!!.Float(4)!!.text.toDouble()
+                }
+
                 cdr.ruleNotNull { cmd_arc()!!.compound_arctap_argument() }.exec {
                     ctx.cmd_arc()!!.compound_arctap_argument()!!.arctap().forEach { arcTapTiming ->
                         arcTapList.tap(arcTapTiming.Int().text.toLong())
@@ -211,7 +220,7 @@ class ANTLRArcaeaChartParser(
 
                 cdr.notNull { cmd_arc()!!.K_designant() }.exec {
                     timingGroup(tgName) {
-                        arcNoteLegacy(
+                        arcNoteDesignant(
                             ctx.cmd_arc()!!.Int(0)!!.text.toLong(),
                             ctx.cmd_arc()!!.Int(1)!!.text.toLong(),
                             ctx.cmd_arc()!!.Float(0)!!.text.toDouble(),
@@ -226,11 +235,13 @@ class ANTLRArcaeaChartParser(
                             arcTapList.data.forEach { arcTapTiming ->
                                 this.tap(arcTapTiming)
                             }
-                        }.withRawHitsound(ctx.cmd_arc()?.Hitsound()?.text ?: ctx.cmd_arc()!!.Alphas()!!.text)
+                        }
+                            .withRawHitsound(ctx.cmd_arc()?.Hitsound()?.text ?: ctx.cmd_arc()!!.Alphas()!!.text)
+                            .withArcResolution(arcResolution)
                     }
                 }.onElse {
                     timingGroup(tgName) {
-                        arcNoteLegacy(
+                        arcNoteDesignant(
                             ctx.cmd_arc()!!.Int(0)!!.text.toLong(),
                             ctx.cmd_arc()!!.Int(1)!!.text.toLong(),
                             ctx.cmd_arc()!!.Float(0)!!.text.toDouble(),
@@ -244,7 +255,9 @@ class ANTLRArcaeaChartParser(
                             arcTapList.data.forEach { arcTapTiming ->
                                 this.tap(arcTapTiming)
                             }
-                        }.withRawHitsound(ctx.cmd_arc()?.Hitsound()?.text ?: ctx.cmd_arc()!!.Alphas()!!.text)
+                        }
+                            .withRawHitsound(ctx.cmd_arc()?.Hitsound()?.text ?: ctx.cmd_arc()!!.Alphas()!!.text)
+                            .withArcResolution(arcResolution)
                     }
                 }
             }

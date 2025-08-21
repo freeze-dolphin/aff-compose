@@ -275,7 +275,13 @@ class ANTLRArcCreateChartParser(
                 }
 
                 timingGroup(tgName) {
-                    arcNoteLegacy(
+                    val arcResolution = specialEffects.firstOrNull { effect -> effect.type.codename == "arcresolution" }.let { fx ->
+                        if (fx != null) {
+                            fx.extraParam!!.toDouble()
+                        } else 1.0
+                    }
+
+                    arcNoteDesignant(
                         ctx.cmd_arc()!!.Int(0)!!.text.toLong(),
                         ctx.cmd_arc()!!.Int(1)!!.text.toLong(),
                         ctx.cmd_arc()!!.Float(0)!!.text.toDouble(),
@@ -289,7 +295,9 @@ class ANTLRArcCreateChartParser(
                         arcTapList.data.forEach { arcTapTiming ->
                             this.tap(arcTapTiming)
                         }
-                    }.withRawHitsound(ctx.cmd_arc()!!.hitsound()!!.text)
+                    }
+                        .withRawHitsound(ctx.cmd_arc()!!.hitsound()!!.text)
+                        .withArcResolution(arcResolution)
 
                     vlArcTapList.forEach { data ->
                         vlArctapWithDistance(data.first, data.second, data.third / 2) // conversion
