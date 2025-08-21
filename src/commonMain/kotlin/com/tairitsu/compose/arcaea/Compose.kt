@@ -181,8 +181,11 @@ val Difficulty.noinput: TimingGroupSpecialEffect
 val Difficulty.fadingholds: TimingGroupSpecialEffect
     get() = TimingGroupSpecialEffect(TimingGroupSpecialEffectType.FADING_HOLDS)
 
-fun Difficulty.anglex(extraParam: Int): TimingGroupSpecialEffect = TimingGroupSpecialEffect(TimingGroupSpecialEffectType.ANGLEX, extraParam.toString())
-fun Difficulty.angley(extraParam: Int): TimingGroupSpecialEffect = TimingGroupSpecialEffect(TimingGroupSpecialEffectType.ANGLEX, extraParam.toString())
+fun Difficulty.anglex(extraParam: Int): TimingGroupSpecialEffect =
+    TimingGroupSpecialEffect(TimingGroupSpecialEffectType.ANGLEX, extraParam.toString())
+
+fun Difficulty.angley(extraParam: Int): TimingGroupSpecialEffect =
+    TimingGroupSpecialEffect(TimingGroupSpecialEffectType.ANGLEX, extraParam.toString())
 
 
 // Scenecontrol
@@ -345,7 +348,8 @@ fun <TTime : Number, TEndTime : Number> Difficulty.arcNote(
     endPosition: Position,
     color: ArcNote.Color? = null,
     isGuidingLine: Boolean = color == null,
-    arcTapClosure: (ArcNote.ArcTapList.() -> Unit) = { },
+    arcTapList: MutableList<Long> = mutableListOf(),
+    postProcessor: (ArcNote.() -> Unit) = { },
 ): Note {
     val ctx = this.currentTimingGroup
     val note = ArcNote(
@@ -357,7 +361,8 @@ fun <TTime : Number, TEndTime : Number> Difficulty.arcNote(
         color ?: ArcNote.Color.BLUE,
         isGuidingLine.toString(),
         1.0,
-        arcTapClosure
+        arcTapList,
+        postProcessor
     )
     return ctx.addArcNote(note)
 }
@@ -365,25 +370,27 @@ fun <TTime : Number, TEndTime : Number> Difficulty.arcNote(
 fun <TTime : Number, TEndTime : Number> Difficulty.arcNoteDesignant(
     time: TTime,
     endTime: TEndTime,
-    x1: Double, x2: Double,
+    startPosition: Position,
     curveType: ArcNote.CurveType,
-    y1: Double, y2: Double,
+    endPosition: Position,
     color: ArcNote.Color? = null,
     isGuidingLine: Boolean = color == null,
     isDesignant: Boolean? = null,
-    arcTapClosure: (ArcNote.ArcTapList.() -> Unit) = { },
+    arcTapList: MutableList<Long> = mutableListOf(),
+    postProcessor: (ArcNote.() -> Unit) = { },
 ): Note {
     val ctx = this.currentTimingGroup
     val note = ArcNote(
         time.toLong(),
         endTime.toLong(),
-        x1 pos y1,
+        startPosition,
         curveType,
-        x2 pos y2,
+        endPosition,
         color ?: ArcNote.Color.BLUE,
         if (isDesignant == true) "designant" else isGuidingLine.toString(),
         1.0,
-        arcTapClosure
+        arcTapList,
+        postProcessor
     )
     return ctx.addArcNote(note)
 }
@@ -396,7 +403,8 @@ fun <TTime : Number, TEndTime : Number> Difficulty.arcNoteCustom(
     y1: Double, y2: Double,
     color: ArcNote.Color? = null,
     arcType: String,
-    arcTapClosure: (ArcNote.ArcTapList.() -> Unit) = { },
+    arcTapList: MutableList<Long> = mutableListOf(),
+    postProcessor: (ArcNote.() -> Unit) = { },
 ): Note {
     val ctx = this.currentTimingGroup
     val note = ArcNote(
@@ -408,7 +416,8 @@ fun <TTime : Number, TEndTime : Number> Difficulty.arcNoteCustom(
         color ?: ArcNote.Color.BLUE,
         arcType,
         1.0,
-        arcTapClosure
+        arcTapList,
+        postProcessor
     )
     return ctx.addArcNote(note)
 }

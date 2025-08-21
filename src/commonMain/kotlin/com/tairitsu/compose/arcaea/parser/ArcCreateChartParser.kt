@@ -1,6 +1,8 @@
 package com.tairitsu.compose.arcaea.parser
 
 import com.tairitsu.compose.arcaea.*
+import com.tairitsu.compose.arcaea.PostProcessor.arcResolution
+import com.tairitsu.compose.arcaea.PostProcessor.rawHitsound
 import com.tairitsu.compose.arcaea.antlr.ArcCreateChartLexer
 import com.tairitsu.compose.arcaea.antlr.ArcCreateChartParser
 import com.tairitsu.compose.arcaea.parser.Executable.Companion.all
@@ -234,7 +236,7 @@ class ANTLRArcCreateChartParser(
                     { cmd_arc()!!.hitsound() }
                 )
             ).exec {
-                val arcTapList: ArcNote.ArcTapList = ArcNote.ArcTapList(mutableListOf())
+                val arcTapList = mutableListOf<Long>()
                 val vlArcTapList = mutableListOf<Triple<Long, Position, Double>>()
 
                 cdr.ruleNotNull { cmd_arc()!!.compound_arctap_argument() }.exec {
@@ -269,7 +271,7 @@ class ANTLRArcCreateChartParser(
 
                         }.onElse {
                             // fixed arctaps
-                            arcTapList.tap(arcTapTiming.Int().text.toLong())
+                            arcTapList.add(arcTapTiming.Int().text.toLong())
                         }
                     }
                 }
@@ -284,20 +286,18 @@ class ANTLRArcCreateChartParser(
                     arcNoteDesignant(
                         ctx.cmd_arc()!!.Int(0)!!.text.toLong(),
                         ctx.cmd_arc()!!.Int(1)!!.text.toLong(),
-                        ctx.cmd_arc()!!.Float(0)!!.text.toDouble(),
-                        ctx.cmd_arc()!!.Float(1)!!.text.toDouble(),
+                        ctx.cmd_arc()!!.Float(0)!!.text.toDouble() pos ctx.cmd_arc()!!.Float(1)!!.text.toDouble(),
                         ArcNote.CurveType(ctx.cmd_arc()!!.enum_arcnote_curve_type()!!.text),
-                        ctx.cmd_arc()!!.Float(2)!!.text.toDouble(),
-                        ctx.cmd_arc()!!.Float(3)!!.text.toDouble(),
+                        ctx.cmd_arc()!!.Float(2)!!.text.toDouble() pos ctx.cmd_arc()!!.Float(3)!!.text.toDouble(),
                         ArcNote.Color(ctx.cmd_arc()!!.Int(2)!!.text.toInt()),
-                        ctx.cmd_arc()!!.Boolean()!!.text.toBoolean()
+                        isGuidingLine = ctx.cmd_arc()!!.Boolean()!!.text.toBoolean(),
+                        isDesignant = false,
+                        arcTapList
                     ) {
-                        arcTapList.data.forEach { arcTapTiming ->
-                            this.tap(arcTapTiming)
-                        }
+                        rawHitsound(ctx.cmd_arc()!!.hitsound()!!.text)
+                        arcResolution(arcResolution)
                     }
-                        .withRawHitsound(ctx.cmd_arc()!!.hitsound()!!.text)
-                        .withArcResolution(arcResolution)
+
 
                     vlArcTapList.forEach { data ->
                         vlArctapWithDistance(data.first, data.second, data.third / 2) // conversion

@@ -1,5 +1,6 @@
 package com.tairitsu.compose.arcaea
 
+import com.benasher44.uuid.uuid4
 import com.tairitsu.compose.arcaea.parser.*
 import com.tairitsu.compose.arcaea.serializer.*
 import io.sn.aetherium.utils.*
@@ -9,6 +10,7 @@ import kotlinx.serialization.Transient
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
+const val TIMING_GROUP_SERIALIZATION_PADDING = 4
 
 @Serializable
 class Chart {
@@ -38,7 +40,7 @@ class Chart {
                         it.serializeForArcaea()
                     }
                 }){\r\n")
-            sb.append(timing.serializeForArcaea(padding = 4))
+            sb.append(timing.serializeForArcaea(padding = TIMING_GROUP_SERIALIZATION_PADDING))
             sb.append("};\r\n")
         }
 
@@ -62,7 +64,7 @@ class Chart {
                         it.serializeForArcCreate()
                     }
                 }){\r\n")
-            sb.append(timing.serializeForArcCreate(padding = 4))
+            sb.append(timing.serializeForArcCreate(padding = TIMING_GROUP_SERIALIZATION_PADDING))
             sb.append("};\r\n")
         }
 
@@ -109,8 +111,8 @@ interface TimedObject : ChartObject {
     val time: Long
 
     fun serialize(): String?
-    fun serializeForArcaea() = serialize()
-    fun serializeForArcCreate() = serialize()
+    fun serializeTimedObjForArcaea(ctx: TimingGroup) = serialize()
+    fun serializeTimedObjForArcCreate(ctx: TimingGroup) = serialize()
 
     object Comparator : kotlin.Comparator<TimedObject> {
         override fun compare(a: TimedObject, b: TimedObject): Int {
@@ -227,7 +229,7 @@ class Scenecontrol(
         return "scenecontrol(${time},${type.id}${params});"
     }
 
-    override fun serializeForArcCreate(): String? {
+    override fun serializeTimedObjForArcCreate(ctx: TimingGroup): String? {
         return when {
             type == ScenecontrolType.TRACK_HIDE -> {
                 Scenecontrol(time, ScenecontrolType.TRACK_DISPLAY, 1000.0, 0).serialize()
@@ -242,29 +244,34 @@ class Scenecontrol(
             }
 
             else -> {
-                super.serializeForArcCreate()
+                super.serializeTimedObjForArcCreate(ctx)
             }
         }
     }
 }
 
 @Serializable
-enum class TimingGroupSpecialEffectType(
+data class TimingGroupSpecialEffectType(
     /**
      * @param lowercase id of the special effect, while the `name` field is the uppercase enum name
      */
     val codename: String,
 ) {
-    // @formatter:off
-    NO_INPUT("noinput"),
-    FADING_HOLDS("fadingholds"),
-    ANGLEX("anglex"),
-    ANGLEY("angley");
-    // @formatter:on
-
     companion object {
+        val NO_INPUT = TimingGroupSpecialEffectType("noinput")
+        val FADING_HOLDS = TimingGroupSpecialEffectType("fadingholds")
+        val ANGLEX = TimingGroupSpecialEffectType("anglex")
+        val ANGLEY = TimingGroupSpecialEffectType("angley")
+
+        val entries = listOf(
+            NO_INPUT,
+            FADING_HOLDS,
+            ANGLEX,
+            ANGLEY,
+        )
+
         fun fromCodename(codename: String): TimingGroupSpecialEffectType {
-            TimingGroupSpecialEffectType.entries.forEach {
+            entries.forEach {
                 if (it.codename == codename) return it
             }
             throw IllegalArgumentException("Unknown timing group special effect type: $codename")
@@ -473,13 +480,13 @@ class TimingGroup : ChartObject {
 
     fun serializeForArcaea(padding: Int): String {
         return serializeGeneric(padding) {
-            this.serializeForArcaea()
+            this.serializeTimedObjForArcaea(this@TimingGroup)
         }
     }
 
     fun serializeForArcCreate(padding: Int): String {
         return serializeGeneric(padding) {
-            this.serializeForArcCreate()
+            this.serializeTimedObjForArcCreate(this@TimingGroup)
         }
     }
 
@@ -558,13 +565,11 @@ data class ArcNote(
     var hitSound: String,
     var arcType: String,
     var arcResolution: Double,
-
-    @Serializable(ArcTapListSerializer::class)
-    @SerialName("tapList")
-    val arcTapList: ArcTapList,
+    val arcTapList: MutableList<Long>,
 ) : Note() {
 
-    fun isGuidingLine(): Boolean = arcType == "true" || (arcTapList.data.isNotEmpty() && arcType != "designant")
+    fun isGuidingLine(): Boolean =
+        arcType == "true" // || (arcTapList.isNotEmpty() && arcType != "designant") /* this convertion logic is in the ctor during initialization */
 
     fun isDesignant(): Boolean = arcType == "designant"
 
@@ -598,7 +603,8 @@ data class ArcNote(
         color: Color,
         arcType: String,
         arcResolution: Double = 1.0,
-        arcTapClosure: (ArcTapList.() -> Unit) = {},
+        arcTapList: MutableList<Long> = mutableListOf<Long>(),
+        postProcessor: (ArcNote.() -> Unit) = { },
     ) : this(
         time,
         endTime,
@@ -609,17 +615,13 @@ data class ArcNote(
         "none",
         arcType,
         arcResolution,
-        ArcTapList(mutableListOf())
+        arcTapList
     ) {
-        arcTapList.arcNote = this
-        arcTapClosure.invoke(arcTapList)
-        if (arcTapTimestamps.isNotEmpty()) {
+        if (arcTapList.isNotEmpty() && arcType != "designant") {
             this@ArcNote.arcType = "true"
         }
+        postProcessor.invoke(this)
     }
-
-    private val arcTapTimestamps: MutableList<Long>
-        get() = arcTapList.data
 
     override fun serialize(): String {
         val sb = StringBuilder()
@@ -630,15 +632,15 @@ data class ArcNote(
                         if (!it.endsWith("_wav") && !it.endsWith(".wav")) "${it}_wav" else it.replace(".wav", "_wav")
                     }
                 }
-            },${if (isDesignant()) "designant" else arcType})"
+            },${arcType}${if (arcResolution != 1.0) ",$arcResolution" else ""})"
         )
-        if (arcTapTimestamps.isNotEmpty()) {
-            arcTapTimestamps.sort()
+        if (arcTapList.isNotEmpty()) {
+            arcTapList.sort()
             sb.append("[")
-            for (idx in arcTapTimestamps.indices) {
-                val tap = arcTapTimestamps[idx]
+            for (idx in arcTapList.indices) {
+                val tap = arcTapList[idx]
                 sb.append("arctap(${tap})")
-                if (idx < arcTapTimestamps.size - 1) {
+                if (idx < arcTapList.size - 1) {
                     sb.append(",")
                 }
             }
@@ -648,7 +650,26 @@ data class ArcNote(
         return sb.toString()
     }
 
-    override fun serializeForArcCreate(): String? {
+    override fun serializeTimedObjForArcCreate(ctx: TimingGroup): String? {
+        fun buildArcSentence(): String {
+            val sb = StringBuilder()
+            sb.append("arc(${time},${endTime},${startPosition.x.affFormat},${endPosition.x.affFormat},${curveType.value},${startPosition.y.affFormat},${endPosition.y.affFormat},${color.value},${hitSound},$arcType)")
+            if (arcTapList.isNotEmpty()) {
+                arcTapList.sort()
+                sb.append("[")
+                for (idx in arcTapList.indices) {
+                    val tap = arcTapList[idx]
+                    sb.append("arctap(${tap})")
+                    if (idx < arcTapList.size - 1) {
+                        sb.append(",")
+                    }
+                }
+                sb.append("]")
+            }
+            sb.append(";")
+            return sb.toString()
+        }
+
         // "designant" exception
         if (isDesignant()) return null
 
@@ -662,22 +683,39 @@ data class ArcNote(
             })];"
         }
 
-        val sb = StringBuilder()
-        sb.append("arc(${time},${endTime},${startPosition.x.affFormat},${endPosition.x.affFormat},${curveType.value},${startPosition.y.affFormat},${endPosition.y.affFormat},${color.value},${hitSound},$arcType)")
-        if (arcTapTimestamps.isNotEmpty()) {
-            arcTapTimestamps.sort()
-            sb.append("[")
-            for (idx in arcTapTimestamps.indices) {
-                val tap = arcTapTimestamps[idx]
-                sb.append("arctap(${tap})")
-                if (idx < arcTapTimestamps.size - 1) {
-                    sb.append(",")
-                }
-            }
-            sb.append("]")
+        // handle arcResolution
+        if (arcResolution != 1.0) {
+            // duplicate all `timing` commands
+            val timingGroup = TimingGroup("arcResolution_" + uuid4())
+            timingGroup.timing.addAll(ctx.getTimings())
+
+            // duplicate all fx
+            timingGroup.specialEffects.addAll(ctx.specialEffects)
+
+            timingGroup.addRawSpecialEffect(
+                TimingGroupSpecialEffect(
+                    TimingGroupSpecialEffectType("arcresolution"),
+                    arcResolution.toString()
+                )
+            )
+            timingGroup.addArcNote(this.apply {
+                arcResolution = 1.0 // break java.lang.StackOverflowError
+            })
+
+            val sb = StringBuilder()
+            sb.append(
+                "timinggroup(${
+                    timingGroup.specialEffects.joinToString(",") {
+                        it.serializeForArcCreate()
+                    }
+                }){\r\n")
+            sb.append(timingGroup.serializeForArcCreate(padding = TIMING_GROUP_SERIALIZATION_PADDING))
+            sb.append("};\r\n")
+
+            return sb.toString().trim { it <= ' ' }
+        } else {
+            return buildArcSentence()
         }
-        sb.append(";")
-        return sb.toString()
     }
 
     @Serializable(ArcNoteCurveTypeSerializer::class)
@@ -702,32 +740,6 @@ data class ArcNote(
             val GREEN = Color(2)
             val GRAY = Color(3)
         }
-    }
-
-    @Serializable
-    data class ArcTapList(
-        val data: MutableList<Long>,
-    ) {
-
-        internal var arcNote: ArcNote? = null
-
-        fun tap(vararg tap: Long) {
-            tap.forEach { data.add(it) }
-        }
-
-        /**
-         * The same as [ArcTapList.tap]
-         */
-        fun arctap(vararg tap: Long) {
-            tap(*tap)
-        }
-
-        val parent: ArcNote
-            get() {
-                if (arcNote == null) throw IllegalStateException("The parent arcNote is null")
-                return arcNote!!
-            }
-
     }
 }
 
@@ -810,21 +822,4 @@ infix fun <A : Number, B : Number> A.pos(that: B): Position = Position(this.toDo
 
 fun Pair<Double, Double>.toPosition(): Position {
     return this.first pos this.second
-}
-
-fun Note.withHitsound(hitsound: String): ArcNote {
-    return withRawHitsound("${hitsound}_wav")
-}
-
-internal fun Note.withRawHitsound(rawHitsound: String): ArcNote {
-    if (this !is ArcNote) throw IllegalArgumentException("Hitsound is only available for ArcNotes")
-    // if (!this.isGuidingLine) return this
-    this.hitSound = rawHitsound
-    return this
-}
-
-fun Note.withArcResolution(res: Double): ArcNote {
-    if (this !is ArcNote) throw IllegalArgumentException("Hitsound is only available for ArcNotes")
-    this.arcResolution = res
-    return this
 }

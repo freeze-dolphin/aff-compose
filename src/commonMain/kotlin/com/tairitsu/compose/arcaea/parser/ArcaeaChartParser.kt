@@ -1,6 +1,8 @@
 package com.tairitsu.compose.arcaea.parser
 
 import com.tairitsu.compose.arcaea.*
+import com.tairitsu.compose.arcaea.PostProcessor.arcResolution
+import com.tairitsu.compose.arcaea.PostProcessor.rawHitsound
 import com.tairitsu.compose.arcaea.antlr.*
 import com.tairitsu.compose.arcaea.parser.Executable.Companion.all
 import org.antlr.v4.kotlinruntime.*
@@ -205,7 +207,7 @@ class ANTLRArcaeaChartParser(
                     { cmd_arc()!!.enum_arcnote_curve_type() },
                 )
             ).exec {
-                val arcTapList: ArcNote.ArcTapList = ArcNote.ArcTapList(mutableListOf())
+                val arcTapList = mutableListOf<Long>()
 
                 var arcResolution = 1.0
                 cdr.notNull { cmd_arc()!!.Float(4) }.exec {
@@ -214,7 +216,7 @@ class ANTLRArcaeaChartParser(
 
                 cdr.ruleNotNull { cmd_arc()!!.compound_arctap_argument() }.exec {
                     ctx.cmd_arc()!!.compound_arctap_argument()!!.arctap().forEach { arcTapTiming ->
-                        arcTapList.tap(arcTapTiming.Int().text.toLong())
+                        arcTapList.add(arcTapTiming.Int().text.toLong())
                     }
                 }
 
@@ -223,41 +225,34 @@ class ANTLRArcaeaChartParser(
                         arcNoteDesignant(
                             ctx.cmd_arc()!!.Int(0)!!.text.toLong(),
                             ctx.cmd_arc()!!.Int(1)!!.text.toLong(),
-                            ctx.cmd_arc()!!.Float(0)!!.text.toDouble(),
-                            ctx.cmd_arc()!!.Float(1)!!.text.toDouble(),
+                            ctx.cmd_arc()!!.Float(0)!!.text.toDouble() pos ctx.cmd_arc()!!.Float(1)!!.text.toDouble(),
                             ArcNote.CurveType(ctx.cmd_arc()!!.enum_arcnote_curve_type()!!.text),
-                            ctx.cmd_arc()!!.Float(2)!!.text.toDouble(),
-                            ctx.cmd_arc()!!.Float(3)!!.text.toDouble(),
+                            ctx.cmd_arc()!!.Float(2)!!.text.toDouble() pos ctx.cmd_arc()!!.Float(3)!!.text.toDouble(),
                             ArcNote.Color(ctx.cmd_arc()!!.Int(2)!!.text.toInt()),
                             isGuidingLine = false,
-                            isDesignant = true
+                            isDesignant = true,
+                            arcTapList
                         ) {
-                            arcTapList.data.forEach { arcTapTiming ->
-                                this.tap(arcTapTiming)
-                            }
+                            rawHitsound(ctx.cmd_arc()?.Hitsound()?.text ?: ctx.cmd_arc()!!.Alphas()!!.text)
+                            arcResolution(arcResolution)
                         }
-                            .withRawHitsound(ctx.cmd_arc()?.Hitsound()?.text ?: ctx.cmd_arc()!!.Alphas()!!.text)
-                            .withArcResolution(arcResolution)
                     }
                 }.onElse {
                     timingGroup(tgName) {
                         arcNoteDesignant(
                             ctx.cmd_arc()!!.Int(0)!!.text.toLong(),
                             ctx.cmd_arc()!!.Int(1)!!.text.toLong(),
-                            ctx.cmd_arc()!!.Float(0)!!.text.toDouble(),
-                            ctx.cmd_arc()!!.Float(1)!!.text.toDouble(),
+                            ctx.cmd_arc()!!.Float(0)!!.text.toDouble() pos ctx.cmd_arc()!!.Float(1)!!.text.toDouble(),
                             ArcNote.CurveType(ctx.cmd_arc()!!.enum_arcnote_curve_type()!!.text),
-                            ctx.cmd_arc()!!.Float(2)!!.text.toDouble(),
-                            ctx.cmd_arc()!!.Float(3)!!.text.toDouble(),
+                            ctx.cmd_arc()!!.Float(2)!!.text.toDouble() pos ctx.cmd_arc()!!.Float(3)!!.text.toDouble(),
                             ArcNote.Color(ctx.cmd_arc()!!.Int(2)!!.text.toInt()),
-                            ctx.cmd_arc()!!.Boolean()!!.text.toBoolean(),
+                            isGuidingLine = ctx.cmd_arc()!!.Boolean()!!.text.toBoolean(),
+                            isDesignant = false,
+                            arcTapList
                         ) {
-                            arcTapList.data.forEach { arcTapTiming ->
-                                this.tap(arcTapTiming)
-                            }
+                            rawHitsound(ctx.cmd_arc()?.Hitsound()?.text ?: ctx.cmd_arc()!!.Alphas()!!.text)
+                            arcResolution(arcResolution)
                         }
-                            .withRawHitsound(ctx.cmd_arc()?.Hitsound()?.text ?: ctx.cmd_arc()!!.Alphas()!!.text)
-                            .withArcResolution(arcResolution)
                     }
                 }
             }

@@ -76,11 +76,9 @@ object RawChartParser {
                                         arcNoteDesignant(
                                             nextParam().toInt(),
                                             nextParam().toInt(),
-                                            nextParam().toDouble(),
-                                            nextParam().toDouble(),
+                                            nextParam().toDouble() pos nextParam().toDouble(),
                                             ArcNote.CurveType(nextParam()),
-                                            nextParam().toDouble(),
-                                            nextParam().toDouble(),
+                                            nextParam().toDouble() pos nextParam().toDouble(),
                                             ArcNote.Color(nextParam().toInt()),
                                             false
                                         )
@@ -88,18 +86,13 @@ object RawChartParser {
                                         arcNoteDesignant(
                                             nextParam().toInt(),
                                             nextParam().toInt(),
-                                            nextParam().toDouble(),
-                                            nextParam().toDouble(),
+                                            nextParam().toDouble() pos nextParam().toDouble(),
                                             ArcNote.CurveType(nextParam()),
-                                            nextParam().toDouble(),
-                                            nextParam().toDouble(),
+                                            nextParam().toDouble() pos nextParam().toDouble(),
                                             ArcNote.Color(nextParam().toInt()),
-                                            true
-                                        ) {
-                                            parser.arctapList.forEach {
-                                                tap(it)
-                                            }
-                                        }
+                                            true,
+
+                                        )
                                     }
                                 }
                             }

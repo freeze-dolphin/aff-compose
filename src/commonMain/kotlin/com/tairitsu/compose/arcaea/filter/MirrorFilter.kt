@@ -25,9 +25,8 @@ object MirrorFilter : NoteFilter() {
             endPosition = endPosition,
             color = color,
             arcType = note.arcType,
+            arcTapList = note.arcTapList
         )
-
-        ret.arcTapList.tap(*note.arcTapList.data.toLongArray())
 
         return ret
     }
