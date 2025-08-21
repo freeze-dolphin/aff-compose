@@ -225,9 +225,9 @@ class ANTLRArcaeaChartParser(
                         arcNoteDesignant(
                             ctx.cmd_arc()!!.Int(0)!!.text.toLong(),
                             ctx.cmd_arc()!!.Int(1)!!.text.toLong(),
-                            ctx.cmd_arc()!!.Float(0)!!.text.toDouble() pos ctx.cmd_arc()!!.Float(1)!!.text.toDouble(),
+                            ctx.cmd_arc()!!.Float(0)!!.text.toDouble() pos ctx.cmd_arc()!!.Float(2)!!.text.toDouble(),
                             ArcNote.CurveType(ctx.cmd_arc()!!.enum_arcnote_curve_type()!!.text),
-                            ctx.cmd_arc()!!.Float(2)!!.text.toDouble() pos ctx.cmd_arc()!!.Float(3)!!.text.toDouble(),
+                            ctx.cmd_arc()!!.Float(1)!!.text.toDouble() pos ctx.cmd_arc()!!.Float(3)!!.text.toDouble(),
                             ArcNote.Color(ctx.cmd_arc()!!.Int(2)!!.text.toInt()),
                             isGuidingLine = false,
                             isDesignant = true,
@@ -239,15 +239,14 @@ class ANTLRArcaeaChartParser(
                     }
                 }.onElse {
                     timingGroup(tgName) {
-                        arcNoteDesignant(
+                        arcNote(
                             ctx.cmd_arc()!!.Int(0)!!.text.toLong(),
                             ctx.cmd_arc()!!.Int(1)!!.text.toLong(),
-                            ctx.cmd_arc()!!.Float(0)!!.text.toDouble() pos ctx.cmd_arc()!!.Float(1)!!.text.toDouble(),
+                            ctx.cmd_arc()!!.Float(0)!!.text.toDouble() pos ctx.cmd_arc()!!.Float(2)!!.text.toDouble(),
                             ArcNote.CurveType(ctx.cmd_arc()!!.enum_arcnote_curve_type()!!.text),
-                            ctx.cmd_arc()!!.Float(2)!!.text.toDouble() pos ctx.cmd_arc()!!.Float(3)!!.text.toDouble(),
+                            ctx.cmd_arc()!!.Float(1)!!.text.toDouble() pos ctx.cmd_arc()!!.Float(3)!!.text.toDouble(),
                             ArcNote.Color(ctx.cmd_arc()!!.Int(2)!!.text.toInt()),
                             isGuidingLine = ctx.cmd_arc()!!.Boolean()!!.text.toBoolean(),
-                            isDesignant = false,
                             arcTapList
                         ) {
                             rawHitsound(ctx.cmd_arc()?.Hitsound()?.text ?: ctx.cmd_arc()!!.Alphas()!!.text)
