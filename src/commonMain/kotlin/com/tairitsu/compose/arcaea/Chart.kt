@@ -1,6 +1,5 @@
 package com.tairitsu.compose.arcaea
 
-import com.benasher44.uuid.uuid4
 import com.tairitsu.compose.arcaea.parser.*
 import com.tairitsu.compose.arcaea.serializer.*
 import io.sn.aetherium.utils.*
@@ -22,6 +21,18 @@ class Chart {
     @Deprecated("please specify the format", ReplaceWith("com.tairitsu.compose.arcaea.Chart.serializeForArcaea()"))
     fun serialize() = serializeForArcaea()
 
+    private fun StringBuilder.appendTimingGroup(tgs: List<TimingGroup>) {
+        for (timing in tgs) {
+            append(
+                "timinggroup(${
+                    timing.specialEffects.joinToString(",") {
+                        it.serializeForArcCreate()
+                    }
+                }){\r\n")
+            append(timing.serializeForArcCreate(padding = TIMING_GROUP_SERIALIZATION_PADDING, this@Chart))
+            append("};\r\n")
+        }
+    }
 
     fun serializeForArcaea(): String {
         val sb = StringBuilder()
@@ -32,7 +43,7 @@ class Chart {
         }
         sb.append("-\r\n")
 
-        sb.append(mainTiming.serializeForArcaea(0))
+        sb.append(mainTiming.serializeForArcaea(0, this))
         for (timing in subTiming.values) {
             sb.append(
                 "timinggroup(${
@@ -40,7 +51,7 @@ class Chart {
                         it.serializeForArcaea()
                     }
                 }){\r\n")
-            sb.append(timing.serializeForArcaea(padding = TIMING_GROUP_SERIALIZATION_PADDING))
+            sb.append(timing.serializeForArcaea(padding = TIMING_GROUP_SERIALIZATION_PADDING, this))
             sb.append("};\r\n")
         }
 
@@ -56,17 +67,23 @@ class Chart {
         }
         sb.append("-\r\n")
 
-        sb.append(mainTiming.serializeForArcCreate(0))
-        for (timing in subTiming.values) {
-            sb.append(
-                "timinggroup(${
-                    timing.specialEffects.joinToString(",") {
-                        it.serializeForArcCreate()
-                    }
-                }){\r\n")
-            sb.append(timing.serializeForArcCreate(padding = TIMING_GROUP_SERIALIZATION_PADDING))
-            sb.append("};\r\n")
+        sb.append(mainTiming.serializeForArcCreate(0, this))
+
+        val nonArcResolutionTimings = mutableListOf<TimingGroup>()
+        val arcResolutionTimings = mutableListOf<TimingGroup>()
+
+        for (timingEntry in subTiming) {
+            if (timingEntry.key.contains("_arcResolution")) {
+                arcResolutionTimings.add(timingEntry.value)
+            } else {
+                nonArcResolutionTimings.add(timingEntry.value)
+            }
         }
+
+        sb.appendTimingGroup(nonArcResolutionTimings)
+
+        // arcResolution serialization is seperated to here
+        sb.appendTimingGroup(arcResolutionTimings)
 
         return sb.toString().trim { it <= ' ' }
     }
@@ -107,12 +124,17 @@ data class ChartConfiguration(var audioOffset: Long, val extra: MutableSet<Confi
 
 interface ChartObject
 
+data class SerializationContext(
+    val chart: Chart,
+    val timingGroup: TimingGroup,
+)
+
 interface TimedObject : ChartObject {
     val time: Long
 
     fun serializeTimedObjDefault(): String?
-    fun serializeTimedObjForArcaea(ctx: TimingGroup) = serializeTimedObjDefault()
-    fun serializeTimedObjForArcCreate(ctx: TimingGroup) = serializeTimedObjDefault()
+    fun serializeTimedObjForArcaea(ctx: SerializationContext) = serializeTimedObjDefault()
+    fun serializeTimedObjForArcCreate(ctx: SerializationContext) = serializeTimedObjDefault()
 
     object Comparator : kotlin.Comparator<TimedObject> {
         override fun compare(a: TimedObject, b: TimedObject): Int {
@@ -229,7 +251,7 @@ class Scenecontrol(
         return "scenecontrol(${time},${type.id}${params});"
     }
 
-    override fun serializeTimedObjForArcCreate(ctx: TimingGroup): String? {
+    override fun serializeTimedObjForArcCreate(ctx: SerializationContext): String? {
         return when {
             type == ScenecontrolType.TRACK_HIDE -> {
                 Scenecontrol(time, ScenecontrolType.TRACK_DISPLAY, 1000.0, 0).serializeTimedObjDefault()
@@ -474,19 +496,19 @@ class TimingGroup : ChartObject {
     }
 
     @Deprecated("please specify target", ReplaceWith("serializeForArcaea() or serializeForArcCreate()"))
-    fun serialize(padding: Int): String {
-        return serializeForArcaea(padding)
+    fun serializeDefault(padding: Int, chart: Chart): String {
+        return serializeForArcaea(padding, chart)
     }
 
-    fun serializeForArcaea(padding: Int): String {
+    fun serializeForArcaea(padding: Int, chart: Chart): String {
         return serializeGeneric(padding) {
-            this.serializeTimedObjForArcaea(this@TimingGroup)
+            this.serializeTimedObjForArcaea(SerializationContext(chart, this@TimingGroup))
         }
     }
 
-    fun serializeForArcCreate(padding: Int): String {
+    fun serializeForArcCreate(padding: Int, chart: Chart): String {
         return serializeGeneric(padding) {
-            this.serializeTimedObjForArcCreate(this@TimingGroup)
+            this.serializeTimedObjForArcCreate(SerializationContext(chart, this@TimingGroup))
         }
     }
 
@@ -650,7 +672,7 @@ data class ArcNote(
         return sb.toString()
     }
 
-    override fun serializeTimedObjForArcCreate(ctx: TimingGroup): String? {
+    override fun serializeTimedObjForArcCreate(ctx: SerializationContext): String? {
         fun buildArcSentence(): String {
             val sb = StringBuilder()
             sb.append("arc(${time},${endTime},${startPosition.x.affFormat},${endPosition.x.affFormat},${curveType.value},${startPosition.y.affFormat},${endPosition.y.affFormat},${color.value},${hitSound},$arcType)")
@@ -686,36 +708,37 @@ data class ArcNote(
         // handle arcResolution
         if (arcResolution != 1.0) {
             // duplicate all `timing` commands
-            val timingGroup = TimingGroup("arcResolution_" + uuid4())
-            timingGroup.timing.addAll(ctx.getTimings())
+            val parentGroupId = if (ctx.timingGroup.name != "main") {
+                ctx.chart.subTiming.values.indexOf(ctx.timingGroup)
+            } else "main"
 
-            // duplicate all fx
-            timingGroup.specialEffects.addAll(ctx.specialEffects)
+            val tgName = "${parentGroupId}_arcResolution${arcResolution}"
+            val timingGroup = ctx.chart.subTiming.getOrPut(tgName) { TimingGroup(tgName) }
 
-            timingGroup.addRawSpecialEffect(
-                TimingGroupSpecialEffect(
-                    TimingGroupSpecialEffectType("arcresolution"),
-                    arcResolution.toString()
+            // newly generated
+            if (timingGroup.specialEffects.isEmpty()) {
+                timingGroup.timing.addAll(ctx.timingGroup.getTimings())
+
+                // duplicate all fx
+                timingGroup.specialEffects.addAll(ctx.timingGroup.specialEffects)
+
+                timingGroup.addRawSpecialEffect(
+                    TimingGroupSpecialEffect(
+                        TimingGroupSpecialEffectType("arcresolution"),
+                        arcResolution.toString()
+                    )
                 )
-            )
+            }
+
             timingGroup.addArcNote(this.apply {
                 arcResolution = 1.0 // break java.lang.StackOverflowError
             })
 
-            val sb = StringBuilder()
-            sb.append(
-                "timinggroup(${
-                    timingGroup.specialEffects.joinToString(",") {
-                        it.serializeForArcCreate()
-                    }
-                }){\r\n")
-            sb.append(timingGroup.serializeForArcCreate(padding = TIMING_GROUP_SERIALIZATION_PADDING))
-            sb.append("};\r\n")
-
-            return sb.toString().trim { it <= ' ' }
-        } else {
-            return buildArcSentence()
+            //
+            return ""
         }
+
+        return buildArcSentence()
     }
 
     @Serializable(ArcNoteCurveTypeSerializer::class)
