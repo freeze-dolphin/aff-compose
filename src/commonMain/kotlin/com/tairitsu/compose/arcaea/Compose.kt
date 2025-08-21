@@ -355,33 +355,7 @@ fun <TTime : Number, TEndTime : Number> Difficulty.arcNote(
         curveType,
         endPosition,
         color ?: ArcNote.Color.BLUE,
-        isGuidingLine,
-        false,
-        arcTapClosure
-    )
-    return ctx.addArcNote(note)
-}
-
-fun <TTime : Number, TEndTime : Number, TStartPositionX : Number, TStartPositionY : Number, TEndPositionX : Number, TEndPositionY : Number> Difficulty.arcNote(
-    time: TTime,
-    endTime: TEndTime,
-    startPosition: Pair<TStartPositionX, TStartPositionY>,
-    curveType: ArcNote.CurveType,
-    endPosition: Pair<TEndPositionX, TEndPositionY>,
-    color: ArcNote.Color? = null,
-    isGuidingLine: Boolean = color == null,
-    arcTapClosure: (ArcNote.ArcTapList.() -> Unit) = { },
-): Note {
-    val ctx = this.currentTimingGroup
-    val note = ArcNote(
-        time.toLong(),
-        endTime.toLong(),
-        startPosition.first.toDouble() to startPosition.second.toDouble(),
-        curveType,
-        endPosition.first.toDouble() to endPosition.second.toDouble(),
-        color ?: ArcNote.Color.BLUE,
-        isGuidingLine,
-        false,
+        isGuidingLine.toString(),
         arcTapClosure
     )
     return ctx.addArcNote(note)
@@ -406,8 +380,31 @@ fun <TTime : Number, TEndTime : Number> Difficulty.arcNoteLegacy(
         curveType,
         x2 pos y2,
         color ?: ArcNote.Color.BLUE,
-        isGuidingLine,
-        isDesignant,
+        if (isDesignant == true) "designant" else isGuidingLine.toString(),
+        arcTapClosure
+    )
+    return ctx.addArcNote(note)
+}
+
+fun <TTime : Number, TEndTime : Number> Difficulty.arcNoteLegacy(
+    time: TTime,
+    endTime: TEndTime,
+    x1: Double, x2: Double,
+    curveType: ArcNote.CurveType,
+    y1: Double, y2: Double,
+    color: ArcNote.Color? = null,
+    arcType: String,
+    arcTapClosure: (ArcNote.ArcTapList.() -> Unit) = { },
+): Note {
+    val ctx = this.currentTimingGroup
+    val note = ArcNote(
+        time.toLong(),
+        endTime.toLong(),
+        x1 pos y1,
+        curveType,
+        x2 pos y2,
+        color ?: ArcNote.Color.BLUE,
+        arcType,
         arcTapClosure
     )
     return ctx.addArcNote(note)
@@ -415,24 +412,38 @@ fun <TTime : Number, TEndTime : Number> Difficulty.arcNoteLegacy(
 
 // Var-len Arctap
 
-fun <TTime : Number, TStartPositionX : Number, TStartPositionY : Number, TEndPositionX : Number, TEndPositionY : Number> Difficulty.vlArctap(
-    time: TTime, startPosition: Pair<TStartPositionX, TStartPositionY>, endPosition: Pair<TEndPositionX, TEndPositionY>,
+fun <TTime : Number> Difficulty.vlArctap(
+    time: TTime,
+    startPosition: Position,
+    endPosition: Position,
 ) {
-    arcNote(time, time, startPosition, ArcNote.CurveType.S, endPosition, ArcNote.Color(3), false) { }
+    arcNote(
+        time,
+        time,
+        startPosition,
+        ArcNote.CurveType.S,
+        endPosition,
+        ArcNote.Color(3),
+        false
+    ) { }
 }
 
 fun <TTime : Number> Difficulty.vlArctapWithRadius(
-    time: TTime, centerPosition: Pair<Double, Double>, radius: Double,
+    time: TTime,
+    centerPosition: Position,
+    radius: Double,
 ) {
     vlArctap(
         time,
-        centerPosition.first - radius to centerPosition.second,
-        centerPosition.first + radius to centerPosition.second
+        centerPosition.x - radius pos centerPosition.y,
+        centerPosition.x + radius pos centerPosition.y
     )
 }
 
 fun <TTime : Number> Difficulty.vlArctapWithDistance(
-    time: TTime, centerPosition: Pair<Double, Double>, distance: Double,
+    time: TTime,
+    centerPosition: Position,
+    distance: Double,
 ) {
     vlArctapWithRadius(
         time,

@@ -292,7 +292,7 @@ class ANTLRArcCreateChartParser(
                     }.withRawHitsound(ctx.cmd_arc()!!.hitsound()!!.text)
 
                     vlArcTapList.forEach { data ->
-                        vlArctapWithDistance(data.first, data.second.toPair(), data.third / 2) // conversion
+                        vlArctapWithDistance(data.first, data.second, data.third / 2) // conversion
                     }
                 }
             }

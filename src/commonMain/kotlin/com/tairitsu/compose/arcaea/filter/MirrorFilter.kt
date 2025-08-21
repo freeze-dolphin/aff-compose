@@ -14,8 +14,8 @@ object MirrorFilter : NoteFilter() {
     override fun filterArcNote(note: ArcNote): Note {
         val color = if (note.color == ArcNote.Color.BLUE) ArcNote.Color.RED else ArcNote.Color.BLUE
 
-        val startPosition = (1.0 - note.startPosition.x) to note.startPosition.y
-        val endPosition = (1.0 - note.endPosition.x) to note.endPosition.y
+        val startPosition = (1.0 - note.startPosition.x) pos note.startPosition.y
+        val endPosition = (1.0 - note.endPosition.x) pos note.endPosition.y
 
         val ret = ArcNote(
             time = note.time,
@@ -24,7 +24,7 @@ object MirrorFilter : NoteFilter() {
             curveType = note.curveType,
             endPosition = endPosition,
             color = color,
-            isGuidingLine = note.isGuidingLine,
+            arcType = note.arcType,
         )
 
         ret.arcTapList.tap(*note.arcTapList.data.toLongArray())

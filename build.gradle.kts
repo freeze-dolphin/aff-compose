@@ -100,6 +100,7 @@ kotlin {
 
     sourceSets {
         commonMain {
+            kotlin.srcDir(generateKotlinGrammarSource)
             dependencies {
                 implementation(libs.kotlin.antlr)
                 implementation(libs.ktor.io)
@@ -108,7 +109,6 @@ kotlin {
                 implementation(libs.kotlinx.serialization.cbor)
                 implementation(libs.uuid)
             }
-            kotlin.srcDir(generateKotlinGrammarSource)
         }
         commonTest {
             dependencies {

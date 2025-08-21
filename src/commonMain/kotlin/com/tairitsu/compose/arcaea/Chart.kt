@@ -502,8 +502,8 @@ sealed class Note : TimedObject {
             if (a !is KeyboardNote && b is KeyboardNote) return 1
 
             if (a is ArcNote && b is ArcNote) {
-                if (a.isGuidingLine && !b.isGuidingLine) return -1
-                if (!a.isGuidingLine && b.isGuidingLine) return 1
+                if (a.isGuidingLine() && !b.isGuidingLine()) return -1
+                if (!a.isGuidingLine() && b.isGuidingLine()) return 1
 
                 if (a.startPosition.x < b.startPosition.x) return -1
                 if (a.startPosition.x > b.startPosition.x) return 1
@@ -551,13 +551,16 @@ data class ArcNote(
     val endPosition: Position,
     val color: Color,
     var hitSound: String,
-    var isGuidingLine: Boolean,
-    val isDesignant: Boolean? = null,
+    var arcType: String,
 
     @Serializable(ArcTapListSerializer::class)
     @SerialName("tapList")
     val arcTapList: ArcTapList,
 ) : Note() {
+
+    fun isGuidingLine(): Boolean = arcType == "true" || (arcTapList.data.isNotEmpty() && arcType != "designant")
+
+    fun isDesignant(): Boolean = arcType == "designant"
 
     companion object {
         fun getEasingFunction3D(startPosition: Position, endPosition: Position, curveType: CurveType) =
@@ -583,49 +586,19 @@ data class ArcNote(
     constructor(
         time: Long,
         endTime: Long,
-        startPosition: Pair<Double, Double>,
-        curveType: CurveType,
-        endPosition: Pair<Double, Double>,
-        color: Color,
-        isGuidingLine: Boolean,
-        isDesignant: Boolean? = null,
-        arcTapClosure: (ArcTapList.() -> Unit) = {},
-    ) : this(
-        time,
-        endTime,
-        Position(startPosition.first, startPosition.second),
-        curveType,
-        Position(endPosition.first, endPosition.second),
-        color,
-        "none",
-        isGuidingLine,
-        isDesignant,
-        ArcTapList(mutableListOf())
-    ) {
-        arcTapList.arcNote = this
-        arcTapClosure.invoke(arcTapList)
-        if (arcTapTimestamps.isNotEmpty()) {
-            this@ArcNote.isGuidingLine = true
-        }
-    }
-
-    constructor(
-        time: Long,
-        endTime: Long,
         startPosition: Position,
         curveType: CurveType,
         endPosition: Position,
         color: Color,
-        isGuidingLine: Boolean,
-        isDesignant: Boolean? = null,
+        arcType: String,
         arcTapClosure: (ArcTapList.() -> Unit) = {},
     ) : this(
-        time, endTime, startPosition, curveType, endPosition, color, "none", isGuidingLine, isDesignant, ArcTapList(mutableListOf())
+        time, endTime, startPosition, curveType, endPosition, color, "none", arcType, ArcTapList(mutableListOf())
     ) {
         arcTapList.arcNote = this
         arcTapClosure.invoke(arcTapList)
         if (arcTapTimestamps.isNotEmpty()) {
-            this@ArcNote.isGuidingLine = true
+            this@ArcNote.arcType = "true"
         }
     }
 
@@ -641,7 +614,7 @@ data class ArcNote(
                         if (!it.endsWith("_wav") && !it.endsWith(".wav")) "${it}_wav" else it.replace(".wav", "_wav")
                     }
                 }
-            },${if (isDesignant == true) "designant" else isGuidingLine})"
+            },${if (isDesignant()) "designant" else arcType})"
         )
         if (arcTapTimestamps.isNotEmpty()) {
             arcTapTimestamps.sort()
@@ -661,10 +634,10 @@ data class ArcNote(
 
     override fun serializeForArcCreate(): String? {
         // "designant" exception
-        if (isDesignant == true) return null
+        if (isDesignant()) return null
 
         // var-len arc-taps exception
-        if (color == Color.GRAY && !isGuidingLine && time == endTime) {
+        if (color == Color.GRAY && !isGuidingLine() && time == endTime) {
             val center = (startPosition.x + endPosition.x) / 2 pos startPosition.y
             return "arc(${time},${endTime},${center.x.affFormat},${center.x.affFormat},s,${center.y.affFormat},${center.y.affFormat},0,${hitSound},true)[arctap(${time},${
                 abs(
@@ -674,7 +647,7 @@ data class ArcNote(
         }
 
         val sb = StringBuilder()
-        sb.append("arc(${time},${endTime},${startPosition.x.affFormat},${endPosition.x.affFormat},${curveType.value},${startPosition.y.affFormat},${endPosition.y.affFormat},${color.value},${hitSound},$isGuidingLine)")
+        sb.append("arc(${time},${endTime},${startPosition.x.affFormat},${endPosition.x.affFormat},${curveType.value},${startPosition.y.affFormat},${endPosition.y.affFormat},${color.value},${hitSound},$arcType)")
         if (arcTapTimestamps.isNotEmpty()) {
             arcTapTimestamps.sort()
             sb.append("[")
