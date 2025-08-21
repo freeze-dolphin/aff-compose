@@ -110,9 +110,9 @@ interface ChartObject
 interface TimedObject : ChartObject {
     val time: Long
 
-    fun serialize(): String?
-    fun serializeTimedObjForArcaea(ctx: TimingGroup) = serialize()
-    fun serializeTimedObjForArcCreate(ctx: TimingGroup) = serialize()
+    fun serializeTimedObjDefault(): String?
+    fun serializeTimedObjForArcaea(ctx: TimingGroup) = serializeTimedObjDefault()
+    fun serializeTimedObjForArcCreate(ctx: TimingGroup) = serializeTimedObjDefault()
 
     object Comparator : kotlin.Comparator<TimedObject> {
         override fun compare(a: TimedObject, b: TimedObject): Int {
@@ -166,7 +166,7 @@ class Timing(val offset: Long, val bpm: Double, val beats: Double) : TimedObject
     override val time: Long
         get() = offset
 
-    override fun serialize(): String {
+    override fun serializeTimedObjDefault(): String {
         return "timing($offset,${bpm.affFormat},${beats.affFormat});"
     }
 }
@@ -207,7 +207,7 @@ class Scenecontrol(
     val param1: Double?,
     val param2: Int?,
 ) : TimedObject {
-    override fun serialize(): String {
+    override fun serializeTimedObjDefault(): String {
         val params = when {
             !type.paramReq1 && !type.paramReq2 -> {
                 ""
@@ -232,15 +232,15 @@ class Scenecontrol(
     override fun serializeTimedObjForArcCreate(ctx: TimingGroup): String? {
         return when {
             type == ScenecontrolType.TRACK_HIDE -> {
-                Scenecontrol(time, ScenecontrolType.TRACK_DISPLAY, 1000.0, 0).serialize()
+                Scenecontrol(time, ScenecontrolType.TRACK_DISPLAY, 1000.0, 0).serializeTimedObjDefault()
             }
 
             type == ScenecontrolType.TRACK_SHOW -> {
-                Scenecontrol(time, ScenecontrolType.TRACK_DISPLAY, 1000.0, 255).serialize()
+                Scenecontrol(time, ScenecontrolType.TRACK_DISPLAY, 1000.0, 255).serializeTimedObjDefault()
             }
 
             type.needTimeConversion() -> {
-                Scenecontrol(time, type, param1!!.times(1000), param2).serialize()
+                Scenecontrol(time, type, param1!!.times(1000), param2).serializeTimedObjDefault()
             }
 
             else -> {
@@ -540,7 +540,7 @@ data class NormalNote(
     override val time: Long,
     override val column: Int,
 ) : KeyboardNote() {
-    override fun serialize(): String = "($time,$column);"
+    override fun serializeTimedObjDefault(): String = "($time,$column);"
 }
 
 @Serializable
@@ -550,7 +550,7 @@ data class HoldNote(
     val endTime: Long,
     override val column: Int,
 ) : KeyboardNote() {
-    override fun serialize(): String = "hold($time,$endTime,$column);"
+    override fun serializeTimedObjDefault(): String = "hold($time,$endTime,$column);"
 }
 
 @Serializable
@@ -623,7 +623,7 @@ data class ArcNote(
         postProcessor.invoke(this)
     }
 
-    override fun serialize(): String {
+    override fun serializeTimedObjDefault(): String {
         val sb = StringBuilder()
         sb.append(
             "arc(${time},${endTime},${startPosition.x.affFormat},${endPosition.x.affFormat},${curveType.value},${startPosition.y.affFormat},${endPosition.y.affFormat},${color.value},${
@@ -781,7 +781,7 @@ data class Camera(
         }
     }
 
-    override fun serialize(): String =
+    override fun serializeTimedObjDefault(): String =
         "camera($time,${xOff.affFormat},${yOff.affFormat},${zOff.affFormat},${xozAng.affFormat},${yozAng.affFormat},${xoyAng.affFormat},${ease.value},$duration);"
 }
 
