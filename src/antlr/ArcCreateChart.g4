@@ -172,11 +172,11 @@ cmd_hold
 cmd_arc
     // without arctap
     : K_arc LPAREN (
-        Int COMMA Int COMMA Float COMMA Float COMMA enum_arcnote_curve_type COMMA Float COMMA Float COMMA Int COMMA hitsound COMMA Boolean
+        Int COMMA Int COMMA Float COMMA Float COMMA enum_arcnote_curve_type COMMA Float COMMA Float COMMA Int COMMA hitsound? COMMA Boolean
     ) RPAREN SEMICOLON
     // with arctap(s)
     | K_arc LPAREN (
-        Int COMMA Int COMMA Float COMMA Float COMMA enum_arcnote_curve_type COMMA Float COMMA Float COMMA Int COMMA hitsound COMMA Boolean
+        Int COMMA Int COMMA Float COMMA Float COMMA enum_arcnote_curve_type COMMA Float COMMA Float COMMA Int COMMA hitsound? COMMA Boolean
     ) RPAREN compound_arctap_argument SEMICOLON
     ;
 
