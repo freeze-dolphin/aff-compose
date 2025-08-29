@@ -181,7 +181,7 @@ cmd_arc
     ;
 
 cmd_scenecontrol
-    : K_scenecontrol LPAREN (Int ((COMMA ('"')? (Int | Float | UnquottedString | String | Alphas) ('"')?)+)?) RPAREN SEMICOLON
+    : K_scenecontrol LPAREN (Int ((COMMA ('"')? (Int | Float | UnquottedString | String | Alphas | HeaderIdentifier) ('"')?)+)?) RPAREN SEMICOLON
     ;
 
 cmd_timinggroup
