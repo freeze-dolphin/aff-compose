@@ -17,6 +17,11 @@ LCURL     : '{';
 RCURL     : '}';
 SEMICOLON : ';';
 COLON     : ':';
+EQL_SGN   : '=';
+SPACE     : ' ';
+DOLLAR    : '$';
+QUESTION  : '?';
+PLUS      : '+';
 
 // Keywords
 K_timing           : 'timing';
@@ -66,7 +71,7 @@ fragment Digit      : '0' .. '9';
 fragment Lower      : 'a' .. 'z';
 fragment Upper      : 'A' .. 'Z';
 fragment Alpha      : (Lower | Upper);
-fragment StringPart : (Lower | Upper | Digit);
+fragment StringPart : (Lower | Upper | Digit | UNDERLINE) ;
 
 Int     : [-]? Digit+;
 Float   : [-]? Digit+ DOT Digit+;
@@ -205,8 +210,15 @@ cmd_camera
 // $antlr-format allowShortRulesOnASingleLine true, allowShortBlocksOnASingleLine true, minEmptyLines 0, alignSemicolons ownLine
 // $antlr-format alignColons trailing, singleLineOverrulesHangingColon true, alignLexerCommands true, alignLabels true, alignTrailers true
 
-Hitsound : StringPart+ '_wav';
-Alphas : Alpha+;
+Hitsound : UnquottedString '_wav';
+
+Alphas          : Alpha+;
+AlphasWithSpace : (Alpha+ | SPACE );
+Lowers          : Lower+;
+
+UnquottedString : (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR | QUESTION | PLUS)+;
+String          : '"' (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR | QUESTION | PLUS)+ '"';
+SpacedString    : '"' (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR | QUESTION | PLUS | SPACE)+ '"';
 
 NEWLINE: [\r\n] -> skip;
 WS: [ \t\r\n]+ -> skip;
