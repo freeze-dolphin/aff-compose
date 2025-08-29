@@ -25,7 +25,9 @@ object MirrorFilter : NoteFilter() {
             endPosition = endPosition,
             color = color,
             arcType = note.arcType,
-            arcTapList = note.arcTapList
+            arcTapList = note.arcTapList,
+            arcResolution = note.arcResolution,
+            hitSound = note.hitSound,
         )
 
         return ret
