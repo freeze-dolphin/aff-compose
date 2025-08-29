@@ -299,7 +299,7 @@ class ANTLRArcCreateChartParser(
             }
         }
 
-        // scenecontrol(Int, Alphas, Float?, Int?);
+        // scenecontrol(Int(, Int | Float | UnquottedString | String | Alphas)?+);
         cdr.ruleNotNull { cmd_scenecontrol() }.exec {
             all(
                 cdr.notNull { cmd_scenecontrol()!!.Int(0) },
@@ -365,6 +365,30 @@ class ANTLRArcCreateChartParser(
                         )
                     )
                     return@outer
+                }
+            }.onElse {
+                all(
+                    cdr.notNull { cmd_scenecontrol()!!.Int(0) },
+                    cdr.notNull { cmd_scenecontrol()!!.String(0) }
+                ).exec {
+                    reporter.ignoredScenecontrols.add(
+                        Pair(
+                            ctx.cmd_scenecontrol()!!.String(0)!!.text,
+                            ctx.cmd_scenecontrol()!!.Int(0)!!.text
+                        )
+                    )
+                }.onElse {
+                    all(
+                        cdr.notNull { cmd_scenecontrol()!!.Int(0) },
+                        cdr.notNull { cmd_scenecontrol()!!.UnquottedString(0) }
+                    ).exec {
+                        reporter.ignoredScenecontrols.add(
+                            Pair(
+                                ctx.cmd_scenecontrol()!!.UnquottedString(0)!!.text,
+                                ctx.cmd_scenecontrol()!!.Int(0)!!.text
+                            )
+                        )
+                    }
                 }
             }
         }

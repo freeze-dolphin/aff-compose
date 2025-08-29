@@ -21,6 +21,7 @@ EQL_SGN   : '=';
 SPACE     : ' ';
 DOLLAR    : '$';
 QUESTION  : '?';
+PLUS      : '+';
 
 // Keywords
 K_timing       : 'timing';
@@ -180,7 +181,7 @@ cmd_arc
     ;
 
 cmd_scenecontrol
-    : K_scenecontrol LPAREN (Int (COMMA Alphas) ((COMMA (String | Int | Float | Alphas))+)?) RPAREN SEMICOLON
+    : K_scenecontrol LPAREN (Int ((COMMA ('"')? (Int | Float | UnquottedString | String | Alphas) ('"')?)+)?) RPAREN SEMICOLON
     ;
 
 cmd_timinggroup
@@ -197,12 +198,15 @@ cmd_camera
 // $antlr-format allowShortRulesOnASingleLine true, allowShortBlocksOnASingleLine true, minEmptyLines 0, alignSemicolons ownLine
 // $antlr-format alignColons trailing, singleLineOverrulesHangingColon true, alignLexerCommands true, alignLabels true, alignTrailers true
 
-Alphas : Alpha+;
-Lowers : Lower+;
+Alphas          : Alpha+;
+AlphasWithSpace : (Alpha+ | SPACE );
+Lowers          : Lower+;
 
-UnquottedString : (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR | QUESTION)+;
-String          : '"' (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR | QUESTION)+ '"';
-SpacedString    : '"' (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR | QUESTION | SPACE)+ '"';
+UnquottedString : (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR | QUESTION | PLUS)+;
+String          : '"' (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR | QUESTION | PLUS | ESC | ~["\\])+ '"';
+SpacedString    : '"' (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR | QUESTION | PLUS | SPACE | ESC | ~["\\])+ '"';
+
+fragment ESC: '\\' (["\\nrtb] | . );
 
 NEWLINE: [\r\n] -> skip;
 
