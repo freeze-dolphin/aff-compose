@@ -255,7 +255,7 @@ class ANTLRArcCreateChartParser(
                                     arcTapTime, // arctap time
                                     ArcNote.getEasingFunction3D(arcStartPosition, arcEndPosition, ease)
                                         .invoke(
-                                            (arcTapTime.toDouble() - arcTime) / (arcEndTime - arcTime),
+                                            if (arcEndTime == arcTime) 0.0 else (arcTapTime.toDouble() - arcTime) / (arcEndTime - arcTime),
                                             arcStartPosition,
                                             arcEndPosition
                                         ), // calc position
@@ -290,7 +290,6 @@ class ANTLRArcCreateChartParser(
                         rawHitsound(ctx.cmd_arc()!!.hitsound()!!.text)
                         arcResolution(arcResolution)
                     }
-
 
                     vlArcTapList.forEach { data ->
                         vlArctapWithDistance(data.first, data.second, data.third / 2) // conversion
