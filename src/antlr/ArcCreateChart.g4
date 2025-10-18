@@ -57,13 +57,15 @@ fragment Digit : '0' .. '9';
 fragment Lower : 'a' .. 'z';
 fragment Upper : 'A' .. 'Z';
 fragment Alpha : (Lower | Upper);
-Int            : [-]? Digit+;
-Float          : [-]? Digit+ DOT Digit+;
-Boolean        : ('true' | 'false');
-Version        : Digit (DOT Digit)+;
 
+Int     : [-]? Digit+;
+Float   : [-]? Digit+ DOT Digit+;
+Boolean : ('true' | 'false');
+
+Version          : Digit (DOT Digit)+;
 HeaderIdentifier : (Upper) (Lower)+;
-LaneOrd          : '0' ..'5';
+
+fragment LaneOrd : '0' ..'5';
 
 // $antlr-format alignTrailingComments true, columnLimit 150, minEmptyLines 1, maxEmptyLinesToKeep 1, reflowComments false, useTab false
 // $antlr-format allowShortRulesOnASingleLine false, allowShortBlocksOnASingleLine true, alignSemicolons hanging, alignColons hanging

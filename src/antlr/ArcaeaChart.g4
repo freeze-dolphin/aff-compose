@@ -76,10 +76,11 @@ fragment StringPart : (Lower | Upper | Digit | UNDERLINE) ;
 Int     : [-]? Digit+;
 Float   : [-]? Digit+ DOT Digit+;
 Boolean : ('true' | 'false');
-Version : Digit (DOT Digit)+;
 
+Version          : Digit (DOT Digit)+;
 HeaderIdentifier : (Upper) (Lower)+;
-LaneOrd          : '0' ..'5';
+
+fragment LaneOrd : '0' ..'5';
 
 // $antlr-format alignTrailingComments true, columnLimit 150, minEmptyLines 1, maxEmptyLinesToKeep 1, reflowComments false, useTab false
 // $antlr-format allowShortRulesOnASingleLine false, allowShortBlocksOnASingleLine true, alignSemicolons hanging, alignColons hanging
@@ -216,9 +217,9 @@ Alphas          : Alpha+;
 AlphasWithSpace : (Alpha+ | SPACE );
 Lowers          : Lower+;
 
-UnquottedString : (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR | QUESTION | PLUS)+;
-String          : '"' (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR | QUESTION | PLUS)+ '"';
-SpacedString    : '"' (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR | QUESTION | PLUS | SPACE)+ '"';
+fragment UnquottedString : (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR | QUESTION | PLUS)+;
+fragment String          : '"' (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR | QUESTION | PLUS)+ '"';
+fragment SpacedString    : '"' (Digit | Alpha | DOT | DASH | UNDERLINE | DOLLAR | QUESTION | PLUS | SPACE)+ '"';
 
 NEWLINE: [\r\n] -> skip;
 WS: [ \t\r\n]+ -> skip;
