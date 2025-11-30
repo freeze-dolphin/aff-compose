@@ -11,7 +11,7 @@ object PostProcessor {
     }
 
     fun Note.arcResolution(res: Double) {
-        if (this !is ArcNote) throw IllegalArgumentException("Hitsound is only available for ArcNotes")
+        if (this !is ArcNote) throw IllegalArgumentException("ArcResolution is only available for ArcNotes")
         arcResolution = res
     }
 }

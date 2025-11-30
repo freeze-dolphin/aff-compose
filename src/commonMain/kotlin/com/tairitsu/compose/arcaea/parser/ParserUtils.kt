@@ -24,12 +24,8 @@ class ElseBranch(val isElseBranch: Boolean) {
 
 class Executable(val isExecutable: Boolean) {
     fun exec(closure: Unit.() -> Unit): ElseBranch {
-        if (isExecutable) {
-            closure.invoke(Unit)
-            return ElseBranch(false)
-        } else {
-            return ElseBranch(true)
-        }
+        if (isExecutable) closure.invoke(Unit)
+        return ElseBranch(!isExecutable)
     }
 
     companion object {
