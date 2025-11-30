@@ -17,22 +17,10 @@ class Chart {
     val configuration: ChartConfiguration = ChartConfiguration(0, mutableSetOf())
     val mainTiming: TimingGroup = TimingGroup("main")
     val subTiming: MutableMap<String, TimingGroup> = mutableMapOf()
+    val postProcesssTiming: MutableMap<String, TimingGroup> = mutableMapOf()
 
     @Deprecated("please specify the format", ReplaceWith("com.tairitsu.compose.arcaea.Chart.serializeForArcaea()"))
     fun serialize() = serializeForArcaea()
-
-    private fun StringBuilder.appendTimingGroup(tgs: List<TimingGroup>) {
-        for (timing in tgs) {
-            append(
-                "timinggroup(${
-                    timing.specialEffects.joinToString(",") {
-                        it.serializeForArcCreate()
-                    }
-                }){\r\n")
-            append(timing.serializeForArcCreate(padding = TIMING_GROUP_SERIALIZATION_PADDING, this@Chart))
-            append("};\r\n")
-        }
-    }
 
     fun serializeForArcaea(): String {
         val sb = StringBuilder()
@@ -59,6 +47,16 @@ class Chart {
     }
 
     fun serializeForArcCreate(): String {
+        fun StringBuilder.appendTimingGroup(tgs: List<TimingGroup>, chart: Chart) {
+            for (timing in tgs) {
+                append(
+                    "timinggroup(${timing.specialEffects.joinToString(",") { it.serializeForArcCreate() }}){\r\n"
+                )
+                append(timing.serializeForArcCreate(padding = TIMING_GROUP_SERIALIZATION_PADDING, chart))
+                append("};\r\n")
+            }
+        }
+
         val sb = StringBuilder()
 
         sb.append("AudioOffset:${configuration.audioOffset}\r\n")
@@ -72,7 +70,11 @@ class Chart {
         val nonArcResolutionTimings = mutableListOf<TimingGroup>()
         val arcResolutionTimings = mutableListOf<TimingGroup>()
 
-        for (timingEntry in subTiming) {
+        sb.appendTimingGroup(subTiming.values.toList(), this)
+
+        // post process
+
+        for (timingEntry in postProcesssTiming) {
             if (timingEntry.key.contains("_arcResolution")) {
                 arcResolutionTimings.add(timingEntry.value)
             } else {
@@ -80,10 +82,8 @@ class Chart {
             }
         }
 
-        sb.appendTimingGroup(nonArcResolutionTimings)
-
-        // arcResolution serialization is seperated to here
-        sb.appendTimingGroup(arcResolutionTimings)
+        sb.appendTimingGroup(nonArcResolutionTimings, this)
+        sb.appendTimingGroup(arcResolutionTimings, this)
 
         return sb.toString().trim { it <= ' ' }
     }
@@ -91,7 +91,6 @@ class Chart {
     companion object {
         @Deprecated("use ANTLRChartParser#fromAff instead", ReplaceWith("com.tairitsu.compose.arcaea.Chart.fromAff(aff)"))
         fun fromAffRaw(aff: String): Chart = RawChartParser.fromAff(aff)
-
         fun fromAff(aff: String): Chart = ANTLRArcaeaChartParser(aff).parse()
         fun fromAcf(acf: String): Pair<Chart, ArcCreateChartParseReport> = ANTLRArcCreateChartParser(acf).parse()
     }
@@ -720,7 +719,7 @@ data class ArcNote(
             } else "main"
 
             val tgName = "${parentGroupId}_arcResolution${arcResolution}"
-            val timingGroup = ctx.chart.subTiming.getOrPut(tgName) { TimingGroup(tgName) }
+            val timingGroup = ctx.chart.postProcesssTiming.getOrPut(tgName) { TimingGroup(tgName) }
 
             // newly generated
             if (timingGroup.specialEffects.isEmpty()) {
