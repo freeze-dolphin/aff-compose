@@ -7,6 +7,13 @@ import com.tairitsu.compose.arcaea.antlr.ArcaeaChartParser
 import org.antlr.v4.kotlinruntime.ParserRuleContext
 import org.antlr.v4.kotlinruntime.tree.TerminalNode
 
+fun Double.isInteger(): Boolean {
+    return this.rem(1.0) == 0.0
+}
+
+fun keyboardNoteSerializeColumn(column: Int, columnFloat: Double): String =
+    if (columnFloat.isNaN()) column.toString() else columnFloat.toString()
+
 class ElseBranch(val isElseBranch: Boolean) {
     fun onElse(closure: Unit.() -> Unit) {
         if (isElseBranch) {

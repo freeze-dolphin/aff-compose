@@ -306,11 +306,23 @@ fun <TTime : Number> Difficulty.normalNote(time: TTime, column: Int): Note {
     return ctx.addNormalNote(note)
 }
 
+fun <TTime : Number> Difficulty.normalNoteFloat(time: TTime, columnFloat: Double): Note {
+    val ctx = this.currentTimingGroup
+    val note = NormalNote(time.toLong(), Int.MIN_VALUE, columnFloat)
+    return ctx.addNormalNote(note)
+}
+
 // Hold Note
 
 fun <TTime : Number, TEndTime : Number> Difficulty.holdNote(time: TTime, endTime: TEndTime, column: Int): Note {
     val ctx = this.currentTimingGroup
     val note = HoldNote(time.toLong(), endTime.toLong(), column)
+    return ctx.addHoldNote(note)
+}
+
+fun <TTime : Number, TEndTime : Number> Difficulty.holdNoteFloat(time: TTime, endTime: TEndTime, columnFloat: Double): Note {
+    val ctx = this.currentTimingGroup
+    val note = HoldNote(time.toLong(), endTime.toLong(), Int.MIN_VALUE,  columnFloat)
     return ctx.addHoldNote(note)
 }
 

@@ -554,6 +554,11 @@ sealed class Note : TimedObject {
 @SerialName("keyboard")
 sealed class KeyboardNote : Note() {
     abstract val column: Int
+    abstract val columnFloat: Double
+
+    fun isFloated(): Boolean {
+        return !columnFloat.isNaN()
+    }
 }
 
 @Serializable
@@ -561,8 +566,9 @@ sealed class KeyboardNote : Note() {
 data class NormalNote(
     override val time: Long,
     override val column: Int,
+    override val columnFloat: Double = Double.NaN,
 ) : KeyboardNote() {
-    override fun serializeTimedObjDefault(): String = "($time,$column);"
+    override fun serializeTimedObjDefault(): String = "($time,${keyboardNoteSerializeColumn(column, columnFloat)});"
 }
 
 @Serializable
@@ -571,8 +577,9 @@ data class HoldNote(
     override val time: Long,
     val endTime: Long,
     override val column: Int,
+    override val columnFloat: Double = Double.NaN,
 ) : KeyboardNote() {
-    override fun serializeTimedObjDefault(): String = "hold($time,$endTime,$column);"
+    override fun serializeTimedObjDefault(): String = "hold($time,$endTime,${keyboardNoteSerializeColumn(column, columnFloat)});"
 }
 
 @Serializable

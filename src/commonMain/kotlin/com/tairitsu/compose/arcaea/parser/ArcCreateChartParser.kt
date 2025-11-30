@@ -194,7 +194,11 @@ class ANTLRArcCreateChartParser(
 
         // [note](Int, (Int | Double));
         cdr.ruleNotNull { cmd_note() }.exec {
-            cdr.notNull { cmd_note()!!.Int(1) }.exec {
+            cdr.notNull { cmd_note()!!.Float() }.exec {
+                timingGroup(tgName) {
+                    normalNoteFloat(ctx.cmd_note()!!.Int(0)!!.text.toLong(), ctx.cmd_note()!!.Float()!!.text.toDouble())
+                }
+            }.onElse {
                 timingGroup(tgName) {
                     normalNote(ctx.cmd_note()!!.Int(0)!!.text.toLong(), ctx.cmd_note()!!.Int(1)!!.text.toInt())
                 }
@@ -203,16 +207,21 @@ class ANTLRArcCreateChartParser(
 
         // hold(Int, Int, (Int | Double));
         cdr.ruleNotNull { cmd_hold() }.exec {
-            cdr.allNotNull({ cmd_hold()!!.Int(0) }, { cmd_hold()!!.Int(1) }).exec {
-
-                cdr.notNull { cmd_hold()!!.Int(2) }.exec {
-                    timingGroup(tgName) {
-                        holdNote(
-                            ctx.cmd_hold()!!.Int(0)!!.text.toLong(),
-                            ctx.cmd_hold()!!.Int(1)!!.text.toLong(),
-                            ctx.cmd_hold()!!.Int(2)!!.text.toInt()
-                        )
-                    }
+            cdr.notNull { cmd_hold()!!.Float() }.exec {
+                timingGroup(tgName) {
+                    holdNoteFloat(
+                        ctx.cmd_hold()!!.Int(0)!!.text.toLong(),
+                        ctx.cmd_hold()!!.Int(1)!!.text.toLong(),
+                        ctx.cmd_hold()!!.Float()!!.text.toDouble()
+                    )
+                }
+            }.onElse {
+                timingGroup(tgName) {
+                    holdNote(
+                        ctx.cmd_hold()!!.Int(0)!!.text.toLong(),
+                        ctx.cmd_hold()!!.Int(1)!!.text.toLong(),
+                        ctx.cmd_hold()!!.Int(2)!!.text.toInt()
+                    )
                 }
             }
         }

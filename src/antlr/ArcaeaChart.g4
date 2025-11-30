@@ -80,8 +80,6 @@ Boolean : ('true' | 'false');
 Version          : Digit (DOT Digit)+;
 HeaderIdentifier : (Upper) (Lower)+;
 
-fragment LaneOrd : '0' ..'5';
-
 // $antlr-format alignTrailingComments true, columnLimit 150, minEmptyLines 1, maxEmptyLinesToKeep 1, reflowComments false, useTab false
 // $antlr-format allowShortRulesOnASingleLine false, allowShortBlocksOnASingleLine true, alignSemicolons hanging, alignColons hanging
 
@@ -175,11 +173,11 @@ cmd_timing
     ;
 
 cmd_note
-    : LPAREN (Int COMMA Int) RPAREN SEMICOLON
+    : LPAREN (Int COMMA (Int | Float)) RPAREN SEMICOLON
     ;
 
 cmd_hold
-    : K_hold LPAREN (Int COMMA Int COMMA Int) RPAREN SEMICOLON
+    : K_hold LPAREN (Int COMMA Int COMMA (Int | Float)) RPAREN SEMICOLON
     ;
 
 cmd_arc

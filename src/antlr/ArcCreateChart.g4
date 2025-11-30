@@ -164,11 +164,11 @@ cmd_timing
     ;
 
 cmd_note
-    : LPAREN (Int COMMA Int) RPAREN SEMICOLON
+    : LPAREN (Int COMMA (Int | Float)) RPAREN SEMICOLON
     ;
 
 cmd_hold
-    : K_hold LPAREN (Int COMMA Int COMMA Int) RPAREN SEMICOLON
+    : K_hold LPAREN (Int COMMA Int COMMA (Int | Float)) RPAREN SEMICOLON
     ;
 
 cmd_arc
