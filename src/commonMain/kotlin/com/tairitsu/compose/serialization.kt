@@ -8,6 +8,7 @@ import org.antlr.v4.kotlinruntime.Recognizer
 import org.antlr.v4.kotlinruntime.tree.AbstractParseTreeVisitor
 import org.antlr.v4.kotlinruntime.tree.ErrorNode
 import org.antlr.v4.kotlinruntime.tree.TerminalNode
+import kotlin.math.pow
 
 fun Double.isInteger(): Boolean = this % 1 == 0.0
 
@@ -18,7 +19,7 @@ data class SerializationContext(
 
 data class ParseContext(
     val difficulty: Difficulty,
-    val timingGroup: TimingGroup
+    val timingGroup: TimingGroup,
 )
 
 class UniversalChartVisitor : UniversalAffChartVisitor<Any>, AbstractParseTreeVisitor<Any>() {
@@ -35,7 +36,32 @@ class UniversalChartVisitor : UniversalAffChartVisitor<Any>, AbstractParseTreeVi
         val kv: Pair<String, Value> get() = keyValuePair!!
     }
 
+    /**
+     * Expressional fields support
+     *
+     * TODO: operator priority is not implemented yet
+     */
+    data class Expr(
+        val algebraicValue: Number,
+        val operator: OperatorType,
+    ) {
+        fun evaluate(on: Number): Value {
+            val raw = "${on}${operator.sign}${algebraicValue}"
+            val value = when (operator) {
+                OperatorType.ADD -> on.toDouble() + algebraicValue.toDouble()
+                OperatorType.SUB -> on.toDouble() - algebraicValue.toDouble()
+                OperatorType.MUL -> on.toDouble() * algebraicValue.toDouble()
+                OperatorType.DIV -> on.toDouble() / algebraicValue.toDouble()
+                OperatorType.POW -> on.toDouble().pow(algebraicValue.toDouble())
+                OperatorType.REM -> on.toDouble().rem(algebraicValue.toDouble())
+            }
+
+            return Value(raw, ValueType.ALGEBRAIC, algebraicValue = value)
+        }
+    }
+
     enum class ValueType { STRING, ALGEBRAIC, KEY_VALUE }
+    enum class OperatorType(val sign: Char) { ADD('+'), SUB('-'), MUL('*'), DIV('/'), POW('^'), REM('%') }
 
     data class Event(
         val name: String?,
@@ -50,10 +76,47 @@ class UniversalChartVisitor : UniversalAffChartVisitor<Any>, AbstractParseTreeVi
         return visitBody(ctx.body())
     }
 
+    override fun visitExprPart(ctx: UniversalAffChartParser.ExprPartContext): Expr {
+        val operator = when (ctx.Operator().text) {
+            "+" -> OperatorType.ADD
+            "-" -> OperatorType.SUB
+            "*" -> OperatorType.MUL
+            "/" -> OperatorType.DIV
+            "^" -> OperatorType.POW
+            "%" -> OperatorType.REM
+            else -> error("Unsupported operator in expression: ${ctx.text}")
+        }
+
+        return when {
+            ctx.Int() != null -> {
+                val raw = ctx.Int()!!.text
+                val num = raw.toLong()
+                Expr(num, operator)
+            }
+
+            ctx.Float() != null -> {
+                val raw = ctx.Float()!!.text
+                val num = raw.toDouble()
+                Expr(num, operator)
+            }
+
+            else -> error("No number exists in expression")
+        }
+    }
+
     override fun visitValue(ctx: UniversalAffChartParser.ValueContext): Value {
         requireNotNull(ctx.start)
 
         return when {
+            ctx.exprPart(0) != null -> {
+                val on: Number = ctx.Int()?.text?.toInt() ?: ctx.Float()?.text?.toDouble() ?: error("No number exists in expression")
+                val evalResult = ctx.exprPart().fold(on) { acc, expr ->
+                    visitExprPart(expr).evaluate(acc).algebraicValue!!
+                }
+
+                Value(evalResult.toString(), ValueType.ALGEBRAIC, algebraicValue = evalResult)
+            }
+
             ctx.String() != null -> {
                 val raw = ctx.String()!!.text
                 val content = raw.removeSurrounding("'", "'").removeSurrounding("\"", "\"")
@@ -97,8 +160,8 @@ class UniversalChartVisitor : UniversalAffChartVisitor<Any>, AbstractParseTreeVi
         val ctxValues = ctx.values()
         val values = visitValues(ctxValues)
 
-        val ctxSubEvents = ctx.subevents()
-        val subEvents = if (ctxSubEvents != null) visitSubevents(ctxSubEvents) else emptyList()
+        val ctxSubEvents = ctx.subEvents()
+        val subEvents = if (ctxSubEvents != null) visitSubEvents(ctxSubEvents) else emptyList()
 
         val ctxSegment = ctx.segment()
         val segment = if (ctxSegment != null) visitSegment(ctxSegment) else null
@@ -110,7 +173,7 @@ class UniversalChartVisitor : UniversalAffChartVisitor<Any>, AbstractParseTreeVi
         return visitEvent(ctx.event())
     }
 
-    override fun visitSubevents(ctx: UniversalAffChartParser.SubeventsContext): List<Event> {
+    override fun visitSubEvents(ctx: UniversalAffChartParser.SubEventsContext): List<Event> {
         return ctx.event().map { visitEvent(it) }
     }
 

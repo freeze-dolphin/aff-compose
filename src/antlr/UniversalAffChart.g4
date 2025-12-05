@@ -1,6 +1,6 @@
 /**
  * Based on Arcade-plus
- * 
+ *
  * @source https://github.com/yojohanshinwataikei/Arcade-plus/blob/master/Assets/Scripts/Aff/ArcaeaFileFormat.g4
  * @author yojohanshinwataikei
  */
@@ -17,6 +17,7 @@ RBrace    : '}';
 Comma     : ',';
 Semicolon : ';';
 Equal     : '=';
+Operator  : '+' | '-' | '*' | '/' | '%' | '^';
 
 fragment SQUOTE     : '\'';
 fragment DQUOTE     : '"';
@@ -31,11 +32,12 @@ fragment SPACE      : ' ';
 
 chart: body EOF;
 
-value     : String | Word | Int | Float | (Word Equal value);
+exprPart : Operator (Int | Float) ;
+value     : String | Word | Int | Float | (Word Equal value) | (Int | Float) exprPart+;
 values    : LParen (value (Comma value)*)? RParen;
-event     : Word? values subevents? segment?;
+event     : Word? values subEvents? segment?;
 item      : event Semicolon;
-subevents : LBrack (event (Comma event)*)? RBrack;
+subEvents : LBrack (event (Comma event)*)? RBrack;
 segment   : LBrace body RBrace;
 body      : item*;
 

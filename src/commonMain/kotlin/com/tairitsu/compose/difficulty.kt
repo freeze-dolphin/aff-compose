@@ -9,18 +9,18 @@ import kotlinx.serialization.Transient
  */
 @Serializable
 class Difficulty(
-    @Transient
-    val chartConfiguration: Chart.Configuration = Chart.Configuration.DEFAULT,
+    @Transient private val chartConfiguration: Chart.Configuration = Chart.Configuration.DEFAULT,
+    @Transient private val fxFilter: TimingGroupSpecialEffectFilter = TimingGroupSpecialEffectFilter.DEFAULT,
 ) {
 
     /**
      * The chart content of the difficulty
      */
     @Transient
-    val chart: Chart = Chart(this.chartConfiguration)
+    val chart: Chart = Chart(this.chartConfiguration, fxFilter)
 
     /**
-     * The context while mapping in code.
+     * The context while mapping in code
      */
     @Transient
     val context: DifficultyContext = DifficultyContext()
@@ -30,7 +30,7 @@ class Difficulty(
     }
 
     /**
-     * Get the current context.
+     * Get the current context
      */
     internal val currentTimingGroup: TimingGroup
         get() {
@@ -42,17 +42,31 @@ class Difficulty(
         }
 
     /**
-     * Add note filter.
+     * Add a [NoteFilter]
      */
     fun addNoteFilter(filter: NoteFilter) {
         currentTimingGroup.addNoteFilter(filter)
     }
 
     /**
-     * Pop note filter
+     * Remove the last [NoteFilter]
      */
     fun popNoteFilter() {
         currentTimingGroup.popNoteFilter()
+    }
+
+    /**
+     * Add a [EventFilter]
+     */
+    fun addEventFilter(filter: EventFilter) {
+        currentTimingGroup.addEventFilter(filter)
+    }
+
+    /**e
+     * Remove the last [EventFilter]
+     */
+    fun popEventFilter() {
+        currentTimingGroup.popEventFilter()
     }
 
     companion object {

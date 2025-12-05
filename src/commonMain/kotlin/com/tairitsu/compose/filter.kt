@@ -1,6 +1,6 @@
 package com.tairitsu.compose
 
-abstract class NoteFilter {
+open class NoteFilter {
     operator fun invoke(note: Note): Note {
         return when (note) {
             is NormalNote -> filterNormalNote(note)
@@ -10,14 +10,13 @@ abstract class NoteFilter {
         }
     }
 
-    abstract fun filterNormalNote(note: NormalNote): Note
-    abstract fun filterHoldNote(note: HoldNote): Note
-    abstract fun filterArcNote(note: ArcNote): Note
-
-    abstract fun filterArcTapNote(note: ArcTapNote): Note
+    open fun filterNormalNote(note: NormalNote): Note = note
+    open fun filterHoldNote(note: HoldNote): Note = note
+    open fun filterArcNote(note: ArcNote): Note = note
+    open fun filterArcTapNote(note: ArcTapNote): Note = note
 }
 
-abstract class EventFilter {
+open class EventFilter {
     operator fun invoke(event: TimedObject): TimedObject {
         return when (event) {
             is Timing -> filterTiming(event)
@@ -27,8 +26,16 @@ abstract class EventFilter {
         }
     }
 
-    abstract fun filterTiming(event: Timing): TimedObject
-    abstract fun filterScenecontrol(sc: Scenecontrol): TimedObject
-    abstract fun filterCamera(camera: Camera): TimedObject
-    abstract fun filterElse(timedObject: TimedObject): TimedObject
+    open fun filterTiming(event: Timing): TimedObject = event
+    open fun filterScenecontrol(sc: Scenecontrol): TimedObject = sc
+    open fun filterCamera(camera: Camera): TimedObject = camera
+    open fun filterElse(timedObject: TimedObject): TimedObject = timedObject
+}
+
+fun interface TimingGroupSpecialEffectFilter {
+    fun filter(fx: TimingGroup.SpecialEffect): TimingGroup.SpecialEffect
+
+    companion object {
+        val DEFAULT = TimingGroupSpecialEffectFilter { it }
+    }
 }

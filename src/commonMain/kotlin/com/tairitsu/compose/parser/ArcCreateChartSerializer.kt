@@ -9,17 +9,7 @@ class ArcCreateChartSerializer : ArcaeaChartSerializer() {
 
     companion object {
         val Instance by lazy { ArcCreateChartSerializer() }
-    }
-
-    override fun serialize(chart: Chart): List<String> = mutableListOf<String>().apply {
-        addAll(headerSerializer(chart.configuration))
-        addAll(serializeTimingGroup(chart.mainTiming, SerializationContext(chart, chart.mainTiming)))
-        chart.subTiming.forEach { (_, timingGroup) ->
-            addAll(serializeTimingGroup(timingGroup, SerializationContext(chart, timingGroup)))
-        }
-        chart.postTiming.forEach { (_, timingGroup) ->
-            addAll(serializeTimingGroup(timingGroup, SerializationContext(chart, timingGroup)))
-        }
+        fun serialize(chart: Chart): List<String> = Instance.serialize(chart)
     }
 
     override val timingGroupSpecialEffectSeparator = ","
@@ -34,24 +24,14 @@ class ArcCreateChartSerializer : ArcaeaChartSerializer() {
             } else "main"
 
             val tgName = "${parentGroupId}_arcResolution${arcResolution}"
-            val timingGroup = ctx.chart.postTiming.getOrPut(tgName) { TimingGroup(tgName) }
+            val timingGroup = ctx.chart.postTiming.getOrPut(tgName) { ctx.timingGroup.duplicate(tgName) }
 
-            // newly generated tg
-            if (timingGroup.getSpecialEffects().isEmpty()) {
-                // duplicate all timings
-                ctx.timingGroup.getTimings().forEach { timingGroup.addTiming(it) }
-
-                // duplicate all fx
-                ctx.timingGroup.getSpecialEffects().forEach { timingGroup.addSpecialEffect(it) }
-
-                // add arcresolution fx
-                timingGroup.addSpecialEffect(
-                    TimingGroup.SpecialEffect(
-                        TimingGroup.SpecialEffectType.fromValue("arcresolution"),
-                        arcResolution.toString()
-                    )
+            timingGroup.addSpecialEffect(
+                TimingGroup.SpecialEffect(
+                    TimingGroup.SpecialEffectType.fromValue("arcresolution"),
+                    arcResolution.toString()
                 )
-            }
+            )
 
             timingGroup.addArcNote(arcNote.copy(arcResolution = 1.0))
         }
@@ -59,5 +39,11 @@ class ArcCreateChartSerializer : ArcaeaChartSerializer() {
         return ""
     }
 
+    override fun serializeArcTaps(arcNote: ArcNote, ctx: SerializationContext): String {
+        if (arcNote.arcTapList.isEmpty()) return ""
 
+        return "[" + arcNote.arcTapList.joinToString(",") {
+            "arctap(" + it.time.toString() + (if (it.length != null) ",${it.length}" else "") + ")"
+        } + "]"
+    }
 }

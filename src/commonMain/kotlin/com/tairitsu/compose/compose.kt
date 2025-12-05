@@ -1,4 +1,4 @@
-@file:Suppress("unused")
+@file:Suppress("unused", "UnusedReceiverParameter")
 
 package com.tairitsu.compose
 
@@ -32,19 +32,29 @@ fun chartConfig(
     }
 }
 
-fun compose(closure: Difficulty.() -> Unit): Difficulty {
-    val ctx = Difficulty()
+fun compose(
+    fxFilter: TimingGroupSpecialEffectFilter = TimingGroupSpecialEffectFilter.DEFAULT,
+    closure: Difficulty.() -> Unit,
+): Difficulty {
+    val ctx = Difficulty(fxFilter = fxFilter)
     closure(ctx)
     return ctx
 }
 
-fun compose(chartConfig: Chart.Configuration, closure: Difficulty.() -> Unit): Difficulty {
-    val ctx = Difficulty(chartConfig)
+fun compose(
+    chartConfig: Chart.Configuration,
+    fxFilter: TimingGroupSpecialEffectFilter = TimingGroupSpecialEffectFilter.DEFAULT,
+    closure: Difficulty.() -> Unit,
+): Difficulty {
+    val ctx = Difficulty(chartConfig, fxFilter)
     closure(ctx)
     return ctx
 }
 
-fun compose(diff: Difficulty, closure: Difficulty.() -> Unit): Difficulty {
+fun compose(
+    diff: Difficulty,
+    closure: Difficulty.() -> Unit,
+): Difficulty {
     closure(diff)
     return diff
 }
@@ -70,6 +80,9 @@ fun Difficulty.mainTimingGroup(closure: TimingGroup.() -> Unit) {
     closure.invoke(chart.mainTiming)
 }
 
+/**
+ * Create a [TimingGroup] by using Arcaea grammar
+ */
 fun Difficulty.timinggroup(vararg specialEffects: TimingGroup.SpecialEffect, closure: TimingGroup.() -> Unit): TimingGroup =
     timingGroup {
         specialEffects.forEach { this.addSpecialEffect(it) }
@@ -79,29 +92,42 @@ fun Difficulty.timinggroup(vararg specialEffects: TimingGroup.SpecialEffect, clo
 /**
  * Get the existing or creating a new [TimingGroup] of the [Difficulty]
  */
-fun Difficulty.timingGroup(name: String = uuid4().toString(), closure: TimingGroup.() -> Unit): TimingGroup {
+fun Difficulty.timingGroup(
+    name: String = uuid4().toString(),
+    fxFilter: TimingGroupSpecialEffectFilter = TimingGroupSpecialEffectFilter.DEFAULT,
+    closure: TimingGroup.() -> Unit,
+): TimingGroup {
     if (name == "main") {
         mainTimingGroup(closure)
         return chart.mainTiming
     }
 
-    val newTimingGroup = chart.subTiming.getOrPut(name) { TimingGroup(name) }
+    val newTimingGroup = chart.subTiming.getOrPut(name) { TimingGroup(name, fxFilter) }
     context.timingGroupStack.addLast(newTimingGroup)
     closure(newTimingGroup)
     context.timingGroupStack.removeLast()
     return newTimingGroup
 }
 
-fun Difficulty.timingGroup(vararg specialEffects: TimingGroup.SpecialEffect, closure: TimingGroup.() -> Unit): TimingGroup {
-    val tg = timingGroup(uuid4().toString(), closure)
+fun Difficulty.timingGroup(
+    vararg specialEffects: TimingGroup.SpecialEffect,
+    fxFilter: TimingGroupSpecialEffectFilter = TimingGroupSpecialEffectFilter.DEFAULT,
+    closure: TimingGroup.() -> Unit,
+): TimingGroup {
+    val tg = timingGroup(uuid4().toString(), fxFilter, closure)
     specialEffects.forEach {
         tg.addSpecialEffect(it)
     }
     return tg
 }
 
-fun Difficulty.timingGroup(name: String, vararg specialEffects: TimingGroup.SpecialEffect, closure: TimingGroup.() -> Unit): TimingGroup {
-    val tg = timingGroup(name, closure)
+fun Difficulty.timingGroup(
+    name: String,
+    vararg specialEffects: TimingGroup.SpecialEffect,
+    fxFilter: TimingGroupSpecialEffectFilter = TimingGroupSpecialEffectFilter.DEFAULT,
+    closure: TimingGroup.() -> Unit,
+): TimingGroup {
+    val tg = timingGroup(name, fxFilter, closure)
     specialEffects.forEach {
         tg.addSpecialEffect(it)
     }
@@ -124,7 +150,7 @@ fun <TTime : Number> Difficulty.scenecontrol(
     time: TTime,
     type: ScenecontrolType,
     vararg params: Any,
-) {
+): Scenecontrol {
     val ctx = this.currentTimingGroup
     val sc = Scenecontrol(time.toLong(), type) { params.map { if (it is Double) it.toAffFormat() else it.toString() } }
     return ctx.addScenecontrol(sc)
@@ -134,7 +160,7 @@ fun <TTime : Number> Difficulty.scenecontrol(
     time: TTime,
     type: ScenecontrolType,
     vararg params: Number,
-) {
+): Scenecontrol {
     val ctx = this.currentTimingGroup
     val sc = Scenecontrol(time.toLong(), type) { params.map { if (it is Double) it.toAffFormat() else it.toString() } }
     return ctx.addScenecontrol(sc)
@@ -144,7 +170,7 @@ fun <TTime : Number> Difficulty.scenecontrol(
     time: TTime,
     type: ScenecontrolType,
     vararg params: String,
-) {
+): Scenecontrol {
     val ctx = this.currentTimingGroup
     val sc = Scenecontrol(time.toLong(), type)
     return ctx.addScenecontrol(sc)
@@ -153,7 +179,7 @@ fun <TTime : Number> Difficulty.scenecontrol(
 fun <TTime : Number> Difficulty.scenecontrol(
     time: TTime,
     type: ScenecontrolType,
-) {
+): Scenecontrol {
     val ctx = this.currentTimingGroup
     val sc = Scenecontrol(time.toLong(), type)
     return ctx.addScenecontrol(sc)
@@ -225,6 +251,8 @@ val Difficulty.soso: ArcNote.EaseType get() = ArcNote.EaseType.SOSO
 val Difficulty.blue: ArcNote.Color get() = ArcNote.Color.BLUE
 val Difficulty.red: ArcNote.Color get() = ArcNote.Color.RED
 val Difficulty.green: ArcNote.Color get() = ArcNote.Color.GREEN
+val Difficulty.gray: ArcNote.Color get() = ArcNote.Color.GRAY
+val Difficulty.grey: ArcNote.Color get() = ArcNote.Color.GREY
 
 val Difficulty.none: String get() = "none"
 
@@ -232,6 +260,10 @@ val Difficulty.designant: ArcNote.NoteType get() = ArcNote.NoteType.DESIGNANT
 
 fun <TTime : Number> MutableList<ArcTapNote>.arctap(time: TTime) {
     this.add(ArcTapNote(time.toLong()))
+}
+
+fun <TTime : Number, TLength : Number> MutableList<ArcTapNote>.arctap(time: TTime, length: TLength) {
+    this.add(ArcTapNote(time.toLong(), length.toDouble()))
 }
 
 /**
@@ -244,7 +276,7 @@ fun <TTime : Number, TEndTime : Number, TCoordinate : Number> Difficulty.arc(
     easeType: ArcNote.EaseType,
     y1: TCoordinate, y2: TCoordinate,
     color: Int,
-    hitsound: String,
+    hitSound: String,
     isTrace: Boolean,
     arcResolution: Double = 1.0,
     arcTapList: MutableList<ArcTapNote>.() -> Unit = { },
@@ -259,7 +291,7 @@ fun <TTime : Number, TEndTime : Number, TCoordinate : Number> Difficulty.arc(
         ArcNote.Color.fromColorId(color),
         if (isTrace) ArcNote.NoteType.TRACE else ArcNote.NoteType.ARC,
         arcResolution,
-        arcTapList = mutableListOf<ArcTapNote>().apply { arcTapList() }
+        arcTapList = mutableListOf<ArcTapNote>().apply { arcTapList(this) }
     )
     return ctx.addArcNote(note)
 }
@@ -274,7 +306,7 @@ fun <TTime : Number, TEndTime : Number, TCoordinate : Number> Difficulty.arc(
     easeType: ArcNote.EaseType,
     y1: TCoordinate, y2: TCoordinate,
     color: Int,
-    hitsound: String,
+    hitSound: String,
     noteType: ArcNote.NoteType,
     arcResolution: Double = 1.0,
     arcTapList: MutableList<ArcTapNote>.() -> Unit = { },
@@ -289,7 +321,7 @@ fun <TTime : Number, TEndTime : Number, TCoordinate : Number> Difficulty.arc(
         ArcNote.Color.fromColorId(color),
         noteType,
         arcResolution,
-        arcTapList = mutableListOf<ArcTapNote>().apply { arcTapList() }
+        arcTapList = mutableListOf<ArcTapNote>().apply { arcTapList(this) }
     )
     return ctx.addArcNote(note)
 }
@@ -330,9 +362,9 @@ fun <TTime : Number, TEndTime : Number> Difficulty.trace(
     easeType: ArcNote.EaseType,
     endPosition: Position,
     color: ArcNote.Color = ArcNote.Color.BLUE,
-    arcTapList: MutableList<ArcTapNote>.() -> Unit = { },
     hitSound: String = "none",
     arcResolution: Double = 1.0,
+    arcTapList: MutableList<ArcTapNote>.() -> Unit = { },
 ): Note {
     val ctx = this.currentTimingGroup
     val note = ArcNote(
@@ -345,7 +377,7 @@ fun <TTime : Number, TEndTime : Number> Difficulty.trace(
         ArcNote.NoteType.TRACE,
         arcResolution,
         hitSound,
-        arcTapList = mutableListOf<ArcTapNote>().apply { arcTapList() }
+        arcTapList = mutableListOf<ArcTapNote>().apply { arcTapList(this) }
     )
     return ctx.addArcNote(note)
 }
@@ -359,9 +391,9 @@ fun <TTime : Number, TEndTime : Number> Difficulty.traceDesignant(
     startPosition: Position,
     easeType: ArcNote.EaseType,
     endPosition: Position,
-    arcTapList: MutableList<ArcTapNote>.() -> Unit = { },
     hitSound: String = "none",
     arcResolution: Double = 1.0,
+    arcTapList: MutableList<ArcTapNote>.() -> Unit = { },
 ): Note {
     val ctx = this.currentTimingGroup
     val note = ArcNote(
@@ -374,52 +406,9 @@ fun <TTime : Number, TEndTime : Number> Difficulty.traceDesignant(
         ArcNote.NoteType.DESIGNANT,
         arcResolution,
         hitSound,
-        arcTapList = mutableListOf<ArcTapNote>().apply { arcTapList() }
+        arcTapList = mutableListOf<ArcTapNote>().apply { arcTapList(this) }
     )
     return ctx.addArcNote(note)
-}
-
-// Var-len ArcTap
-@Deprecated("platform-dependent behaviours should not be included in public api")
-fun <TTime : Number> Difficulty.varlenArcTap(
-    time: TTime,
-    startPosition: Position,
-    endPosition: Position,
-) {
-    arcNote(
-        time,
-        time,
-        startPosition,
-        ArcNote.EaseType.S,
-        endPosition,
-        ArcNote.Color.GRAY,
-    )
-}
-
-@Deprecated("platform-dependent behaviours should not be included in public api")
-fun <TTime : Number> Difficulty.varlenArcTapWithRadius(
-    time: TTime,
-    centerPosition: Position,
-    radius: Double,
-) {
-    varlenArcTap(
-        time,
-        centerPosition.x - radius pos centerPosition.y,
-        centerPosition.x + radius pos centerPosition.y
-    )
-}
-
-@Deprecated("platform-dependent behaviours should not be included in public api")
-fun <TTime : Number> Difficulty.varlenArcTapWithDistance(
-    time: TTime,
-    centerPosition: Position,
-    distance: Double,
-) {
-    varlenArcTapWithRadius(
-        time,
-        centerPosition,
-        distance / 2
-    )
 }
 
 // Camera
@@ -443,7 +432,7 @@ fun <TTime : Number, TPixel : Number, TDegree : Number> Difficulty.camera(
     xoyAng: TDegree,
     ease: Camera.EaseType,
     duration: TTime,
-) {
+): Camera {
     val ctx = this.currentTimingGroup
     val camera = Camera(
         time.toLong(),
@@ -463,7 +452,7 @@ fun <TTime : Number, TPixel : Number, TDegree : Number> Difficulty.camera(
     xoyAng: TDegree,
     ease: ArcNote.EaseType,
     duration: TTime,
-) {
+): Camera {
     require(ease == ArcNote.EaseType.S)
 
     val ctx = this.currentTimingGroup

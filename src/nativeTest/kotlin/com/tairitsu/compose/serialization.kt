@@ -2,7 +2,8 @@
 
 package com.tairitsu.compose
 
-import com.tairitsu.compose.parser.ArcaeaChartSerializerimport kotlin.test.Test
+import com.tairitsu.compose.parser.ArcaeaChartSerializer
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ArcaeaChartSerializerTest {

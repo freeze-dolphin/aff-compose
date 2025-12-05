@@ -60,8 +60,6 @@ fun getCheckedOutGitCommitHash(takeFromHash: Int = 7): String {
 version = getCheckedOutGitCommitHash()
 
 kotlin {
-    jvm()
-
     val hostOs = System.getProperty("os.name")
     val isArm64 = System.getProperty("os.arch") == "aarch64"
     val isMingwX64 = hostOs.startsWith("Windows")
@@ -85,6 +83,8 @@ kotlin {
             }
         }
     }
+
+    jvm()
 
     sourceSets {
         commonMain {
@@ -117,7 +117,7 @@ kotlin {
         }
     }
 
-    val bmm = sourceSets.getByName("commonBenchmark")
+    val cbm = sourceSets.getByName("commonBenchmark")
 
     targets.matching { it.name != "metadata" }.all {
         compilations.create("benchmark") {
@@ -126,12 +126,10 @@ kotlin {
                 dependencies {
                     implementation(libs.kotlinx.microbenchmark)
                 }
-                dependsOn(bmm)
+                dependsOn(cbm)
             }
         }
-    }
 
-    targets.matching { it.name != "metadata" }.all {
         benchmark.targets.register("${name}Benchmark")
     }
 }

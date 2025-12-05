@@ -1,17 +1,20 @@
-# aff-compose-kmp
+# aff-compose *v3*
 
 This is a Kotlin Multiplatform library for parsing and serializing .aff files.
+
+last commit of v2.x: [`b95a541`](https://github.com/freeze-dolphin/aff-compose/tree/b95a5416a8462560f6dc2b9f2b8106f4b6da0651)
 
 ## Roadmap
 
 - [x] parse .aff files
 - [x] serialize .aff files
+- [ ] expression support
 
-###  
+conversion of chart objects different between standards:
 
 - [x] arcresolution
-- [ ] var-len arctap
-- [ ] conversion for scalars in scenecontrol and timing group fx
+- [x] var-len arctap
+- [x] conversion for scalars in scenecontrol and timing group fx
 
 ### support for other platforms
 
@@ -55,12 +58,22 @@ val content = ArcaeaChartSerializer.Instance.serialize(chart).joinToString("\n")
 
 see full example in [`commonTest/serialization.kt`](src/commonTest/kotlin/com/tairitsu/compose/serialization.kt)
 
+#### Extensible API
+
+Since v3, the library is refactored to provide an extensible api  
+You can create your own chart parser and serializer if the internal ones does not cover your needs
+
+Your parser should implement `ChartParser` (or simply extend `ArcaeaChartParser`)  
+and your serializer should implement `ChartSerializer`
+
+see more info in [`commonMain/parser`](src/commonMain/kotlin/com/tairitsu/compose/parser)
+
+
 <details>
-<summary>Graph</summary>
+<summary>parser graph</summary>
 
 <img width="600" align="center" alt="graph" src="docs/parse_and_serialization.drawio.png">
 </details>
-
 
 ### DSL
 
@@ -105,3 +118,9 @@ assertEquals(a1, a2)
 ```
 
 see APIs in [`commonMain/compose.kt`](src/commonMain/kotlin/com/tairitsu/compose/compose.kt)
+
+### Conversion
+
+there is built-in conversion for chart objects that are different between games
+
+see full example in [`commonTest/shim.kt`](src/commonTest/kotlin/com/tairitsu/compose/shim.kt)

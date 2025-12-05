@@ -6,12 +6,14 @@ import com.tairitsu.compose.arcaea.antlr.UniversalAffChartLexer
 import com.tairitsu.compose.arcaea.antlr.UniversalAffChartParser
 import org.antlr.v4.kotlinruntime.CharStreams
 import org.antlr.v4.kotlinruntime.CommonTokenStream
+import kotlin.math.absoluteValue
 
 @Suppress("DuplicatedCode")
 open class ArcaeaChartParser : ChartParser {
 
     companion object {
         val Instance by lazy { ArcaeaChartParser() }
+        fun parse(content: String): Difficulty = Instance.parse(content)
     }
 
     open val normalNoteParser: (UniversalChartVisitor.Event, ParseContext) -> Unit = { evt, ctx ->
@@ -88,25 +90,45 @@ open class ArcaeaChartParser : ChartParser {
                 val easeType = ArcNote.EaseType.fromValue(evt.values[4].str)
                 val endPosition = evt.values[3].num pos evt.values[6].num
                 val color = evt.values[7].num.toInt()
-                val hitsound = evt.values[8].str
+                val hitSound = evt.values[8].str
                 val noteType = ArcNote.NoteType.fromValue(evt.values[9].str)
                 val arcResolution = (if (evt.values.size == 11) evt.values[10].num else 1.0).toDouble()
 
-                arc(
-                    time,
-                    endTime,
-                    startPosition.x,
-                    endPosition.x,
-                    easeType,
-                    startPosition.y,
-                    endPosition.y,
-                    color,
-                    hitsound,
-                    noteType,
-                    arcResolution
+                if (time == endTime &&
+                    startPosition.y == endPosition.y &&
+                    color == 3 &&
+                    noteType == ArcNote.NoteType.ARC &&
+                    evt.subEvents.isEmpty()
                 ) {
-                    evt.subEvents.forEach { subEvt ->
-                        arcTapNoteParser(subEvt, this)
+                    val centerPos = (startPosition.x + endPosition.x) / 2 pos startPosition.y
+                    val length = (startPosition.x - endPosition.x).absoluteValue * 2
+
+                    trace(
+                        time,
+                        time.toLong() + 1,
+                        centerPos, s, centerPos,
+                        gray,
+                        hitSound
+                    ) {
+                        arctap(time, length)
+                    }
+                } else {
+                    arc(
+                        time,
+                        endTime,
+                        startPosition.x,
+                        endPosition.x,
+                        easeType,
+                        startPosition.y,
+                        endPosition.y,
+                        color,
+                        hitSound,
+                        noteType,
+                        arcResolution
+                    ) {
+                        evt.subEvents.forEach { subEvt ->
+                            arcTapNoteParser(subEvt, this)
+                        }
                     }
                 }
             }
@@ -134,20 +156,28 @@ open class ArcaeaChartParser : ChartParser {
             timingGroup(ctx.timingGroup.name) {
                 require(evt.values.size >= 2)
 
-                val params = evt.values.subList(2, evt.values.size)
                 require(evt.values[0].type == UniversalChartVisitor.ValueType.ALGEBRAIC)
                 require(evt.values[1].type == UniversalChartVisitor.ValueType.STRING)
-                require(params.all { it.type == UniversalChartVisitor.ValueType.STRING || it.type == UniversalChartVisitor.ValueType.ALGEBRAIC })
 
                 val time = evt.values[0].num
                 val type = ScenecontrolType.fromValue(evt.values[1].str)
-                scenecontrol(time, type, params.map {
-                    when (it.type) {
-                        UniversalChartVisitor.ValueType.STRING -> it.str
-                        UniversalChartVisitor.ValueType.ALGEBRAIC -> it.num
-                        else -> error("Unexcepted scenecontrol parameter: ${it.raw}, with type: ${it.type}")
-                    }
-                })
+
+                if (evt.values.size == 2) {
+                    scenecontrol(time, type)
+                } else {
+                    val params = evt.values.subList(2, evt.values.size)
+                    require(params.all { it.type == UniversalChartVisitor.ValueType.STRING || it.type == UniversalChartVisitor.ValueType.ALGEBRAIC })
+
+                    val typedParams = (params.map {
+                        when (it.type) {
+                            UniversalChartVisitor.ValueType.STRING -> it.str
+                            UniversalChartVisitor.ValueType.ALGEBRAIC -> it.num
+                            else -> error("Unexcepted scenecontrol parameter: ${it.raw}, with type: ${it.type}")
+                        }
+                    }.toTypedArray())
+
+                    scenecontrol(time, type, *typedParams)
+                }
             }
         }
     }
@@ -182,39 +212,41 @@ open class ArcaeaChartParser : ChartParser {
 
     open val timingGroupParser: (UniversalChartVisitor.Event, ParseContext) -> Unit = { evt, ctx ->
         ctx.difficulty.run {
-            timingGroup(ctx.timingGroup.name) {
-                require(evt.values.size in 0..1) // all special effects are connected using '_' in Arcaea
-                require(evt.values.isEmpty() || evt.values[0].type == UniversalChartVisitor.ValueType.STRING)
+            require(evt.values.size in 0..1) // all special effects are connected using '_' in Arcaea
+            require(evt.values.isEmpty() || evt.values[0].type == UniversalChartVisitor.ValueType.STRING)
 
-                val fxMatcher = Regex("([a-zA-Z]+)(-?(0|([1-9][0-9]*))(\\.\\d+)?)")
-                val fx = if (evt.values.isEmpty())
-                    emptyList()
-                else
-                    evt.values[0].str.split('_').map { rawFx ->
-                        if (rawFx.all { it.isLetter() }) {
-                            TimingGroup.SpecialEffect(TimingGroup.SpecialEffectType.fromValue(rawFx))
-                        } else if (rawFx.matches(fxMatcher)) {
-                            val match = fxMatcher.findAll(rawFx)
+            val fxMatcher = Regex("([a-zA-Z]+)(-?(0|([1-9][0-9]*))(\\.\\d+)?)")
+            val fx = if (evt.values.isEmpty())
+                emptyList()
+            else
+                evt.values[0].str.split('_').map { rawFx ->
+                    if (rawFx.all { it.isLetter() }) {
+                        TimingGroup.SpecialEffect(TimingGroup.SpecialEffectType.fromValue(rawFx))
+                    } else if (rawFx.matches(fxMatcher)) {
+                        val match = fxMatcher.findAll(rawFx)
 
-                            require(match.count() == 1)
-                            match.first().groupValues.let { groups ->
-                                TimingGroup.SpecialEffect(
-                                    TimingGroup.SpecialEffectType.fromValue(groups[1]),
-                                    groups[2]
-                                )
-                            }
-                        } else {
-                            error("Unable to parse `${rawFx}` into a SpecialEffect")
+                        require(match.count() == 1)
+                        match.first().groupValues.let { groups ->
+                            TimingGroup.SpecialEffect(
+                                TimingGroup.SpecialEffectType.fromValue(groups[1]),
+                                groups[2]
+                            )
                         }
+                    } else {
+                        error("Unable to parse `${rawFx}` into a SpecialEffect")
                     }
+                }
 
-                timingGroup {
-                    fx.forEach { addSpecialEffect(it) }
-                    val nCtx = ParseContext(this@run, this)
+            timingGroup(fxFilter = globalEffectFilter) {
+                fx.forEach { addSpecialEffect(it) }
 
-                    evt.segment?.events?.forEach { bEvt ->
-                        getEventParser()(bEvt, nCtx)
-                    }
+                globalNoteFilter?.let { addNoteFilter(it) }
+                globalEventFilter?.let { addEventFilter(it) }
+
+                val nCtx = ParseContext(this@run, this)
+
+                evt.segment?.events?.forEach { bEvt ->
+                    getEventParser()(bEvt, nCtx)
                 }
             }
         }
@@ -257,6 +289,10 @@ open class ArcaeaChartParser : ChartParser {
             }
     }
 
+    open val globalEffectFilter: TimingGroupSpecialEffectFilter = TimingGroupSpecialEffectFilter.DEFAULT
+    open val globalNoteFilter: NoteFilter? = null
+    open val globalEventFilter: EventFilter? = null
+
     override fun parse(content: String): Difficulty {
         val separator = "-\n"
         val sepIdx = content.indexOf(separator)
@@ -275,7 +311,10 @@ open class ArcaeaChartParser : ChartParser {
         val visitor = UniversalChartVisitor()
         val body = visitor.visitChart(tree)
 
-        return compose(headerParser(header)) {
+        return compose(headerParser(header), globalEffectFilter) {
+            globalNoteFilter?.let { addNoteFilter(it) }
+            globalEventFilter?.let { addEventFilter(it) }
+
             val nCtx = ParseContext(this, this.currentTimingGroup)
             body.events.forEach { evt ->
                 getEventParser()(evt, nCtx)

@@ -79,6 +79,10 @@ class ArcaeaChartParserTest {
             timinggroup(unknown_uint32){
               timing(0,100,4);
             };
+            timinggroup(){
+              timing(177375,80,4.00);
+              scenecontrol(177375,exprtest,300+120,2.3*5);
+            };
         """.trimIndent()
         val chart = ArcaeaChartParser.Instance.parse(content).chart
 
@@ -106,10 +110,16 @@ class ArcaeaChartParserTest {
             chart.subTiming.values.toList()[2].getSpecialEffects()
         )
 
-        // unknown timinggroup fx
+        // unknown timing group fx
         assertEquals(
             listOf("unknown" to null, "uint" to "32"),
             chart.subTiming.values.toList()[3].getSpecialEffects().map { it.type.value to it.param }
+        )
+
+        // expr
+        assertEquals(
+            listOf(420.0, 11.5),
+            chart.subTiming.values.toList()[4].getScenecontrols()[0].params.map { it.toDouble() }
         )
     }
 }

@@ -1,12 +1,7 @@
 package com.tairitsu.compose.filter
 
-import com.tairitsu.compose.ArcNote
+import com.tairitsu.compose.*
 import com.tairitsu.compose.ArcNote.Color
-import com.tairitsu.compose.ArcTapNote
-import com.tairitsu.compose.HoldNote
-import com.tairitsu.compose.NormalNote
-import com.tairitsu.compose.Note
-import com.tairitsu.compose.NoteFilter
 import com.tairitsu.compose.Position.Companion.pos
 
 object MirrorNoteFilter : NoteFilter() {
@@ -34,6 +29,4 @@ object MirrorNoteFilter : NoteFilter() {
             endPosition = endPosition
         )
     }
-
-    override fun filterArcTapNote(note: ArcTapNote): Note = note
 }

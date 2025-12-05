@@ -11,8 +11,9 @@ import kotlinx.serialization.Transient
 @Serializable
 class Chart(
     val configuration: Configuration,
+    val mainTimingGroupEffectsFilter: TimingGroupSpecialEffectFilter,
 ) {
-    val mainTiming: TimingGroup = TimingGroup("main")
+    val mainTiming: TimingGroup = TimingGroup("main", this.mainTimingGroupEffectsFilter)
     val subTiming: MutableMap<String, TimingGroup> = mutableMapOf()
     val postTiming: MutableMap<String, TimingGroup> = mutableMapOf()
 
@@ -21,7 +22,6 @@ class Chart(
         val audioOffset: Long,
         val extra: MutableSet<Item> = mutableSetOf(),
     ) {
-
         @Serializable
         data class Item(val key: String, val value: String)
 
@@ -90,7 +90,7 @@ class Timing(val offset: Long, val bpm: Double, val beats: Double) : TimedObject
 
 @Suppress("unused")
 @Serializable
-data class ScenecontrolType(val id: String) {
+data class ScenecontrolType(val value: String) {
     companion object {
         val TRACK_HIDE = ScenecontrolType("trackhide")
         val TRACK_SHOW = ScenecontrolType("trackshow")
@@ -137,6 +137,12 @@ class TimingGroup : ChartObject {
 
     constructor(name: String) {
         this.name = name
+        this.fxFilter = TimingGroupSpecialEffectFilter.DEFAULT
+    }
+
+    constructor(name: String, fxFilter: TimingGroupSpecialEffectFilter) {
+        this.name = name
+        this.fxFilter = fxFilter
     }
 
     @Transient
@@ -144,6 +150,12 @@ class TimingGroup : ChartObject {
 
     @Transient
     private val noteFilters: ArrayDeque<NoteFilter> = ArrayDeque()
+
+    @Transient
+    private val eventFilters: ArrayDeque<EventFilter> = ArrayDeque()
+
+    @Transient
+    private lateinit var fxFilter: TimingGroupSpecialEffectFilter
 
     private val notes = mutableListOf<Note>()
     private val timings = mutableListOf<Timing>()
@@ -212,7 +224,7 @@ class TimingGroup : ChartObject {
      */
     fun getCameras(): List<Camera> = cameras.toList()
 
-    private fun applyFilterImpl(note: Note): Note {
+    private fun applyNoteFilterImpl(note: Note): Note {
         var ret = note
 
         val filterSize = noteFilters.size
@@ -223,16 +235,26 @@ class TimingGroup : ChartObject {
         return ret
     }
 
-    private fun applyFilterImpl(note: Collection<Note>): Collection<Note> {
-        return note.map { applyFilterImpl(it) }
+    private fun applyEventFilterImpl(timedObject: TimedObject): TimedObject {
+        var ret = timedObject
+
+        val filterSize = eventFilters.size
+        for (idx in (0 until filterSize).reversed()) {
+            ret = eventFilters[idx](ret)
+        }
+
+        return ret
     }
 
-    private fun Note.applyFilter(): Note {
-        return applyFilterImpl(this)
-    }
-
-    private fun Collection<Note>.applyFilter(): Collection<Note> {
-        return this.map { applyFilterImpl(it) }
+    private fun applyNoteFilterImpl(note: Collection<Note>): Collection<Note> = note.map { applyNoteFilterImpl(it) }
+    private fun applyEventFilterImpl(note: Collection<TimedObject>): Collection<TimedObject> = note.map { applyEventFilterImpl(it) }
+    private fun Note.applyFilter(): Note = applyNoteFilterImpl(this)
+    private fun TimedObject.applyFilter(): TimedObject = applyEventFilterImpl(this)
+    private fun Collection<TimedObject>.applyFilter(): Collection<TimedObject> = this.map {
+        when (this) {
+            is Note -> applyNoteFilterImpl(it as Note)
+            else -> applyEventFilterImpl(it)
+        }
     }
 
     /**
@@ -250,17 +272,35 @@ class TimingGroup : ChartObject {
     }
 
     /**
+     * Add a [EventFilter]
+     */
+    fun addEventFilter(filter: EventFilter) {
+        eventFilters.addLast(filter)
+    }
+
+    /**
+     * Remove the last [EventFilter]
+     */
+    fun popEventFilter() {
+        eventFilters.removeLast()
+    }
+
+    /**
      * Add a [Scenecontrol]
      */
-    fun addScenecontrol(sc: Scenecontrol) {
-        scenecontrols.add(sc)
+    fun addScenecontrol(sc: Scenecontrol): Scenecontrol {
+        val commitSc = sc.applyFilter() as Scenecontrol
+        scenecontrols.add(commitSc)
+        return commitSc
     }
 
     /**
      * Add a [Timing]
      */
-    fun addTiming(timing: Timing) {
-        timings.add(timing)
+    fun addTiming(timing: Timing): TimedObject {
+        val commitTiming = timing.applyFilter() as Timing
+        timings.add(commitTiming)
+        return commitTiming
     }
 
     /**
@@ -293,15 +333,23 @@ class TimingGroup : ChartObject {
     /**
      * Add a [SpecialEffect]
      */
-    fun addSpecialEffect(se: SpecialEffect) {
-        specialEffects.add(se)
+    fun addSpecialEffect(fx: SpecialEffect): SpecialEffect {
+        check(specialEffects.all { it.type != fx.type }) { "duplicated effects" }
+        check(::fxFilter.isInitialized) { "fxFilter not initialized" }
+
+        fxFilter.filter(fx).apply {
+            specialEffects.add(this)
+            return this
+        }
     }
 
     /**
      * Add a [Camera]
      */
-    fun addCamera(camera: Camera) {
-        cameras.add(camera)
+    fun addCamera(camera: Camera): Camera {
+        val commitCamera = camera.applyFilter() as Camera
+        cameras.add(commitCamera)
+        return commitCamera
     }
 
     /**
@@ -316,6 +364,20 @@ class TimingGroup : ChartObject {
             is Scenecontrol -> addScenecontrol(obj)
             is Camera -> addCamera(obj)
         }
+    }
+
+    /**
+     * Return a new [TimingGroup] with the same timing table, but contains no chart objects
+     */
+    fun duplicate(name: String): TimingGroup {
+        val newTg = TimingGroup(name)
+
+        getSpecialEffects().forEach { newTg.addSpecialEffect(it) }
+        noteFilters.forEach { newTg.addNoteFilter(it) }
+        eventFilters.forEach { newTg.addEventFilter(it) }
+        getTimings().forEach { newTg.addTiming(it) }
+
+        return newTg
     }
 
     override fun toString(): String {

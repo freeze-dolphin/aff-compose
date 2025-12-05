@@ -1,11 +1,14 @@
 package com.tairitsu.compose.parser
 
 import com.tairitsu.compose.*
+import com.tairitsu.compose.Position.Companion.pos
+import kotlin.math.roundToInt
 
 open class ArcaeaChartSerializer : ChartSerializer {
 
     companion object {
         val Instance by lazy { ArcaeaChartSerializer() }
+        fun serialize(chart: Chart): List<String> = Instance.serialize(chart)
     }
 
     open val headerSerializer: (Chart.Configuration) -> MutableList<String> = { chartConfig ->
@@ -24,6 +27,9 @@ open class ArcaeaChartSerializer : ChartSerializer {
         addAll(headerSerializer(chart.configuration))
         addAll(serializeTimingGroup(chart.mainTiming, SerializationContext(chart, chart.mainTiming)))
         chart.subTiming.forEach { (_, timingGroup) ->
+            addAll(serializeTimingGroup(timingGroup, SerializationContext(chart, timingGroup)))
+        }
+        chart.postTiming.forEach { (_, timingGroup) ->
             addAll(serializeTimingGroup(timingGroup, SerializationContext(chart, timingGroup)))
         }
     }
@@ -96,7 +102,7 @@ open class ArcaeaChartSerializer : ChartSerializer {
                 "${startPosition.y.toAffFormat()}," +
                 "${endPosition.y.toAffFormat()}," +
                 "${color.value}," +
-                "${serializeHitsound(hitSound, ctx)}," +
+                "${serializeHitSound(hitSound, ctx)}," +
                 arcType.value +
                 serializeArcResolution(this, arcResolution, ctx) +
                 ")" +
@@ -106,8 +112,16 @@ open class ArcaeaChartSerializer : ChartSerializer {
 
     open fun serializeScenecontrol(timedObject: Scenecontrol, ctx: SerializationContext): String = timedObject.run {
         "scenecontrol(${time}," +
-                "${type.id}," +
-                params.joinToString(",") +
+                "${type.value}," +
+                params.joinToString(",") {
+                    if (it.toDoubleOrNull()?.rem(1.0)?.equals(0.0) == true) {
+                        it.toDouble().roundToInt().toString()
+                    } else if (it.toDoubleOrNull() != null) {
+                        it.toDouble().toAffFormat()
+                    } else {
+                        it
+                    }
+                } +
                 ");"
     }
 
@@ -127,10 +141,10 @@ open class ArcaeaChartSerializer : ChartSerializer {
     open fun serializeTimingGroupSpecialEffect(specialEffect: TimingGroup.SpecialEffect): String =
         specialEffect.type.value + (specialEffect.param ?: "")
 
-    open fun serializeHitsound(hitsound: String, ctx: SerializationContext): String =
-        if (hitsound == "none")
+    open fun serializeHitSound(hitSound: String, ctx: SerializationContext): String =
+        if (hitSound == "none")
             "none"
-        else "${hitsound}_wav"
+        else "${hitSound}_wav"
 
     open fun serializeArcResolution(arcNote: ArcNote, arcResolution: Double, ctx: SerializationContext): String =
         if (arcResolution > 1.0)
@@ -138,8 +152,42 @@ open class ArcaeaChartSerializer : ChartSerializer {
         else ""
 
     open fun serializeArcTaps(arcNote: ArcNote, ctx: SerializationContext): String {
-        if (arcNote.arcTapList.isEmpty()) return ""
+        if (arcNote.arcTapList.none { it.length == null }) return "" // no normal arctap, just return
 
-        return "[" + arcNote.arcTapList.joinToString(",") { "arctap(${it.time})" } + "]"
+        val serialized = mutableListOf<String>()
+
+        arcNote.arcTapList.forEach { arctap ->
+            if (arctap.length != null) { // handle var-len arctap
+                val centerPos = ArcNote.easeFunc2(arcNote.startPosition, arcNote.endPosition, arcNote.easeType)(
+                    if (arcNote.endTime == arcNote.time) 0.0 else (arctap.time.toDouble() - arcNote.time) / (arcNote.endTime - arcNote.time),
+                    arcNote.startPosition,
+                    arcNote.endPosition
+                ) // calculate absolute position for this arctap
+
+                val tgName = "__internal_vlArcTapConv_${ctx.timingGroup.name}"
+                val timingGroup = ctx.chart.postTiming.getOrPut(tgName) { ctx.timingGroup.duplicate(tgName) }
+
+                val radius = arctap.length / 2
+
+                timingGroup.apply {
+                    addArcNote(
+                        ArcNote(
+                            arcNote.time,
+                            arcNote.endTime,
+                            centerPos.x - radius pos centerPos.y,
+                            ArcNote.EaseType.S,
+                            centerPos.x + radius pos centerPos.y,
+                            ArcNote.Color.GRAY,
+                            ArcNote.NoteType.ARC,
+                            hitSound = arcNote.hitSound,
+                        )
+                    )
+                }
+            } else {
+                serialized.add("arctap(${arctap.time})")
+            }
+        }
+
+        return "[" + serialized.joinToString(",") + "]"
     }
 }
