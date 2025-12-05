@@ -2,21 +2,21 @@
 
 package io.sn.aetherium.utils
 
-import com.tairitsu.compose.arcaea.Position
+import com.tairitsu.compose.Position
 import kotlin.math.*
 
-typealias EasingFunction = (progress: Double) -> Double
+typealias EaseFunc = (progress: Double) -> Double
 
-typealias EasingFunction3D = (progress: Double, startPosition: Position, endPosition: Position) -> Position
+typealias EaseFunc2 = (progress: Double, startPosition: Position, endPosition: Position) -> Position
 
-fun buildEasingFunction3D(xAxis: EasingFunction, yAxis: EasingFunction): EasingFunction3D = { progress, startPosition, endPosition ->
+fun easeFunc2(xAxis: EaseFunc, yAxis: EaseFunc): EaseFunc2 = { progress, startPosition, endPosition ->
     Position(
         (endPosition.x - startPosition.x) * xAxis(progress) + startPosition.x,
         (endPosition.y - startPosition.y) * yAxis(progress) + startPosition.y
     )
 }
 
-fun buildEasingFunction3D(xyAxis: EasingFunction): EasingFunction3D = buildEasingFunction3D(xyAxis, xyAxis)
+fun easeFunc2(xyAxis: EaseFunc): EaseFunc2 = easeFunc2(xyAxis, xyAxis)
 
 const val c1 = 1.70158
 const val c2 = c1 * 1.525
@@ -24,25 +24,25 @@ const val c3 = c1 + 1
 const val c4 = (2 * PI) / 3
 const val c5 = (2 * PI) / 4.5
 
-private fun bezier(t: Double, controlPoints: List<Double>): Double {
-    if (controlPoints.size == 1) {
-        return controlPoints[0]
+private fun bezier(t: Double, controls: List<Double>): Double {
+    if (controls.size == 1) {
+        return controls[0]
     }
 
     val newPoints = mutableListOf<Double>()
-    for (i in 0 until controlPoints.size - 1) {
-        val point = (1 - t) * controlPoints[i] + t * controlPoints[i + 1]
+    for (i in 0 until controls.size - 1) {
+        val point = (1 - t) * controls[i] + t * controls[i + 1]
         newPoints.add(point)
     }
 
     return bezier(t, newPoints)
 }
 
-fun buildBezierEasingFunction3D(vararg p: Double): EasingFunction3D = buildEasingFunction3D({ progress ->
+fun bezierEaseFunc2(vararg p: Double): EaseFunc2 = easeFunc2({ progress ->
     bezier(progress, p.toList())
 }, linear)
 
-val bounceOut: EasingFunction = { x ->
+val bounceOut: EaseFunc = { x ->
     val n1 = 7.5625
     val d1 = 2.75
     when {
@@ -53,25 +53,25 @@ val bounceOut: EasingFunction = { x ->
     }
 }
 
-val linear: EasingFunction = { x -> x }
-val easeInQuad: EasingFunction = { x -> x * x }
-val easeOutQuad: EasingFunction = { x -> 1 - (1 - x) * (1 - x) }
-val easeInOutQuad: EasingFunction = { x -> if (x < 0.5) 2 * x * x else 1 - (-2 * x + 2).pow(2) / 2 }
-val easeInCubic: EasingFunction = { x -> x * x * x }
-val easeOutCubic: EasingFunction = { x -> 1 - (1 - x).pow(3) }
-val easeInOutCubic: EasingFunction = { x -> if (x < 0.5) 4 * x * x * x else 1 - (-2 * x + 2).pow(3) / 2 }
-val easeInQuart: EasingFunction = { x -> x * x * x * x }
-val easeOutQuart: EasingFunction = { x -> 1 - (1 - x).pow(4) }
-val easeInOutQuart: EasingFunction = { x -> if (x < 0.5) 8 * x * x * x * x else 1 - (-2 * x + 2).pow(4) / 2 }
-val easeInQuint: EasingFunction = { x -> x * x * x * x * x }
-val easeOutQuint: EasingFunction = { x -> 1 - (1 - x).pow(5) }
-val easeInOutQuint: EasingFunction = { x -> if (x < 0.5) 16 * x * x * x * x * x else 1 - (-2 * x + 2).pow(5) / 2 }
-val easeInSine: EasingFunction = { x -> 1 - cos((x * PI) / 2) }
-val easeOutSine: EasingFunction = { x -> sin((x * PI) / 2) }
-val easeInOutSine: EasingFunction = { x -> -(cos(PI * x) - 1) / 2 }
-val easeInExpo: EasingFunction = { x -> if (x == 0.0) 0.0 else 2.0.pow(10 * x - 10) }
-val easeOutExpo: EasingFunction = { x -> if (x == 1.0) 1.0 else 1 - 2.0.pow(-10 * x) }
-val easeInOutExpo: EasingFunction = { x ->
+val linear: EaseFunc = { x -> x }
+val easeInQuad: EaseFunc = { x -> x * x }
+val easeOutQuad: EaseFunc = { x -> 1 - (1 - x) * (1 - x) }
+val easeInOutQuad: EaseFunc = { x -> if (x < 0.5) 2 * x * x else 1 - (-2 * x + 2).pow(2) / 2 }
+val easeInCubic: EaseFunc = { x -> x * x * x }
+val easeOutCubic: EaseFunc = { x -> 1 - (1 - x).pow(3) }
+val easeInOutCubic: EaseFunc = { x -> if (x < 0.5) 4 * x * x * x else 1 - (-2 * x + 2).pow(3) / 2 }
+val easeInQuart: EaseFunc = { x -> x * x * x * x }
+val easeOutQuart: EaseFunc = { x -> 1 - (1 - x).pow(4) }
+val easeInOutQuart: EaseFunc = { x -> if (x < 0.5) 8 * x * x * x * x else 1 - (-2 * x + 2).pow(4) / 2 }
+val easeInQuint: EaseFunc = { x -> x * x * x * x * x }
+val easeOutQuint: EaseFunc = { x -> 1 - (1 - x).pow(5) }
+val easeInOutQuint: EaseFunc = { x -> if (x < 0.5) 16 * x * x * x * x * x else 1 - (-2 * x + 2).pow(5) / 2 }
+val easeInSine: EaseFunc = { x -> 1 - cos((x * PI) / 2) }
+val easeOutSine: EaseFunc = { x -> sin((x * PI) / 2) }
+val easeInOutSine: EaseFunc = { x -> -(cos(PI * x) - 1) / 2 }
+val easeInExpo: EaseFunc = { x -> if (x == 0.0) 0.0 else 2.0.pow(10 * x - 10) }
+val easeOutExpo: EaseFunc = { x -> if (x == 1.0) 1.0 else 1 - 2.0.pow(-10 * x) }
+val easeInOutExpo: EaseFunc = { x ->
     when {
         x == 0.0 -> 0.0
         x == 1.0 -> 1.0
@@ -79,21 +79,21 @@ val easeInOutExpo: EasingFunction = { x ->
         else -> (2 - 2.0.pow(-20 * x + 10)) / 2
     }
 }
-val easeInCirc: EasingFunction = { x -> 1 - sqrt(1 - x.pow(2)) }
-val easeOutCirc: EasingFunction = { x -> sqrt(1 - (x - 1).pow(2)) }
-val easeInOutCirc: EasingFunction = { x -> if (x < 0.5) (1 - sqrt(1 - (2 * x).pow(2))) / 2 else (sqrt(1 - (-2 * x + 2).pow(2)) + 1) / 2 }
-val easeInBack: EasingFunction = { x -> c3 * x * x * x - c1 * x * x }
-val easeOutBack: EasingFunction = { x -> 1 + c3 * (x - 1).pow(3) + c1 * (x - 1).pow(2) }
-val easeInOutBack: EasingFunction =
+val easeInCirc: EaseFunc = { x -> 1 - sqrt(1 - x.pow(2)) }
+val easeOutCirc: EaseFunc = { x -> sqrt(1 - (x - 1).pow(2)) }
+val easeInOutCirc: EaseFunc = { x -> if (x < 0.5) (1 - sqrt(1 - (2 * x).pow(2))) / 2 else (sqrt(1 - (-2 * x + 2).pow(2)) + 1) / 2 }
+val easeInBack: EaseFunc = { x -> c3 * x * x * x - c1 * x * x }
+val easeOutBack: EaseFunc = { x -> 1 + c3 * (x - 1).pow(3) + c1 * (x - 1).pow(2) }
+val easeInOutBack: EaseFunc =
     { x -> if (x < 0.5) (2 * x).pow(2) * ((c2 + 1) * 2 * x - c2) / 2 else ((2 * x - 2).pow(2) * ((c2 + 1) * (2 * x - 2) + c2) + 2) / 2 }
-val easeInElastic: EasingFunction =
+val easeInElastic: EaseFunc =
     { x -> if (x == 0.0) 0.0 else if (x == 1.0) 1.0 else (-2.0).pow(10 * x - 10) * sin((x * 10 - 10.75) * c4) }
-val easeOutElastic: EasingFunction = { x -> if (x == 0.0) 0.0 else if (x == 1.0) 1.0 else 2.0.pow(-10 * x) * sin((x * 10 - 0.75) * c4) + 1 }
-val easeInOutElastic: EasingFunction = { x ->
+val easeOutElastic: EaseFunc = { x -> if (x == 0.0) 0.0 else if (x == 1.0) 1.0 else 2.0.pow(-10 * x) * sin((x * 10 - 0.75) * c4) + 1 }
+val easeInOutElastic: EaseFunc = { x ->
     if (x == 0.0) 0.0 else if (x == 1.0) 1.0 else if (x < 0.5) -(2.0.pow(20 * x - 10) * sin((20 * x - 11.125) * c5)) / 2 else (2.0.pow(-20 * x + 10) * sin(
         (20 * x - 11.125) * c5
     )) / 2 + 1
 }
-val easeInBounce: EasingFunction = { x -> 1 - bounceOut(1 - x) }
-val easeOutBounce: EasingFunction = bounceOut
-val easeInOutBounce: EasingFunction = { x -> if (x < 0.5) (1 - bounceOut(1 - 2 * x)) / 2 else (1 + bounceOut(2 * x - 1)) / 2 }
+val easeInBounce: EaseFunc = { x -> 1 - bounceOut(1 - x) }
+val easeOutBounce: EaseFunc = bounceOut
+val easeInOutBounce: EaseFunc = { x -> if (x < 0.5) (1 - bounceOut(1 - 2 * x)) / 2 else (1 + bounceOut(2 * x - 1)) / 2 }

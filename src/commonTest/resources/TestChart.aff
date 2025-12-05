@@ -1,0 +1,31 @@
+timing(0,100,4);
+(1000,1);
+hold(1200,1400,2);
+arc(1500,2100,0,0.5,s,1,0,0,none,false);
+arc(2100,2400,0.5,1,si,0,0.5,0,none,false,2);
+arc(2400,3000,0.5,0.5,s,1,1,0,none,true)[arctap(2400),arctap(2600)];
+timinggroup(){
+  timing(0,100,4);
+  (1234,0.56);
+  hold(1234,1400,0.23);
+  arc(2500,3100,0,0.5,s,1,0,0,none,false);
+  arc(3100,3400,0.5,1,si,0,0.5,0,none,false,2);
+  arc(3400,4000,0.5,0.5,s,1,1,0,none,true)[arctap(3400),arctap(3600)];
+};
+timinggroup(noinput){
+  timing(0,100,4);
+  camera(152141,0.00,3000.00,2000.00,0.00,0.00,0.00,qo,1785);
+  camera(152141,0.00,0.00,0.00,0.00,-10.00,0.00,qo,1785);
+  camera(153926,0.00,-3000.00,-2000.00,0.00,0.00,0.00,qi,1785);
+  camera(153926,0.00,0.00,0.00,0.00,10.00,0.00,qi,1785);
+  camera(155712,0.00,0.00,0.00,0.00,0.00,0.00,reset,23);
+};
+timinggroup(noinput_angle1900_flaoted1.02){
+  timing(0,252.00,4.00);
+  scenecontrol(82618,trackdisplay,953.00,0);
+  scenecontrol(90237,trackdisplay,953.00,255);
+  scenecontrol(129285,enwidencamera,1905.00,1);
+  scenecontrol(129285,enwidenlanes,952.50,1);
+  scenecontrol(142619,enwidencamera,1905.00,0);
+  scenecontrol(142619,enwidenlanes,952.50,0);
+};

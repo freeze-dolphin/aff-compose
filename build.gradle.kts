@@ -1,20 +1,21 @@
-@file:OptIn(ExperimentalWasmDsl::class)
-
 import com.strumenta.antlrkotlin.gradle.AntlrKotlinTask
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-import org.jetbrains.kotlin.konan.properties.hasProperty
 import java.util.*
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.vanniktech.mavenPublish)
-
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.kotlin.antlr)
+
+    alias(libs.plugins.kotlinx.microbenchmark)
+    alias(libs.plugins.vanniktech.mavenPublish)
 }
 
 group = "com.tairitsu"
 
 val generateKotlinGrammarSource = tasks.register<AntlrKotlinTask>("generateKotlinGrammarSource") {
+    description = "Generate kotlin source from g4 files"
+    group = "other"
+
     dependsOn("cleanGenerateKotlinGrammarSource")
 
     // ANTLR .g4 files are under {example-project}/antlr
@@ -38,7 +39,7 @@ val generateKotlinGrammarSource = tasks.register<AntlrKotlinTask>("generateKotli
 }
 
 fun getCheckedOutGitCommitHash(takeFromHash: Int = 7): String {
-    val gitFolder = file(rootProject.projectDir.absolutePath, ".git")
+    val gitFolder = File(rootProject.projectDir.absolutePath).resolve(".git")
     require(gitFolder.exists()) { "Not a Git repository (missing .git directory)" }
 
     val headFile = File(gitFolder, "HEAD")
@@ -61,39 +62,26 @@ version = getCheckedOutGitCommitHash()
 kotlin {
     jvm()
 
-    val buildNativeFilename =
-        arrayOf("build", "native", System.getenv().getOrElse("__AFF_COMPOSE_NATIVE_BUILD_TARGET") { null }, "properties").filterNotNull()
-            .joinToString(separator = ".")
+    val hostOs = System.getProperty("os.name")
+    val isArm64 = System.getProperty("os.arch") == "aarch64"
+    val isMingwX64 = hostOs.startsWith("Windows")
 
-    val buildNativeFile = File(rootProject.projectDir, buildNativeFilename);
-    if (buildNativeFile.exists()) {
-        val buildNativeProp = Properties().apply { buildNativeFile.inputStream().use { load(it) } }
-        val autoDetection = !buildNativeProp.hasProperty("os.name")
-                || !buildNativeProp.hasProperty("os.arch")
+    val nativeTarget = when {
+        hostOs == "Mac OS X" && isArm64 -> macosArm64("native")
+        hostOs == "Mac OS X" && !isArm64 -> macosX64("native")
+        hostOs == "Linux" && isArm64 -> linuxArm64("native")
+        hostOs == "Linux" && !isArm64 -> linuxX64("native")
+        isMingwX64 -> mingwX64("native")
+        else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
+    }
 
-        val hostOs = if (autoDetection) System.getProperty("os.name") else buildNativeProp.getProperty("os.name")
-        val isArm64 = (if (autoDetection) System.getProperty("os.arch") else buildNativeProp.getProperty("os.arch")) == "aarch64"
-
-        val isMingwX64 = hostOs.startsWith("Windows")
-
-        val nativeTarget = when {
-            hostOs == "Mac OS X" && isArm64 -> macosArm64("native")
-            hostOs == "Mac OS X" && !isArm64 -> macosX64("native")
-            hostOs == "Linux" && isArm64 -> linuxArm64("native")
-            hostOs == "Linux" && !isArm64 -> linuxX64("native")
-            isMingwX64 -> mingwX64("native")
-            else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
-        }
-
-        nativeTarget.apply {
-            binaries {
-                sharedLib {
-                    baseName = "affcompose_" +
-                            "native_" +
-                            "${hostOs.lowercase().replace("\\s".toRegex(), "")}_" +
-                            "${if (isArm64) "arm64" else "x64"}_" +
-                            "${project.version}"
-                }
+    nativeTarget.apply {
+        binaries {
+            sharedLib {
+                baseName = "affcompose_native_" +
+                        "${hostOs.lowercase().replace("\\s".toRegex(), "")}_" +
+                        "${if (isArm64) "arm64" else "x86_64"}_" +
+                        "${project.version}"
             }
         }
     }
@@ -103,10 +91,11 @@ kotlin {
             kotlin.srcDir(generateKotlinGrammarSource)
             dependencies {
                 implementation(libs.kotlin.antlr)
-                implementation(libs.ktor.io)
                 implementation(libs.kotlinx.serialization.core)
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.kotlinx.serialization.cbor)
+                implementation(libs.cryptography)
+                implementation(libs.cryptography.provider)
                 implementation(libs.uuid)
             }
         }
@@ -114,13 +103,36 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.test)
                 implementation(libs.kotlin.antlr)
-                implementation(libs.ktor.io)
                 implementation(libs.kotlinx.serialization.core)
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.kotlinx.serialization.cbor)
                 implementation(libs.uuid)
             }
         }
+
+        val commonBenchmark by creating {
+            dependencies {
+                implementation(libs.kotlinx.microbenchmark)
+            }
+        }
+    }
+
+    val bmm = sourceSets.getByName("commonBenchmark")
+
+    targets.matching { it.name != "metadata" }.all {
+        compilations.create("benchmark") {
+            associateWith(this@all.compilations.getByName("main"))
+            defaultSourceSet {
+                dependencies {
+                    implementation(libs.kotlinx.microbenchmark)
+                }
+                dependsOn(bmm)
+            }
+        }
+    }
+
+    targets.matching { it.name != "metadata" }.all {
+        benchmark.targets.register("${name}Benchmark")
     }
 }
 
@@ -133,10 +145,4 @@ publishing {
             version = project.version.toString()
         }
     }
-}
-
-fun file(vararg dirs: String): File = dirs.reduce { acc, next ->
-    File(acc, next).path
-}.let {
-    File(it)
 }

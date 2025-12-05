@@ -1,0 +1,104 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.0.3 Chrome/140.0.7339.249 Electron/38.7.0 Safari/537.36" version="29.0.3">
+  <diagram name="第 1 页" id="MxBeUJkqiZykYbgLV1kf">
+    <mxGraphModel dx="1285" dy="859" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="KgBOM26XfTuHLyS8c7wF-25" value="" style="group" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="114" y="445" width="600" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="KgBOM26XfTuHLyS8c7wF-1" value="Arcaea Chart" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="KgBOM26XfTuHLyS8c7wF-25">
+          <mxGeometry width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="KgBOM26XfTuHLyS8c7wF-2" value="ArcCreate&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;&amp;nbsp;Chart&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="KgBOM26XfTuHLyS8c7wF-25">
+          <mxGeometry y="240" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="KgBOM26XfTuHLyS8c7wF-3" value="Chart Class" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="KgBOM26XfTuHLyS8c7wF-25">
+          <mxGeometry x="240" y="80" width="120" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="KgBOM26XfTuHLyS8c7wF-6" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.333;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="KgBOM26XfTuHLyS8c7wF-25" source="KgBOM26XfTuHLyS8c7wF-1" target="KgBOM26XfTuHLyS8c7wF-3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="350" y="240" as="sourcePoint" />
+            <mxPoint x="400" y="190" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="180" y="20" />
+              <mxPoint x="180" y="120" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="KgBOM26XfTuHLyS8c7wF-7" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="KgBOM26XfTuHLyS8c7wF-25" source="KgBOM26XfTuHLyS8c7wF-2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="350" y="280" as="sourcePoint" />
+            <mxPoint x="240" y="160" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="180" y="260" />
+              <mxPoint x="180" y="160" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="KgBOM26XfTuHLyS8c7wF-8" value="ArcCreateChartParser" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" vertex="1" parent="KgBOM26XfTuHLyS8c7wF-25">
+          <mxGeometry x="70" y="180" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="KgBOM26XfTuHLyS8c7wF-11" value="ArcaeaChartParser" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" vertex="1" parent="KgBOM26XfTuHLyS8c7wF-25">
+          <mxGeometry x="70" y="70" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="KgBOM26XfTuHLyS8c7wF-12" value="Arcaea Chart" style="rounded=0;whiteSpace=wrap;html=1;flipH=0;" vertex="1" parent="KgBOM26XfTuHLyS8c7wF-25">
+          <mxGeometry x="480" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="KgBOM26XfTuHLyS8c7wF-13" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="KgBOM26XfTuHLyS8c7wF-25" target="KgBOM26XfTuHLyS8c7wF-12">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="360" y="120" as="sourcePoint" />
+            <mxPoint x="360" y="20" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="420" y="120" />
+              <mxPoint x="420" y="20" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="KgBOM26XfTuHLyS8c7wF-14" value="ArcaeaChartSerializer" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;flipH=0;" vertex="1" parent="KgBOM26XfTuHLyS8c7wF-25">
+          <mxGeometry x="470" y="70" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="KgBOM26XfTuHLyS8c7wF-15" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="KgBOM26XfTuHLyS8c7wF-25">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="360" y="160" as="sourcePoint" />
+            <mxPoint x="480" y="260" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="420" y="160" />
+              <mxPoint x="420" y="260" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="KgBOM26XfTuHLyS8c7wF-16" value="ArcCreatehartSerializer" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;flipH=0;" vertex="1" parent="KgBOM26XfTuHLyS8c7wF-25">
+          <mxGeometry x="470" y="180" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="KgBOM26XfTuHLyS8c7wF-17" value="ArcCreate Chart" style="rounded=0;whiteSpace=wrap;html=1;flipH=0;" vertex="1" parent="KgBOM26XfTuHLyS8c7wF-25">
+          <mxGeometry x="480" y="240" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="KgBOM26XfTuHLyS8c7wF-18" value="" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;" edge="1" parent="KgBOM26XfTuHLyS8c7wF-25">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="180" y="85" as="sourcePoint" />
+            <mxPoint x="170" y="85" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="KgBOM26XfTuHLyS8c7wF-20" value="" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;" edge="1" parent="KgBOM26XfTuHLyS8c7wF-25">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="180" y="194.8" as="sourcePoint" />
+            <mxPoint x="170" y="195" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="KgBOM26XfTuHLyS8c7wF-22" value="" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;" edge="1" parent="KgBOM26XfTuHLyS8c7wF-25">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="430" y="85" as="sourcePoint" />
+            <mxPoint x="420" y="84.80000000000001" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="KgBOM26XfTuHLyS8c7wF-23" value="" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;" edge="1" parent="KgBOM26XfTuHLyS8c7wF-25">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="430" y="195" as="sourcePoint" />
+            <mxPoint x="420" y="194.8" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

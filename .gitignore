@@ -77,9 +77,10 @@ captures
 .cxx
 local.properties
 xcuserdata
-.kotlin
 #So we don't accidentally commit our private keys
 *.gpg
 
 build.native.properties
-/src/commonTest/kotlin/playground.kt
+/src/commonTest/kotlin/playground*
+
+docs/.$*.bkp
