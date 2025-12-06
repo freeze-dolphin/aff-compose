@@ -2,7 +2,7 @@
 
 This is a Kotlin Multiplatform library for parsing and serializing .aff files.
 
-last commit of v2.x: [`b95a541`](https://github.com/freeze-dolphin/aff-compose/tree/b95a5416a8462560f6dc2b9f2b8106f4b6da0651)
+Last version of v2: [:link: v2.2.9999 \[b95a541\]](https://github.com/freeze-dolphin/aff-compose/releases/tag/v2.2.9999)
 
 ## Roadmap
 
