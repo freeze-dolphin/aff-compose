@@ -11,7 +11,7 @@ class SimpleArcCreateChartParser : ArcaeaChartParser() {
 
     companion object {
         val Instance by lazy { SimpleArcCreateChartParser() }
-        fun parse(content: String): Difficulty = Instance.parse(content)
+        fun parse(content: String): Chart = Instance.parse(content)
     }
 
     override val arcTapNoteParser: (UniversalChartVisitor.Event, MutableList<ArcTapNote>) -> Unit = { evt, arcTapList ->
@@ -36,7 +36,7 @@ class SimpleArcCreateChartParser : ArcaeaChartParser() {
 
     @Suppress("DuplicatedCode")
     override val arcNoteParser: (UniversalChartVisitor.Event, ParseContext) -> Unit = { evt, ctx ->
-        ctx.difficulty.run {
+        ctx.chart.run {
             timingGroup(ctx.timingGroup.name) {
                 require(evt.values.size in 10..11)
                 require(evt.values[0].type == UniversalChartVisitor.ValueType.ALGEBRAIC)
@@ -89,7 +89,7 @@ class SimpleArcCreateChartParser : ArcaeaChartParser() {
     }
 
     override val timingGroupParser: (UniversalChartVisitor.Event, ParseContext) -> Unit = { evt, ctx ->
-        ctx.difficulty.run {
+        ctx.chart.run {
             require(evt.values.all { it.type == UniversalChartVisitor.ValueType.KEY_VALUE || it.type == UniversalChartVisitor.ValueType.STRING })
 
             val fx = evt.values.map {

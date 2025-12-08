@@ -13,11 +13,11 @@ open class ArcaeaChartParser : ChartParser {
 
     companion object {
         val Instance by lazy { ArcaeaChartParser() }
-        fun parse(content: String): Difficulty = Instance.parse(content)
+        fun parse(content: String): Chart = Instance.parse(content)
     }
 
     open val normalNoteParser: (UniversalChartVisitor.Event, ParseContext) -> Unit = { evt, ctx ->
-        ctx.difficulty.run {
+        ctx.chart.run {
             timingGroup(ctx.timingGroup.name) {
                 require(evt.values.size == 2)
                 require(evt.values[0].type == UniversalChartVisitor.ValueType.ALGEBRAIC)
@@ -35,7 +35,7 @@ open class ArcaeaChartParser : ChartParser {
     }
 
     open val holdNoteParser: (UniversalChartVisitor.Event, ParseContext) -> Unit = { evt, ctx ->
-        ctx.difficulty.run {
+        ctx.chart.run {
             timingGroup(ctx.timingGroup.name) {
                 require(evt.values.size == 3)
                 require(evt.values[0].type == UniversalChartVisitor.ValueType.ALGEBRAIC)
@@ -69,7 +69,7 @@ open class ArcaeaChartParser : ChartParser {
     }
 
     open val arcNoteParser: (UniversalChartVisitor.Event, ParseContext) -> Unit = { evt, ctx ->
-        ctx.difficulty.run {
+        ctx.chart.run {
             timingGroup(ctx.timingGroup.name) {
                 require(evt.values.size in 10..11)
                 require(evt.values[0].type == UniversalChartVisitor.ValueType.ALGEBRAIC) // time
@@ -136,7 +136,7 @@ open class ArcaeaChartParser : ChartParser {
     }
 
     open val timingParser: (UniversalChartVisitor.Event, ParseContext) -> Unit = { evt, ctx ->
-        ctx.difficulty.run {
+        ctx.chart.run {
             timingGroup(ctx.timingGroup.name) {
                 require(evt.values.size == 3)
                 require(evt.values[0].type == UniversalChartVisitor.ValueType.ALGEBRAIC)
@@ -152,7 +152,7 @@ open class ArcaeaChartParser : ChartParser {
     }
 
     open val scenecontrolParser: (UniversalChartVisitor.Event, ParseContext) -> Unit = { evt, ctx ->
-        ctx.difficulty.run {
+        ctx.chart.run {
             timingGroup(ctx.timingGroup.name) {
                 require(evt.values.size >= 2)
 
@@ -183,7 +183,7 @@ open class ArcaeaChartParser : ChartParser {
     }
 
     open val cameraParser: (UniversalChartVisitor.Event, ParseContext) -> Unit = { evt, ctx ->
-        ctx.difficulty.run {
+        ctx.chart.run {
             timingGroup(ctx.timingGroup.name) {
                 require(evt.values.size == 9)
                 require(evt.values[0].type == UniversalChartVisitor.ValueType.ALGEBRAIC)
@@ -211,7 +211,7 @@ open class ArcaeaChartParser : ChartParser {
     }
 
     open val timingGroupParser: (UniversalChartVisitor.Event, ParseContext) -> Unit = { evt, ctx ->
-        ctx.difficulty.run {
+        ctx.chart.run {
             require(evt.values.size in 0..1) // all special effects are connected using '_' in Arcaea
             require(evt.values.isEmpty() || evt.values[0].type == UniversalChartVisitor.ValueType.STRING)
 
@@ -253,7 +253,7 @@ open class ArcaeaChartParser : ChartParser {
     }
 
     private val eventParser: (UniversalChartVisitor.Event, ParseContext) -> Unit = { evt, ctx ->
-        ctx.difficulty.run {
+        ctx.chart.run {
             timingGroup(ctx.timingGroup.name) { // add notes to context
                 when (evt.name) {
                     null -> normalNoteParser(evt, ctx)
@@ -293,7 +293,7 @@ open class ArcaeaChartParser : ChartParser {
     open val globalNoteFilter: NoteFilter? = null
     open val globalEventFilter: EventFilter? = null
 
-    override fun parse(content: String): Difficulty {
+    override fun parse(content: String): Chart {
         val separator = "-\n"
         val sepIdx = content.indexOf(separator)
 

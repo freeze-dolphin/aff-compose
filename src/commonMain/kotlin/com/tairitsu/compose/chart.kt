@@ -2,6 +2,7 @@
 
 package com.tairitsu.compose
 
+import com.tairitsu.compose.Chart.DifficultyContext.Companion.wrap
 import com.tairitsu.compose.json_serializer.PositionSerializer
 import io.sn.aetherium.utils.*
 import kotlinx.serialization.SerialName
@@ -10,12 +11,68 @@ import kotlinx.serialization.Transient
 
 @Serializable
 class Chart(
-    val configuration: Configuration,
-    val mainTimingGroupEffectsFilter: TimingGroupSpecialEffectFilter,
+    val configuration: Configuration = Configuration.DEFAULT,
+    val fxFilter: TimingGroupSpecialEffectFilter = TimingGroupSpecialEffectFilter.DEFAULT,
 ) {
-    val mainTiming: TimingGroup = TimingGroup("main", this.mainTimingGroupEffectsFilter)
+    val mainTiming: TimingGroup = TimingGroup("main", this.fxFilter)
     val subTiming: MutableMap<String, TimingGroup> = mutableMapOf()
     val postTiming: MutableMap<String, TimingGroup> = mutableMapOf()
+
+    /**
+     * The context while mapping in code
+     */
+    @Transient
+    val context: DifficultyContext = DifficultyContext()
+
+    init {
+        context["AffComposeTimingGroupStack"] = ArrayDeque<TimingGroup>()
+    }
+
+    /**
+     * Get the current context
+     */
+    internal val currentTimingGroup: TimingGroup
+        get() {
+            return if (context.timingGroupStack.isEmpty()) {
+                mainTiming
+            } else {
+                context.timingGroupStack.last()
+            }
+        }
+
+    /**
+     * Add a [NoteFilter]
+     */
+    fun addNoteFilter(filter: NoteFilter) {
+        currentTimingGroup.addNoteFilter(filter)
+    }
+
+    /**
+     * Remove the last [NoteFilter]
+     */
+    fun popNoteFilter() {
+        currentTimingGroup.popNoteFilter()
+    }
+
+    /**
+     * Add a [EventFilter]
+     */
+    fun addEventFilter(filter: EventFilter) {
+        currentTimingGroup.addEventFilter(filter)
+    }
+
+    /**e
+     * Remove the last [EventFilter]
+     */
+    fun popEventFilter() {
+        currentTimingGroup.popEventFilter()
+    }
+
+    companion object {
+        val DifficultyContext.timingGroupStack: ArrayDeque<TimingGroup>
+            get() = wrap("AffComposeTimingGroupStack")
+    }
+
 
     @Serializable
     data class Configuration(
@@ -37,6 +94,57 @@ class Chart(
             val DEFAULT = Configuration(0, mutableSetOf())
         }
 
+    }
+
+    class DifficultyContext : MutableMap<Any, Any?> {
+        private val data = mutableMapOf<Any, Any?>()
+
+        override val entries: MutableSet<MutableMap.MutableEntry<Any, Any?>>
+            get() = data.entries
+        override val keys: MutableSet<Any>
+            get() = data.keys
+        override val size: Int
+            get() = data.size
+        override val values: MutableCollection<Any?>
+            get() = data.values
+
+        override fun clear() {
+            data.clear()
+        }
+
+        override fun isEmpty(): Boolean {
+            return data.isEmpty()
+        }
+
+        override fun remove(key: Any): Any? {
+            return data.remove(key)
+        }
+
+        override fun putAll(from: Map<out Any, Any?>) {
+            return data.putAll(from)
+        }
+
+        override fun put(key: Any, value: Any?): Any? {
+            return data.put(key, value)
+        }
+
+        override fun get(key: Any): Any? {
+            return data[key]
+        }
+
+        override fun containsValue(value: Any?): Boolean {
+            return data.containsValue(value)
+        }
+
+        override fun containsKey(key: Any): Boolean {
+            return data.containsKey(key)
+        }
+
+        companion object {
+            inline fun <reified T> DifficultyContext.wrap(key: Any): T {
+                return this[key] as T
+            }
+        }
     }
 }
 

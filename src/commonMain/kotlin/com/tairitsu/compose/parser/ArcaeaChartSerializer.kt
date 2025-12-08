@@ -113,15 +113,7 @@ open class ArcaeaChartSerializer : ChartSerializer {
     open fun serializeScenecontrol(timedObject: Scenecontrol, ctx: SerializationContext): String = timedObject.run {
         "scenecontrol(${time}," +
                 "${type.value}," +
-                params.joinToString(",") {
-                    if (it.toDoubleOrNull()?.rem(1.0)?.equals(0.0) == true) {
-                        it.toDouble().roundToInt().toString()
-                    } else if (it.toDoubleOrNull() != null) {
-                        it.toDouble().toAffFormat()
-                    } else {
-                        it
-                    }
-                } +
+                params.joinToString(",") +
                 ");"
     }
 

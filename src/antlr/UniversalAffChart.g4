@@ -32,8 +32,7 @@ fragment SPACE      : ' ';
 
 chart: body EOF;
 
-exprPart : Operator (Int | Float) ;
-value     : String | Word | Int | Float | (Word Equal value) | (Int | Float) exprPart+;
+value     : String | Word | Int | Float | (Word Equal value);
 values    : LParen (value (Comma value)*)? RParen;
 event     : Word? values subEvents? segment?;
 item      : event Semicolon;

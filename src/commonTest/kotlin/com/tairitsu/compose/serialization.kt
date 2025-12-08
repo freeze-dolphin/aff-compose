@@ -21,7 +21,7 @@ class ArcaeaChartParserTest {
             arc(2100,2400,0.5,1,si,0,0.5,0,none,false,2);
             arc(2400,3000,0.5,0.5,s,1,1,0,none,true)[arctap(2400),arctap(2600)];
         """.trimIndent()
-        val expect = ArcaeaChartParser.Instance.parse(content).chart
+        val expect = ArcaeaChartParser.Instance.parse(content)
         val expectNotesInMain = expect.mainTiming.getNotes()
 
         val actual = compose(chartConfig(0, "ChartVersion" to "1.0")) {
@@ -31,7 +31,7 @@ class ArcaeaChartParserTest {
             arc(1500, 2100, 0, 0.5, s, 1, 0, 0, none, false)
             arc(2100, 2400, 0.5, 1, si, 0, 0.5, 0, none, false, 2.0)
             arc(2400, 3000, 0.5, 0.5, s, 1, 1, 0, none, true) { arctap(2400); arctap(2600) }
-        }.chart
+        }
 
         assertEquals(expect.configuration, actual.configuration)
         actual.mainTiming.getNotes().forEach {
@@ -79,12 +79,8 @@ class ArcaeaChartParserTest {
             timinggroup(unknown_uint32){
               timing(0,100,4);
             };
-            timinggroup(){
-              timing(177375,80,4.00);
-              scenecontrol(177375,exprtest,300+120,2.3*5);
-            };
         """.trimIndent()
-        val chart = ArcaeaChartParser.Instance.parse(content).chart
+        val chart = ArcaeaChartParser.Instance.parse(content)
 
         // header
         chart.configuration.extra.first().apply {
@@ -114,12 +110,6 @@ class ArcaeaChartParserTest {
         assertEquals(
             listOf("unknown" to null, "uint" to "32"),
             chart.subTiming.values.toList()[3].getSpecialEffects().map { it.type.value to it.param }
-        )
-
-        // expr
-        assertEquals(
-            listOf(420.0, 11.5),
-            chart.subTiming.values.toList()[4].getScenecontrols()[0].params.map { it.toDouble() }
         )
     }
 }

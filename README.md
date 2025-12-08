@@ -8,7 +8,7 @@ Last version of v2: [:link: v2.2.9999 \[b95a541\]](https://github.com/freeze-dol
 
 - [x] parse .aff files
 - [x] serialize .aff files
-- [ ] expression support
+- [ ] advanced ArcCreate parser with expression and macro support
 
 conversion of chart objects different between standards:
 

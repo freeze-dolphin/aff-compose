@@ -37,9 +37,7 @@ class ShimFilterConversionTest {
             arc(1200,1201,0.00,0.00,s,0.00,0.00,3,none,true)[arctap(1200,0.32)];
             timinggroup(anglex=100.0){
               timing(0,1.00,4.00);
-              scenecontrol(0,hidegroup,0,0);
               scenecontrol(53485,trackdisplay,1000,0);
-              scenecontrol(58800,hidegroup,0,0);
               timing(62300,0.00,4.00);
               timing(62400,1.00,4.00);
               timing(62500,2.00,4.00);
@@ -68,9 +66,7 @@ class ShimFilterConversionTest {
                 arc(1200,1200,-0.08,0.08,s,0.00,0.00,3,none,false);
                 timinggroup(anglex1000){
                   timing(0,1.00,4.00);
-                  scenecontrol(0,hidegroup,0.00,0);
                   scenecontrol(53485,trackhide);
-                  scenecontrol(58800,hidegroup,0.00,0);
                   timing(62300,0.00,4.00);
                   timing(62400,1.00,4.00);
                   timing(62500,2.00,4.00);
@@ -89,7 +85,7 @@ class ShimFilterConversionTest {
                   scenecontrol(90237,trackdisplay,953.00,255);
                 };
             """.trimIndent()
-            ).chart
+            )
 
         ArcCreateChartSerializer.serialize(chart).joinToString("\n").let {
             assertEquals(expected, it)

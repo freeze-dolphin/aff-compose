@@ -8,6 +8,7 @@ import com.tairitsu.compose.TimingGroup
 import com.tairitsu.compose.TimingGroupSpecialEffectFilter
 import com.tairitsu.compose.toAffFormat
 import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 /**
  * Shim Filter
@@ -30,7 +31,7 @@ object ShimFilter {
 
             in needTimeConversion -> Scenecontrol(sc.time, sc.type) {
                 listOf(
-                    sc.params[0].toDouble().times(1000).toString(), sc.params[1]
+                    sc.params[0].toDouble().times(1000).roundToLong().toString(), sc.params[1]
                 )
             }
 

@@ -3,7 +3,7 @@
 package com.tairitsu.compose
 
 import com.benasher44.uuid.uuid4
-import com.tairitsu.compose.Difficulty.Companion.timingGroupStack
+import com.tairitsu.compose.Chart.Companion.timingGroupStack
 import com.tairitsu.compose.Position.Companion.pos
 import com.tairitsu.compose.filter.MirrorNoteFilter
 
@@ -34,9 +34,9 @@ fun chartConfig(
 
 fun compose(
     fxFilter: TimingGroupSpecialEffectFilter = TimingGroupSpecialEffectFilter.DEFAULT,
-    closure: Difficulty.() -> Unit,
-): Difficulty {
-    val ctx = Difficulty(fxFilter = fxFilter)
+    closure: Chart.() -> Unit,
+): Chart {
+    val ctx = Chart(fxFilter = fxFilter)
     closure(ctx)
     return ctx
 }
@@ -44,23 +44,23 @@ fun compose(
 fun compose(
     chartConfig: Chart.Configuration,
     fxFilter: TimingGroupSpecialEffectFilter = TimingGroupSpecialEffectFilter.DEFAULT,
-    closure: Difficulty.() -> Unit,
-): Difficulty {
-    val ctx = Difficulty(chartConfig, fxFilter)
+    closure: Chart.() -> Unit,
+): Chart {
+    val ctx = Chart(chartConfig, fxFilter)
     closure(ctx)
     return ctx
 }
 
 fun compose(
-    diff: Difficulty,
-    closure: Difficulty.() -> Unit,
-): Difficulty {
+    diff: Chart,
+    closure: Chart.() -> Unit,
+): Chart {
     closure(diff)
     return diff
 }
 
 // Timing
-fun <TOffset : Number, TBpm : Number, TBeat : Number> Difficulty.timing(
+fun <TOffset : Number, TBpm : Number, TBeat : Number> Chart.timing(
     offset: TOffset,
     bpm: TBpm,
     beats: TBeat,
@@ -74,42 +74,42 @@ fun <TOffset : Number, TBpm : Number, TBeat : Number> Difficulty.timing(
 // Timing group
 
 /**
- * Get the main [TimingGroup] of the [Difficulty]
+ * Get the main [TimingGroup] of the [Chart]
  */
-fun Difficulty.mainTimingGroup(closure: TimingGroup.() -> Unit) {
-    closure.invoke(chart.mainTiming)
+fun Chart.mainTimingGroup(closure: TimingGroup.() -> Unit) {
+    closure.invoke(mainTiming)
 }
 
 /**
  * Create a [TimingGroup] by using Arcaea grammar
  */
-fun Difficulty.timinggroup(vararg specialEffects: TimingGroup.SpecialEffect, closure: TimingGroup.() -> Unit): TimingGroup =
+fun Chart.timinggroup(vararg specialEffects: TimingGroup.SpecialEffect, closure: TimingGroup.() -> Unit): TimingGroup =
     timingGroup {
         specialEffects.forEach { this.addSpecialEffect(it) }
         closure.invoke(this)
     }
 
 /**
- * Get the existing or creating a new [TimingGroup] of the [Difficulty]
+ * Get the existing or creating a new [TimingGroup] of the [Chart]
  */
-fun Difficulty.timingGroup(
+fun Chart.timingGroup(
     name: String = uuid4().toString(),
     fxFilter: TimingGroupSpecialEffectFilter = TimingGroupSpecialEffectFilter.DEFAULT,
     closure: TimingGroup.() -> Unit,
 ): TimingGroup {
     if (name == "main") {
         mainTimingGroup(closure)
-        return chart.mainTiming
+        return mainTiming
     }
 
-    val newTimingGroup = chart.subTiming.getOrPut(name) { TimingGroup(name, fxFilter) }
+    val newTimingGroup = subTiming.getOrPut(name) { TimingGroup(name, fxFilter) }
     context.timingGroupStack.addLast(newTimingGroup)
     closure(newTimingGroup)
     context.timingGroupStack.removeLast()
     return newTimingGroup
 }
 
-fun Difficulty.timingGroup(
+fun Chart.timingGroup(
     vararg specialEffects: TimingGroup.SpecialEffect,
     fxFilter: TimingGroupSpecialEffectFilter = TimingGroupSpecialEffectFilter.DEFAULT,
     closure: TimingGroup.() -> Unit,
@@ -121,7 +121,7 @@ fun Difficulty.timingGroup(
     return tg
 }
 
-fun Difficulty.timingGroup(
+fun Chart.timingGroup(
     name: String,
     vararg specialEffects: TimingGroup.SpecialEffect,
     fxFilter: TimingGroupSpecialEffectFilter = TimingGroupSpecialEffectFilter.DEFAULT,
@@ -134,19 +134,19 @@ fun Difficulty.timingGroup(
     return tg
 }
 
-val Difficulty.noinput: TimingGroup.SpecialEffect get() = TimingGroup.SpecialEffect(TimingGroup.SpecialEffectType.NO_INPUT)
-val Difficulty.fadingholds: TimingGroup.SpecialEffect get() = TimingGroup.SpecialEffect(TimingGroup.SpecialEffectType.FADING_HOLDS)
+val Chart.noinput: TimingGroup.SpecialEffect get() = TimingGroup.SpecialEffect(TimingGroup.SpecialEffectType.NO_INPUT)
+val Chart.fadingholds: TimingGroup.SpecialEffect get() = TimingGroup.SpecialEffect(TimingGroup.SpecialEffectType.FADING_HOLDS)
 
-fun <TTimingGroupEffectParam : Number> Difficulty.anglex(extraParam: TTimingGroupEffectParam): TimingGroup.SpecialEffect =
+fun <TTimingGroupEffectParam : Number> Chart.anglex(extraParam: TTimingGroupEffectParam): TimingGroup.SpecialEffect =
     TimingGroup.SpecialEffect(TimingGroup.SpecialEffectType.ANGLEX, extraParam.toString())
 
-fun <TTimingGroupEffectParam : Number> Difficulty.angley(extraParam: TTimingGroupEffectParam): TimingGroup.SpecialEffect =
+fun <TTimingGroupEffectParam : Number> Chart.angley(extraParam: TTimingGroupEffectParam): TimingGroup.SpecialEffect =
     TimingGroup.SpecialEffect(TimingGroup.SpecialEffectType.ANGLEX, extraParam.toString())
 
 
 // Scenecontrol
 
-fun <TTime : Number> Difficulty.scenecontrol(
+fun <TTime : Number> Chart.scenecontrol(
     time: TTime,
     type: ScenecontrolType,
     vararg params: Any,
@@ -156,7 +156,7 @@ fun <TTime : Number> Difficulty.scenecontrol(
     return ctx.addScenecontrol(sc)
 }
 
-fun <TTime : Number> Difficulty.scenecontrol(
+fun <TTime : Number> Chart.scenecontrol(
     time: TTime,
     type: ScenecontrolType,
     vararg params: Number,
@@ -166,7 +166,7 @@ fun <TTime : Number> Difficulty.scenecontrol(
     return ctx.addScenecontrol(sc)
 }
 
-fun <TTime : Number> Difficulty.scenecontrol(
+fun <TTime : Number> Chart.scenecontrol(
     time: TTime,
     type: ScenecontrolType,
     vararg params: String,
@@ -176,7 +176,7 @@ fun <TTime : Number> Difficulty.scenecontrol(
     return ctx.addScenecontrol(sc)
 }
 
-fun <TTime : Number> Difficulty.scenecontrol(
+fun <TTime : Number> Chart.scenecontrol(
     time: TTime,
     type: ScenecontrolType,
 ): Scenecontrol {
@@ -187,25 +187,25 @@ fun <TTime : Number> Difficulty.scenecontrol(
 
 // Built-in scenecontrols
 
-val Difficulty.trackhide: ScenecontrolType get() = ScenecontrolType.TRACK_HIDE
-val Difficulty.trackshow: ScenecontrolType get() = ScenecontrolType.TRACK_SHOW
-val Difficulty.trackdisplay: ScenecontrolType get() = ScenecontrolType.TRACK_DISPLAY
-val Difficulty.redline: ScenecontrolType get() = ScenecontrolType.RED_LINE
-val Difficulty.arcahvdistort: ScenecontrolType get() = ScenecontrolType.ARCAHV_DISTORT
-val Difficulty.arcahvdebris: ScenecontrolType get() = ScenecontrolType.ARCAHV_DEBRIS
-val Difficulty.hidegroup: ScenecontrolType get() = ScenecontrolType.HIDE_GROUP
-val Difficulty.enwidencamera: ScenecontrolType get() = ScenecontrolType.ENWIDEN_CAMERA
-val Difficulty.enwidenlanes: ScenecontrolType get() = ScenecontrolType.ENWIDEN_LANES
+val Chart.trackhide: ScenecontrolType get() = ScenecontrolType.TRACK_HIDE
+val Chart.trackshow: ScenecontrolType get() = ScenecontrolType.TRACK_SHOW
+val Chart.trackdisplay: ScenecontrolType get() = ScenecontrolType.TRACK_DISPLAY
+val Chart.redline: ScenecontrolType get() = ScenecontrolType.RED_LINE
+val Chart.arcahvdistort: ScenecontrolType get() = ScenecontrolType.ARCAHV_DISTORT
+val Chart.arcahvdebris: ScenecontrolType get() = ScenecontrolType.ARCAHV_DEBRIS
+val Chart.hidegroup: ScenecontrolType get() = ScenecontrolType.HIDE_GROUP
+val Chart.enwidencamera: ScenecontrolType get() = ScenecontrolType.ENWIDEN_CAMERA
+val Chart.enwidenlanes: ScenecontrolType get() = ScenecontrolType.ENWIDEN_LANES
 
 // Normal Note
 
-fun <TTime : Number> Difficulty.normalNote(time: TTime, column: Int): Note {
+fun <TTime : Number> Chart.normalNote(time: TTime, column: Int): Note {
     val ctx = this.currentTimingGroup
     val note = NormalNote(time.toLong(), column)
     return ctx.addNormalNote(note)
 }
 
-fun <TTime : Number> Difficulty.normalNoteFloat(time: TTime, columnFloat: Double): Note {
+fun <TTime : Number> Chart.normalNoteFloat(time: TTime, columnFloat: Double): Note {
     val ctx = this.currentTimingGroup
     val note = NormalNote(time.toLong(), Int.MIN_VALUE, columnFloat)
     return ctx.addNormalNote(note)
@@ -216,22 +216,22 @@ fun <TTime : Number> Difficulty.normalNoteFloat(time: TTime, columnFloat: Double
 /**
  * Create a [HoldNote] by using Arcaea grammar
  */
-fun <TTime : Number, TEndTime : Number> Difficulty.hold(time: TTime, endTime: TEndTime, column: Int): Note =
+fun <TTime : Number, TEndTime : Number> Chart.hold(time: TTime, endTime: TEndTime, column: Int): Note =
     holdNote(time, endTime, column)
 
 /**
  * Create a [HoldNote] by using Arcaea grammar
  */
-fun <TTime : Number, TEndTime : Number> Difficulty.hold(time: TTime, endTime: TEndTime, column: Double): Note =
+fun <TTime : Number, TEndTime : Number> Chart.hold(time: TTime, endTime: TEndTime, column: Double): Note =
     holdNoteFloat(time, endTime, column)
 
-fun <TTime : Number, TEndTime : Number> Difficulty.holdNote(time: TTime, endTime: TEndTime, column: Int): Note {
+fun <TTime : Number, TEndTime : Number> Chart.holdNote(time: TTime, endTime: TEndTime, column: Int): Note {
     val ctx = this.currentTimingGroup
     val note = HoldNote(time.toLong(), endTime.toLong(), column)
     return ctx.addHoldNote(note)
 }
 
-fun <TTime : Number, TEndTime : Number> Difficulty.holdNoteFloat(time: TTime, endTime: TEndTime, columnFloat: Double): Note {
+fun <TTime : Number, TEndTime : Number> Chart.holdNoteFloat(time: TTime, endTime: TEndTime, columnFloat: Double): Note {
     val ctx = this.currentTimingGroup
     val note = HoldNote(time.toLong(), endTime.toLong(), Int.MIN_VALUE, columnFloat)
     return ctx.addHoldNote(note)
@@ -239,24 +239,24 @@ fun <TTime : Number, TEndTime : Number> Difficulty.holdNoteFloat(time: TTime, en
 
 // ArcNote
 
-val Difficulty.s: ArcNote.EaseType get() = ArcNote.EaseType.S
-val Difficulty.b: ArcNote.EaseType get() = ArcNote.EaseType.B
-val Difficulty.si: ArcNote.EaseType get() = ArcNote.EaseType.SI
-val Difficulty.so: ArcNote.EaseType get() = ArcNote.EaseType.SO
-val Difficulty.siso: ArcNote.EaseType get() = ArcNote.EaseType.SISO
-val Difficulty.sosi: ArcNote.EaseType get() = ArcNote.EaseType.SOSI
-val Difficulty.sisi: ArcNote.EaseType get() = ArcNote.EaseType.SISI
-val Difficulty.soso: ArcNote.EaseType get() = ArcNote.EaseType.SOSO
+val Chart.s: ArcNote.EaseType get() = ArcNote.EaseType.S
+val Chart.b: ArcNote.EaseType get() = ArcNote.EaseType.B
+val Chart.si: ArcNote.EaseType get() = ArcNote.EaseType.SI
+val Chart.so: ArcNote.EaseType get() = ArcNote.EaseType.SO
+val Chart.siso: ArcNote.EaseType get() = ArcNote.EaseType.SISO
+val Chart.sosi: ArcNote.EaseType get() = ArcNote.EaseType.SOSI
+val Chart.sisi: ArcNote.EaseType get() = ArcNote.EaseType.SISI
+val Chart.soso: ArcNote.EaseType get() = ArcNote.EaseType.SOSO
 
-val Difficulty.blue: ArcNote.Color get() = ArcNote.Color.BLUE
-val Difficulty.red: ArcNote.Color get() = ArcNote.Color.RED
-val Difficulty.green: ArcNote.Color get() = ArcNote.Color.GREEN
-val Difficulty.gray: ArcNote.Color get() = ArcNote.Color.GRAY
-val Difficulty.grey: ArcNote.Color get() = ArcNote.Color.GREY
+val Chart.blue: ArcNote.Color get() = ArcNote.Color.BLUE
+val Chart.red: ArcNote.Color get() = ArcNote.Color.RED
+val Chart.green: ArcNote.Color get() = ArcNote.Color.GREEN
+val Chart.gray: ArcNote.Color get() = ArcNote.Color.GRAY
+val Chart.grey: ArcNote.Color get() = ArcNote.Color.GREY
 
-val Difficulty.none: String get() = "none"
+val Chart.none: String get() = "none"
 
-val Difficulty.designant: ArcNote.NoteType get() = ArcNote.NoteType.DESIGNANT
+val Chart.designant: ArcNote.NoteType get() = ArcNote.NoteType.DESIGNANT
 
 fun <TTime : Number> MutableList<ArcTapNote>.arctap(time: TTime) {
     this.add(ArcTapNote(time.toLong()))
@@ -269,7 +269,7 @@ fun <TTime : Number, TLength : Number> MutableList<ArcTapNote>.arctap(time: TTim
 /**
  * Create an [ArcNote] by using Arcaea grammar
  */
-fun <TTime : Number, TEndTime : Number, TCoordinate : Number> Difficulty.arc(
+fun <TTime : Number, TEndTime : Number, TCoordinate : Number> Chart.arc(
     time: TTime,
     endTime: TEndTime,
     x1: TCoordinate, x2: TCoordinate,
@@ -299,7 +299,7 @@ fun <TTime : Number, TEndTime : Number, TCoordinate : Number> Difficulty.arc(
 /**
  * Create an [ArcNote] by using Arcaea grammar
  */
-fun <TTime : Number, TEndTime : Number, TCoordinate : Number> Difficulty.arc(
+fun <TTime : Number, TEndTime : Number, TCoordinate : Number> Chart.arc(
     time: TTime,
     endTime: TEndTime,
     x1: TCoordinate, x2: TCoordinate,
@@ -329,7 +329,7 @@ fun <TTime : Number, TEndTime : Number, TCoordinate : Number> Difficulty.arc(
 /**
  * Create an [ArcNote]
  */
-fun <TTime : Number, TEndTime : Number> Difficulty.arcNote(
+fun <TTime : Number, TEndTime : Number> Chart.arcNote(
     time: TTime,
     endTime: TEndTime,
     startPosition: Position,
@@ -355,7 +355,7 @@ fun <TTime : Number, TEndTime : Number> Difficulty.arcNote(
 /**
  * Create [ArcNote] as a trace
  */
-fun <TTime : Number, TEndTime : Number> Difficulty.trace(
+fun <TTime : Number, TEndTime : Number> Chart.trace(
     time: TTime,
     endTime: TEndTime,
     startPosition: Position,
@@ -385,7 +385,7 @@ fun <TTime : Number, TEndTime : Number> Difficulty.trace(
 /**
  * Create [ArcNote] as designant
  */
-fun <TTime : Number, TEndTime : Number> Difficulty.traceDesignant(
+fun <TTime : Number, TEndTime : Number> Chart.traceDesignant(
     time: TTime,
     endTime: TEndTime,
     startPosition: Position,
@@ -413,16 +413,16 @@ fun <TTime : Number, TEndTime : Number> Difficulty.traceDesignant(
 
 // Camera
 
-val Difficulty.l: Camera.EaseType
+val Chart.l: Camera.EaseType
     get() = Camera.EaseType.L
-val Difficulty.qi: Camera.EaseType
+val Chart.qi: Camera.EaseType
     get() = Camera.EaseType.QI
-val Difficulty.qo: Camera.EaseType
+val Chart.qo: Camera.EaseType
     get() = Camera.EaseType.QO
-val Difficulty.reset: Camera.EaseType
+val Chart.reset: Camera.EaseType
     get() = Camera.EaseType.RESET
 
-fun <TTime : Number, TPixel : Number, TDegree : Number> Difficulty.camera(
+fun <TTime : Number, TPixel : Number, TDegree : Number> Chart.camera(
     time: TTime,
     xOff: TPixel,
     yOff: TPixel,
@@ -442,7 +442,7 @@ fun <TTime : Number, TPixel : Number, TDegree : Number> Difficulty.camera(
     return ctx.addCamera(camera)
 }
 
-fun <TTime : Number, TPixel : Number, TDegree : Number> Difficulty.camera(
+fun <TTime : Number, TPixel : Number, TDegree : Number> Chart.camera(
     time: TTime,
     xOff: TPixel,
     yOff: TPixel,
@@ -466,10 +466,10 @@ fun <TTime : Number, TPixel : Number, TDegree : Number> Difficulty.camera(
 
 // filter
 
-fun Difficulty.noteFilter(noteFilter: NoteFilter, closure: (Difficulty.() -> Unit)) {
+fun Chart.noteFilter(noteFilter: NoteFilter, closure: (Chart.() -> Unit)) {
     addNoteFilter(noteFilter)
     closure()
     popNoteFilter()
 }
 
-fun Difficulty.mirror(closure: (Difficulty.() -> Unit)) = noteFilter(MirrorNoteFilter, closure)
+fun Chart.mirror(closure: (Chart.() -> Unit)) = noteFilter(MirrorNoteFilter, closure)
