@@ -81,6 +81,6 @@ xcuserdata
 *.gpg
 
 build.native.properties
-/src/commonTest/kotlin/playground*
+/src/*Test/kotlin/playground*
 
 docs/.$*.bkp

@@ -75,11 +75,14 @@ kotlin {
 
     nativeTarget.apply {
         binaries {
+            val main by compilations.getting
+            val interop by main.cinterops.creating {
+                definitionFile.set(project.file("src/nativeInterop/cinterop/interop.def"))
+            }
+
             sharedLib {
-                baseName = "affcompose_native_" +
-                        "${hostOs.lowercase().replace("\\s".toRegex(), "")}_" +
-                        "${if (isArm64) "arm64" else "x86_64"}_" +
-                        "${project.version}"
+                val prefix = if (isMingwX64) "lib" else ""
+                baseName = prefix + "affcompose"
             }
         }
     }
