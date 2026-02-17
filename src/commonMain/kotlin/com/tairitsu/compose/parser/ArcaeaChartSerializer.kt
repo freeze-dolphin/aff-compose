@@ -43,7 +43,11 @@ open class ArcaeaChartSerializer : ChartSerializer {
             if (!isMainTimingGroup)
                 add(
                     "timinggroup(" +
-                            timingGroup.getSpecialEffects()
+                            timingGroup
+                                .getSpecialEffects()
+                                .filter {
+                                    it.type in TimingGroup.SpecialEffectType.getVanillaSpecialEffectTypes()
+                                }
                                 .joinToString(timingGroupSpecialEffectSeparator) { serializeTimingGroupSpecialEffect(it) } +
                             "){"
                 )

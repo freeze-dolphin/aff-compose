@@ -61,6 +61,14 @@ class UniversalChartVisitor : UniversalAffChartVisitor<Any>, AbstractParseTreeVi
                 Value(raw, ValueType.STRING, stringValue = content)
             }
 
+            // make sure this is checked before ctx.Word()
+            // otherwise (Word Equal value) rule cannot be handled
+            ctx.Word() != null && ctx.Equal() != null && ctx.value() != null -> {
+                val key = ctx.Word()!!.text
+                val value = visitValue(ctx.value()!!)
+                Value("$key=${value.raw}", ValueType.KEY_VALUE, keyValuePair = key to value)
+            }
+
             ctx.Word() != null -> {
                 val raw = ctx.Word()!!.text
                 Value(raw, ValueType.STRING, stringValue = raw)
@@ -76,12 +84,6 @@ class UniversalChartVisitor : UniversalAffChartVisitor<Any>, AbstractParseTreeVi
                 val raw = ctx.Float()!!.text
                 val num = raw.toDouble()
                 Value(raw, ValueType.ALGEBRAIC, algebraicValue = num)
-            }
-
-            ctx.Word() != null && ctx.Equal() != null && ctx.value() != null -> {
-                val key = ctx.Word()!!.text
-                val value = visitValue(ctx.value()!!)
-                Value("$key=${value.raw}", ValueType.KEY_VALUE, keyValuePair = key to value)
             }
 
             else -> error("Unknown value type at ${ctx.start!!.line}:${ctx.start!!.charPositionInLine}")

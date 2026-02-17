@@ -224,6 +224,13 @@ data class ScenecontrolType(val value: String) {
                 else -> ScenecontrolType(value)
             }
         }
+
+        fun getVanillaScenecontrolTypes(): List<ScenecontrolType> = listOf(
+            TRACK_HIDE, TRACK_SHOW, TRACK_DISPLAY,
+            RED_LINE, ARCAHV_DISTORT, ARCAHV_DEBRIS,
+            HIDE_GROUP, ENWIDEN_CAMERA, ENWIDEN_LANES
+        )
+
     }
 }
 
@@ -290,6 +297,11 @@ class TimingGroup : ChartObject {
                     else -> SpecialEffectType(value)
                 }
             }
+
+            fun getVanillaSpecialEffectTypes(): List<SpecialEffectType> = listOf(
+                NO_INPUT, FADING_HOLDS, ANGLEX, ANGLEY
+            )
+
         }
     }
 
