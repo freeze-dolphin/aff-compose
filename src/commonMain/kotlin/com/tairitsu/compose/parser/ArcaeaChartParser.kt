@@ -296,11 +296,11 @@ open class ArcaeaChartParser : ChartParser {
     open val globalEventFilter: EventFilter? = null
 
     override fun parse(content: String): Chart {
-        val separator = "-\n"
-        val sepIdx = content.indexOf(separator)
+        val lines = content.lines()
+        val sepIdx = lines.indexOf("-")
 
-        val header = content.take(sepIdx - 1) // ignore '\n-\n'
-        val bodies = content.drop(sepIdx + separator.length)
+        val header = lines.take(sepIdx).joinToString("\n")
+        val bodies = lines.drop(sepIdx + 1).joinToString("\n")
 
         val lexer = UniversalAffChartLexer(CharStreams.fromString(bodies))
         val tokens = CommonTokenStream(lexer)
