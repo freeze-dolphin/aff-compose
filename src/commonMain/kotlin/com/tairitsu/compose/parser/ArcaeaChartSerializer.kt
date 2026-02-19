@@ -122,6 +122,10 @@ open class ArcaeaChartSerializer : ChartSerializer {
     }
 
     open fun serializeScenecontrol(timedObject: Scenecontrol, ctx: SerializationContext): String = timedObject.run {
+        if (type !in ScenecontrolType.getVanillaScenecontrolTypes()) {
+            return ""
+        }
+
         "scenecontrol(${time}," +
                 "${type.value}," +
                 params.joinToString(",") +
