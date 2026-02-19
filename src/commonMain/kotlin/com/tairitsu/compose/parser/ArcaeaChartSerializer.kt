@@ -2,7 +2,6 @@ package com.tairitsu.compose.parser
 
 import com.tairitsu.compose.*
 import com.tairitsu.compose.Position.Companion.pos
-import kotlin.math.roundToInt
 
 open class ArcaeaChartSerializer : ChartSerializer {
 
@@ -84,7 +83,9 @@ open class ArcaeaChartSerializer : ChartSerializer {
 
             else -> error("Unsupported TimedObject: $timedObject at time ${timedObject.time}")
         }
-    )
+    ).filter {
+        it.isNotEmpty() // exclude empty lines of dropped notes
+    }
 
     open fun serializeTiming(timedObject: Timing, ctx: SerializationContext): String = timedObject.run {
         "timing(${offset},${bpm.toAffFormat()},${beats.toAffFormat()});"
@@ -99,6 +100,11 @@ open class ArcaeaChartSerializer : ChartSerializer {
     }
 
     open fun serializeArcNote(timedObject: ArcNote, ctx: SerializationContext): String = timedObject.run {
+        val serializedArcResolution = serializeArcResolution(this, arcResolution, ctx)
+        if (serializedArcResolution == Double.NaN.toString()) {
+            return ""
+        }
+
         "arc(${time}," +
                 "${endTime}," +
                 "${startPosition.x.toAffFormat()}," +
@@ -109,7 +115,7 @@ open class ArcaeaChartSerializer : ChartSerializer {
                 "${color.value}," +
                 "${serializeHitSound(hitSound, ctx)}," +
                 arcType.value +
-                serializeArcResolution(this, arcResolution, ctx) +
+                serializedArcResolution +
                 ")" +
                 serializeArcTaps(this, ctx) +
                 ";"

@@ -29,14 +29,20 @@ class ArcCreateChartSerializer : ArcaeaChartSerializer() {
             val tgName = "${parentGroupId}_arcResolution${arcResolution}"
             val timingGroup = ctx.chart.postTiming.getOrPut(tgName) { ctx.timingGroup.duplicate(tgName) }
 
-            timingGroup.addSpecialEffect(
-                TimingGroup.SpecialEffect(
-                    TimingGroup.SpecialEffectType.fromValue("arcresolution"),
-                    arcResolution.toString()
+            val fxParam = arcResolution.toString()
+
+            if (timingGroup.getSpecialEffects().firstOrNull { it.type.value == "arcresolution" && it.param == fxParam } == null) {
+                timingGroup.addSpecialEffect(
+                    TimingGroup.SpecialEffect(
+                        TimingGroup.SpecialEffectType.fromValue("arcresolution"),
+                        fxParam
+                    )
                 )
-            )
+            }
 
             timingGroup.addArcNote(arcNote.copy(arcResolution = 1.0))
+
+            return Double.NaN.toString() // drop this arcNote
         }
 
         return ""
