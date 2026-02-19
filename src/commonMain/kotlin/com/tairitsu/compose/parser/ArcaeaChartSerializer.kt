@@ -36,6 +36,9 @@ open class ArcaeaChartSerializer : ChartSerializer {
 
     open val timingGroupSpecialEffectSeparator: CharSequence = "_"
 
+    open val timingGroupSpecialEffectFilter: (TimingGroup.SpecialEffect) -> Boolean =
+        { it.type in TimingGroup.SpecialEffectType.getVanillaSpecialEffectTypes() } // only vanilla fx are allowed
+
     override fun serializeTimingGroup(timingGroup: TimingGroup, ctx: SerializationContext): List<String> =
         mutableListOf<String>().apply tg@{
             val isMainTimingGroup = timingGroup.name == "main"
@@ -45,9 +48,7 @@ open class ArcaeaChartSerializer : ChartSerializer {
                     "timinggroup(" +
                             timingGroup
                                 .getSpecialEffects()
-                                .filter {
-                                    it.type in TimingGroup.SpecialEffectType.getVanillaSpecialEffectTypes()
-                                }
+                                .filter(timingGroupSpecialEffectFilter)
                                 .joinToString(timingGroupSpecialEffectSeparator) { serializeTimingGroupSpecialEffect(it) } +
                             "){"
                 )

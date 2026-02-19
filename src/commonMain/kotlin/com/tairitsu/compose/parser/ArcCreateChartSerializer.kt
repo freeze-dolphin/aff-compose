@@ -14,6 +14,9 @@ class ArcCreateChartSerializer : ArcaeaChartSerializer() {
 
     override val timingGroupSpecialEffectSeparator = ","
 
+    override val timingGroupSpecialEffectFilter: (TimingGroup.SpecialEffect) -> Boolean =
+        { true } // accept all fx
+
     override fun serializeTimingGroupSpecialEffect(specialEffect: TimingGroup.SpecialEffect): String =
         specialEffect.type.value + (specialEffect.param?.let { "=$it" } ?: "")
 
