@@ -159,17 +159,13 @@ open class ArcaeaChartSerializer : ChartSerializer {
         else ""
 
     open fun serializeArcTaps(arcNote: ArcNote, ctx: SerializationContext): String {
-        if (arcNote.arcTapList.none { it.length == null }) return "" // no normal arctap, just return
+        if (arcNote.arcTapList.isEmpty()) return "" // no arctap, just return
 
         val serialized = mutableListOf<String>()
 
         arcNote.arcTapList.forEach { arctap ->
             if (arctap.length != null) { // handle var-len arctap
-                val centerPos = ArcNote.easeFunc2(arcNote.startPosition, arcNote.endPosition, arcNote.easeType)(
-                    if (arcNote.endTime == arcNote.time) 0.0 else (arctap.time.toDouble() - arcNote.time) / (arcNote.endTime - arcNote.time),
-                    arcNote.startPosition,
-                    arcNote.endPosition
-                ) // calculate absolute position for this arctap
+                val centerPos = arcNote.getPositionAt(arctap.time) // calculate absolute position for this arctap
 
                 val tgName = "__internal_vlArcTapConv_${ctx.timingGroup.name}"
                 val timingGroup = ctx.chart.postTiming.getOrPut(tgName) { ctx.timingGroup.duplicate(tgName) }
@@ -179,8 +175,8 @@ open class ArcaeaChartSerializer : ChartSerializer {
                 timingGroup.apply {
                     addArcNote(
                         ArcNote(
-                            arcNote.time,
-                            arcNote.endTime,
+                            arctap.time,
+                            arctap.time + 1,
                             centerPos.x - radius pos centerPos.y,
                             ArcNote.EaseType.S,
                             centerPos.x + radius pos centerPos.y,
@@ -194,6 +190,8 @@ open class ArcaeaChartSerializer : ChartSerializer {
                 serialized.add("arctap(${arctap.time})")
             }
         }
+
+        if (serialized.isEmpty()) return ""
 
         return "[" + serialized.joinToString(",") + "]"
     }

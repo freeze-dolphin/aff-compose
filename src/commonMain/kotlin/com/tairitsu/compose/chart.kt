@@ -594,24 +594,30 @@ data class ArcNote(
     fun isTrace(): Boolean =
         arcType == NoteType.TRACE || arcType == NoteType.DESIGNANT
 
-    companion object {
-        fun easeFunc2(startPosition: Position, endPosition: Position, easeType: EaseType) = when (easeType) {
-            EaseType.S -> easeFunc2(linear)
-            EaseType.B -> bezierEaseFunc2(
-                startPosition.x, startPosition.x, endPosition.x, endPosition.x
-            )
+    fun getEaseFunc(): EaseFunc2 = when (easeType) {
+        EaseType.S -> easeFunc2(linear)
+        EaseType.B -> bezierEaseFunc2(
+            startPosition.x, startPosition.x, endPosition.x, endPosition.x
+        )
 
-            EaseType.SO -> easeFunc2(easeInSine, linear) // invert sIn and sOut
-            EaseType.SI -> easeFunc2(easeOutSine, linear)
-            EaseType.SISO -> easeFunc2(easeOutSine, easeInSine)
-            EaseType.SOSI -> easeFunc2(easeInSine, easeOutSine)
-            EaseType.SISI -> easeFunc2(easeOutSine)
-            EaseType.SOSO -> easeFunc2(easeInSine)
+        EaseType.SO -> easeFunc2(easeInSine, linear) // invert sIn and sOut
+        EaseType.SI -> easeFunc2(easeOutSine, linear)
+        EaseType.SISO -> easeFunc2(easeOutSine, easeInSine)
+        EaseType.SOSI -> easeFunc2(easeInSine, easeOutSine)
+        EaseType.SISI -> easeFunc2(easeOutSine)
+        EaseType.SOSO -> easeFunc2(easeInSine)
 
-            else -> {
-                throw IllegalArgumentException("Invalid ease type: $easeType")
-            }
+        else -> {
+            error("Invalid ease type: $easeType")
         }
+    }
+
+    fun getPositionAt(targetTime: Long): Position {
+        return getEaseFunc()(
+            if (endTime == time) 0.0 else (targetTime.toDouble() - time) / (endTime - time),
+            startPosition,
+            endPosition
+        )
     }
 
     @Serializable

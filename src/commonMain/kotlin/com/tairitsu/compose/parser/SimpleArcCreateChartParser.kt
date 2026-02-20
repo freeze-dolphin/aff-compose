@@ -24,7 +24,8 @@ class SimpleArcCreateChartParser : ArcaeaChartParser() {
                     if (evt.values.size == 2) {
                         require(evt.values[1].type == UniversalChartVisitor.ValueType.ALGEBRAIC)
 
-                        arctap(evt.values[0].num.toLong(), evt.values[1].num.toDouble())
+                        // arctap width in ArcCreate is doubled
+                        arctap(evt.values[0].num.toLong(), evt.values[1].num.toDouble() / 2)
                     } else {
                         val time = evt.values[0].num
                         arctap(time)
