@@ -12,6 +12,11 @@ class ArcCreateChartSerializer : ArcaeaChartSerializer() {
         fun serialize(chart: Chart): List<String> = Instance.serialize(chart)
     }
 
+    override fun serializeArcNote(timedObject: ArcNote, ctx: SerializationContext): String = timedObject.run {
+        if (arcType == ArcNote.NoteType.DESIGNANT) return ""
+        return super.serializeArcNote(timedObject, ctx)
+    }
+
     override val timingGroupSpecialEffectSeparator = ","
 
     override val timingGroupSpecialEffectFilter: (TimingGroup.SpecialEffect) -> Boolean =
