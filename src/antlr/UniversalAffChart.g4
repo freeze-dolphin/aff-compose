@@ -22,6 +22,7 @@ Operator  : '+' | '-' | '*' | '/' | '%' | '^';
 fragment SQUOTE     : '\'';
 fragment DQUOTE     : '"';
 fragment UNDERLINE  : '_';
+fragment SHARP      : '#';
 fragment ALPHABET   : [a-zA-Z];
 fragment DIGITSTART : [1-9];
 fragment ZERO       : '0';
@@ -34,14 +35,16 @@ chart: body EOF;
 
 value     : String | Word | Int | Float | (Word Equal value);
 values    : LParen (value (Comma value)*)? RParen;
-event     : Word? values subEvents? segment?;
+event     : Word? values subEvents? properties? segment?;
 item      : event Semicolon;
+property  : Word (Equal value)?;
+properties: LBrace (property (Comma property)*)? RBrace;
 subEvents : LBrack (event (Comma event)*)? RBrack;
 segment   : LBrace body RBrace;
 body      : item*;
 
-String : SQUOTE (Word | SPACE) SQUOTE
-       | DQUOTE (Word | SPACE) DQUOTE;
-Word   : ALPHABET (UNDERLINE | DIGIT | DOT | ALPHABET)*;
+String : SQUOTE (SHARP | UNDERLINE | ALPHABET | DIGIT | DOT | SPACE)* SQUOTE
+       | DQUOTE (SHARP | UNDERLINE | ALPHABET | DIGIT | DOT | SPACE)* DQUOTE;
+Word   : (SHARP | UNDERLINE | ALPHABET) (SHARP | UNDERLINE | ALPHABET | DIGIT)*;
 Int    : NEGATIVE? (ZERO | DIGITSTART DIGIT*);
 Float  : Int DOT DIGIT+;

@@ -69,7 +69,7 @@ class ArcaeaChartParserTest {
             };
             timinggroup(noinput_anglex1900){
               timing(0,252.00,4.00);
-              scenecontrol(82618,trackdisplay,953.00,0);
+              scenecontrol(82618,trackdisplay,953.00,0){ignored_special_effect};
               scenecontrol(90237,trackdisplay,953.00,255);
               scenecontrol(129285,enwidencamera,1905.00,1);
               scenecontrol(129285,enwidenlanes,952.50,1);
