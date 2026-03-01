@@ -295,7 +295,7 @@ open class ArcaeaChartParser : ChartParser {
     override fun parse(content: String): Chart {
         val lines = content.lines()
         val sepIdx = lines.indexOf("-")
-        require(sepIdx == -1) { "Cannot find separator '-'" }
+        require(sepIdx != -1) { "Cannot find separator '-'" }
 
         val header = lines.take(sepIdx)
         val bodies = lines.drop(sepIdx + 1).joinToString("\n")
