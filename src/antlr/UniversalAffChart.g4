@@ -4,7 +4,15 @@
  * @source https://github.com/yojohanshinwataikei/Arcade-plus/blob/master/Assets/Scripts/Aff/ArcaeaFileFormat.g4
  * @author yojohanshinwataikei
  */
+
+// $antlr-format alignTrailingComments true, columnLimit 150, minEmptyLines 1, maxEmptyLinesToKeep 1, reflowComments false, useTab false
+// $antlr-format allowShortRulesOnASingleLine true, allowShortBlocksOnASingleLine true, alignSemicolons hanging, alignColons hanging
+
 grammar UniversalAffChart;
+
+// $antlr-format alignTrailingComments true, columnLimit 150, minEmptyLines 0, maxEmptyLinesToKeep 1, reflowComments false, useTab false
+// $antlr-format allowShortRulesOnASingleLine true, allowShortBlocksOnASingleLine true, minEmptyLines 0, alignSemicolons ownLine
+// $antlr-format alignColons trailing, singleLineOverrulesHangingColon true, alignLexerCommands true, alignLabels true, alignTrailers true
 
 Whitespace: [\p{White_Space}] -> skip;
 
@@ -17,10 +25,18 @@ RBrace    : '}';
 Comma     : ',';
 Semicolon : ';';
 Equal     : '=';
-Operator  : '+' | '-' | '*' | '/' | '%' | '^';
+
+Space    : ' ';
+Plus     : '+';
+Minus    : '-';
+Multiply : '*';
+Divide   : '/';
+Mod      : '%';
+Pow      : '^';
 
 fragment SQUOTE     : '\'';
 fragment DQUOTE     : '"';
+fragment BQUOTE     : '`';
 fragment UNDERLINE  : '_';
 fragment SHARP      : '#';
 fragment ALPHABET   : [a-zA-Z];
@@ -31,20 +47,80 @@ fragment DOT        : '.';
 fragment NEGATIVE   : '-';
 fragment SPACE      : ' ';
 
-chart: body EOF;
+// $antlr-format alignTrailingComments true, columnLimit 150, minEmptyLines 1, maxEmptyLinesToKeep 1, reflowComments false, useTab false
+// $antlr-format allowShortRulesOnASingleLine false, allowShortBlocksOnASingleLine true, alignSemicolons hanging, alignColons hanging
 
-value     : String | Word | Int | Float | (Word Equal value);
-values    : LParen (value (Comma value)*)? RParen;
-event     : Word? values subEvents? properties? segment?;
-item      : event Semicolon;
-property  : Word (Equal value)?;
-properties: LBrace (property (Comma property)*)? RBrace;
-subEvents : LBrack (event (Comma event)*)? RBrack;
-segment   : LBrace body RBrace;
-body      : item*;
+chart
+    : body EOF
+    ;
 
-String : SQUOTE (SHARP | UNDERLINE | ALPHABET | DIGIT | DOT | SPACE)* SQUOTE
-       | DQUOTE (SHARP | UNDERLINE | ALPHABET | DIGIT | DOT | SPACE)* DQUOTE;
-Word   : (SHARP | UNDERLINE | ALPHABET) (SHARP | UNDERLINE | ALPHABET | DIGIT)*;
-Int    : NEGATIVE? (ZERO | DIGITSTART DIGIT*);
-Float  : Int DOT DIGIT+;
+value
+    : ExprString
+    | (Word Equal value)
+    | String
+    | Word
+    | expr
+    ;
+
+expr
+    : LParen expr RParen
+    | Minus expr
+    | expr (Multiply | Divide | Mod) expr
+    | expr (Plus | Minus) expr
+    | expr Pow expr
+    | Int
+    | Float
+    ;
+
+values
+    : LParen (value (Comma value)*)? RParen
+    ;
+
+event
+    : Word? values subEvents? properties? segment?
+    ;
+
+item
+    : event Semicolon
+    ;
+
+property
+    : Word (Equal value)?
+    ;
+
+properties
+    : LBrace (property (Comma property)*)? RBrace
+    ;
+
+subEvents
+    : LBrack (event (Comma event)*)? RBrack
+    ;
+
+segment
+    : LBrace body RBrace
+    ;
+
+body
+    : item*
+    ;
+
+ExprString
+    : BQUOTE ~[`]* BQUOTE
+    ;
+
+String
+    : SQUOTE (SHARP | UNDERLINE | ALPHABET | DIGIT | DOT | SPACE)* SQUOTE
+    | DQUOTE (SHARP | UNDERLINE | ALPHABET | DIGIT | DOT | SPACE)* DQUOTE
+    ;
+
+Word
+    : (SHARP | UNDERLINE | ALPHABET) (SHARP | UNDERLINE | ALPHABET | DIGIT)*
+    ;
+
+Int
+    : NEGATIVE? (ZERO | DIGITSTART DIGIT*)
+    ;
+
+Float
+    : Int DOT DIGIT+
+    ;

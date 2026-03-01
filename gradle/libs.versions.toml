@@ -15,6 +15,7 @@ kotlinx-microbenchmark = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-run
 cryptography = { module = "dev.whyoleg.cryptography:cryptography-core", version.ref = "cryptography" }
 cryptography-provider = { module = "dev.whyoleg.cryptography:cryptography-provider-optimal", version.ref = "cryptography" }
 uuid = { module = "com.benasher44:uuid", version = "0.8.4" }
+keval = { module = "com.notkamui.libs:keval", version = "1.1.1" }
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

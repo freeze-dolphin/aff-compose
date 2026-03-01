@@ -1,5 +1,7 @@
 package com.tairitsu.compose
 
+import com.notkamui.keval.Keval
+import com.notkamui.keval.KevalException
 import com.tairitsu.compose.arcaea.antlr.UniversalAffChartParser
 import com.tairitsu.compose.arcaea.antlr.UniversalAffChartVisitor
 import org.antlr.v4.kotlinruntime.BaseErrorListener
@@ -8,6 +10,7 @@ import org.antlr.v4.kotlinruntime.Recognizer
 import org.antlr.v4.kotlinruntime.tree.AbstractParseTreeVisitor
 import org.antlr.v4.kotlinruntime.tree.ErrorNode
 import org.antlr.v4.kotlinruntime.tree.TerminalNode
+import kotlin.math.pow
 
 fun Double.isInteger(): Boolean = this % 1 == 0.0
 
@@ -23,6 +26,10 @@ data class ParseContext(
 
 class UniversalChartVisitor : UniversalAffChartVisitor<Any>, AbstractParseTreeVisitor<Any>() {
 
+    private val keval = Keval.create {
+        includeDefault()
+    }
+
     data class Value(
         val raw: String,
         val type: ValueType,
@@ -36,7 +43,6 @@ class UniversalChartVisitor : UniversalAffChartVisitor<Any>, AbstractParseTreeVi
     }
 
     enum class ValueType { STRING, ALGEBRAIC, KEY_VALUE }
-    enum class OperatorType(val sign: Char) { ADD('+'), SUB('-'), MUL('*'), DIV('/'), POW('^'), REM('%') }
 
     data class Event(
         val name: String?,
@@ -55,14 +61,17 @@ class UniversalChartVisitor : UniversalAffChartVisitor<Any>, AbstractParseTreeVi
         requireNotNull(ctx.start)
 
         return when {
-            ctx.String() != null -> {
-                val raw = ctx.String()!!.text
-                val content = raw.removeSurrounding("'", "'").removeSurrounding("\"", "\"")
-                Value(raw, ValueType.STRING, stringValue = content)
+            ctx.ExprString() != null -> {
+                try {
+                    val raw = ctx.ExprString()!!.text
+                    val eval = raw.removeSurrounding("`", "`").let { content -> keval.eval(content) }
+
+                    Value(raw, ValueType.ALGEBRAIC, algebraicValue = eval)
+                } catch (kEx: KevalException) {
+                    error("Unable to evaluate keval expr at ${ctx.start!!.line}:${ctx.start!!.charPositionInLine}: ${kEx.message}")
+                }
             }
 
-            // make sure this is checked before ctx.Word()
-            // otherwise (Word Equal value) rule cannot be handled
             ctx.Word() != null && ctx.Equal() != null && ctx.value() != null -> {
                 val key = ctx.Word()!!.text
                 val value = visitValue(ctx.value()!!)
@@ -75,9 +84,64 @@ class UniversalChartVisitor : UniversalAffChartVisitor<Any>, AbstractParseTreeVi
                 Value("$key=${value.raw}", ValueType.KEY_VALUE, keyValuePair = key to value)
             }
 
+            ctx.String() != null -> {
+                val raw = ctx.String()!!.text
+                val content = raw.removeSurrounding("'", "'").removeSurrounding("\"", "\"")
+                Value(raw, ValueType.STRING, stringValue = content)
+            }
+
             ctx.Word() != null -> {
                 val raw = ctx.Word()!!.text
                 Value(raw, ValueType.STRING, stringValue = raw)
+            }
+
+            ctx.expr() != null -> {
+                visitExpr(ctx.expr()!!)
+            }
+
+            else -> error("Unknown value type at ${ctx.start!!.line}:${ctx.start!!.charPositionInLine}")
+        }
+    }
+
+    override fun visitExpr(ctx: UniversalAffChartParser.ExprContext): Value {
+        requireNotNull(ctx.start)
+        requireNotNull(ctx.getParent()?.start)
+
+        val parentStart = ctx.getParent()!!.start!!
+
+        return when {
+            ctx.LParen() != null && ctx.expr().size == 1 && ctx.RParen() != null -> {
+                visitExpr(ctx.expr(0)!!)
+            }
+
+            ctx.Minus() != null && ctx.expr().size == 1 -> {
+                val child = visitExpr(ctx.expr(0)!!)
+                Value("-${child.raw}", ValueType.ALGEBRAIC, algebraicValue = -child.num.toDouble())
+            }
+
+            ctx.expr().size == 2 -> {
+                val left = visitExpr(ctx.expr(0)!!)
+                val right = visitExpr(ctx.expr(1)!!)
+                val result = when {
+                    ctx.Multiply() != null -> left.num.toDouble() * right.num.toDouble() to ctx.Multiply()!!.text
+                    ctx.Divide() != null -> left.num.toDouble() / right.num.toDouble() to ctx.Divide()!!.text
+                    ctx.Mod() != null -> left.num.toDouble() % right.num.toDouble() to ctx.Mod()!!.text
+
+                    ctx.Plus() != null -> left.num.toDouble() + right.num.toDouble() to ctx.Plus()!!.text
+                    ctx.Minus() != null -> left.num.toDouble() - right.num.toDouble() to ctx.Minus()!!.text
+
+                    ctx.Pow() != null -> left.num.toDouble().pow(right.num.toDouble()) to ctx.Pow()!!.text
+
+                    else -> error(
+                        "Unable to evaluate basic expr at ${ctx.start!!.line}:${ctx.start!!.charPositionInLine + parentStart.charPositionInLine}: Unknown operator ${
+                            ctx.getChild(
+                                1
+                            )!!.text
+                        }"
+                    )
+                }
+
+                Value("${left.raw}${result.second}${right.raw}", ValueType.ALGEBRAIC, algebraicValue = result.first)
             }
 
             ctx.Int() != null -> {
@@ -92,7 +156,7 @@ class UniversalChartVisitor : UniversalAffChartVisitor<Any>, AbstractParseTreeVi
                 Value(raw, ValueType.ALGEBRAIC, algebraicValue = num)
             }
 
-            else -> error("Unknown value type at ${ctx.start!!.line}:${ctx.start!!.charPositionInLine}")
+            else -> error("Unable to evaluate basic expr at ${ctx.start!!.line}:${ctx.start!!.charPositionInLine + parentStart.charPositionInLine}")
         }
     }
 

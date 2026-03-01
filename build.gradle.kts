@@ -102,6 +102,7 @@ kotlin {
                 implementation(libs.cryptography)
                 implementation(libs.cryptography.provider)
                 implementation(libs.uuid)
+                implementation(libs.keval)
             }
         }
         commonTest {

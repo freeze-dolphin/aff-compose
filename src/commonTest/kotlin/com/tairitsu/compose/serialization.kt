@@ -19,7 +19,7 @@ class ArcaeaChartParserTest {
             hold(1200,1400,2);
             arc(1500,2100,0,0.5,s,1,0,0,none,false);
             arc(2100,2400,0.5,1,si,0,0.5,0,none,false,2);
-            arc(2400,3000,0.5,0.5,s,1,1,0,none,true)[arctap(2400),arctap(2600)];
+            arc(2400 * 2,`1500 * 2`,0.5,0.5,s,1,1,0,none,true)[arctap(2400),arctap(2600)];
         """.trimIndent()
         val expect = ArcaeaChartParser.Instance.parse(content)
         val expectNotesInMain = expect.mainTiming.getNotes()
@@ -30,7 +30,7 @@ class ArcaeaChartParserTest {
             hold(1200, 1400, 2)
             arc(1500, 2100, 0, 0.5, s, 1, 0, 0, noneHitSound, false)
             arc(2100, 2400, 0.5, 1, si, 0, 0.5, 0, noneHitSound, false, 2.0)
-            arc(2400, 3000, 0.5, 0.5, s, 1, 1, 0, noneHitSound, true) { arctap(2400); arctap(2600) }
+            arc(2400 * 2, 3000, 0.5, 0.5, s, 1, 1, 0, noneHitSound, true) { arctap(2400); arctap(2600) }
         }
 
         assertEquals(expect.configuration, actual.configuration)
