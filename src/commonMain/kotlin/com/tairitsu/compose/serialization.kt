@@ -66,6 +66,12 @@ class UniversalChartVisitor : UniversalAffChartVisitor<Any>, AbstractParseTreeVi
             ctx.Word() != null && ctx.Equal() != null && ctx.value() != null -> {
                 val key = ctx.Word()!!.text
                 val value = visitValue(ctx.value()!!)
+
+                // prohibit recursive kv pair
+                if (value.type == ValueType.KEY_VALUE) {
+                    error("Recursive key-value pair is not allowed at ${ctx.start!!.line}:${ctx.start!!.charPositionInLine}")
+                }
+
                 Value("$key=${value.raw}", ValueType.KEY_VALUE, keyValuePair = key to value)
             }
 
@@ -111,6 +117,27 @@ class UniversalChartVisitor : UniversalAffChartVisitor<Any>, AbstractParseTreeVi
 
     override fun visitItem(ctx: UniversalAffChartParser.ItemContext): Event {
         return visitEvent(ctx.event())
+    }
+
+    override fun visitProperty(ctx: UniversalAffChartParser.PropertyContext): Value {
+        requireNotNull(ctx.start)
+
+        return when {
+            ctx.Equal() != null && ctx.value() != null -> {
+                val key = ctx.Word().text
+                val value = visitValue(ctx.value()!!)
+                Value("$key=${value.raw}", ValueType.KEY_VALUE, keyValuePair = key to value)
+            }
+
+            else -> {
+                val raw = ctx.Word().text
+                Value(raw, ValueType.STRING, stringValue = raw)
+            }
+        }
+    }
+
+    override fun visitProperties(ctx: UniversalAffChartParser.PropertiesContext): List<Value> {
+        return ctx.property().map { visitProperty(it) }
     }
 
     override fun visitSubEvents(ctx: UniversalAffChartParser.SubEventsContext): List<Event> {
