@@ -7,7 +7,7 @@ import com.tairitsu.compose.Position.Companion.pos
  * Simple implementation of chart parser for ArcCreate
  * macro function `fragment(...);` is not supported
  */
-class SimpleArcCreateChartParser : ArcaeaChartParser() {
+open class SimpleArcCreateChartParser : ArcaeaChartParser() {
 
     companion object {
         val Instance by lazy { SimpleArcCreateChartParser() }

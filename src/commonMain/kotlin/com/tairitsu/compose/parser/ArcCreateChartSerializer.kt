@@ -5,7 +5,7 @@ import com.tairitsu.compose.Chart
 import com.tairitsu.compose.SerializationContext
 import com.tairitsu.compose.TimingGroup
 
-class ArcCreateChartSerializer : ArcaeaChartSerializer() {
+open class ArcCreateChartSerializer : ArcaeaChartSerializer() {
 
     companion object {
         val Instance by lazy { ArcCreateChartSerializer() }
