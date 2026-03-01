@@ -1,3 +1,5 @@
+@file:Suppress("all")
+
 package com.tairitsu.compose
 
 import com.tairitsu.compose.parser.ArcaeaChartSerializer
@@ -8,7 +10,7 @@ class ArcaeaChartSerializerTest {
 
     @Test
     fun serializationTest() {
-        val actual = ArcaeaChartSerializer.Instance.serialize(compose {
+        val actual = ArcaeaChartSerializer.Instance.serialize(compose(Chart.Configuration(0)) {
             // @formatter:off
             timing(0,252.00,4.00);
             arc(0,952,0.00,0.50,siso,1.00,0.50,0,none,false);
