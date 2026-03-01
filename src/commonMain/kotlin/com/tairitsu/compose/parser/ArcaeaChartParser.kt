@@ -272,9 +272,8 @@ open class ArcaeaChartParser : ChartParser {
 
     override fun getEventParser(): (UniversalChartVisitor.Event, ParseContext) -> Unit = eventParser
 
-    open val headerParser: String.() -> Chart.Configuration = {
+    open val headerParser: List<String>.() -> Chart.Configuration = {
         this // AudioOffset:0\nChartVersion:2 `String`
-            .split("\n") // AudioOffset:0 `String`
             .map { item ->
                 item.split(":", limit = 2).let { Chart.Configuration.Item(it[0], it[1]) }
             } // ChartConfiguration.Item(key="AudioOffset", value="0")
@@ -296,8 +295,9 @@ open class ArcaeaChartParser : ChartParser {
     override fun parse(content: String): Chart {
         val lines = content.lines()
         val sepIdx = lines.indexOf("-")
+        require(sepIdx == -1) { "Cannot find separator '-'" }
 
-        val header = lines.take(sepIdx).joinToString("\n")
+        val header = lines.take(sepIdx)
         val bodies = lines.drop(sepIdx + 1).joinToString("\n")
 
         val lexer = UniversalAffChartLexer(CharStreams.fromString(bodies))
