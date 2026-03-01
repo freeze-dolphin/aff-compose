@@ -1,8 +1,6 @@
 package com.tairitsu.compose.parser
 
 import com.tairitsu.compose.*
-import com.tairitsu.compose.ArcNoteExtension.gray
-import com.tairitsu.compose.ArcNoteExtension.s
 import com.tairitsu.compose.Position.Companion.pos
 import com.tairitsu.compose.arcaea.antlr.UniversalAffChartLexer
 import com.tairitsu.compose.arcaea.antlr.UniversalAffChartParser

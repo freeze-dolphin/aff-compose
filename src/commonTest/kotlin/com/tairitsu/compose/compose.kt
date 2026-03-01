@@ -1,8 +1,5 @@
 package com.tairitsu.compose
 
-import com.tairitsu.compose.ArcNoteExtension.blue
-import com.tairitsu.compose.ArcNoteExtension.noneHitSound
-import com.tairitsu.compose.ArcNoteExtension.s
 import com.tairitsu.compose.Position.Companion.pos
 import kotlin.test.Test
 import kotlin.test.assertEquals

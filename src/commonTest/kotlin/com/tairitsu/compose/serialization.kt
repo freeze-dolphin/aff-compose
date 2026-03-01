@@ -1,8 +1,5 @@
 package com.tairitsu.compose
 
-import com.tairitsu.compose.ArcNoteExtension.noneHitSound
-import com.tairitsu.compose.ArcNoteExtension.s
-import com.tairitsu.compose.ArcNoteExtension.si
 import com.tairitsu.compose.TimingGroup.SpecialEffectType
 import com.tairitsu.compose.parser.ArcaeaChartParser
 import kotlin.test.Test
