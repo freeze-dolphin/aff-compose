@@ -63,6 +63,7 @@ value
     | String
     | Word
     | expr
+    | ()
     ;
 
 expr

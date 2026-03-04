@@ -40,6 +40,10 @@ class UniversalChartVisitor : UniversalAffChartVisitor<Any>, AbstractParseTreeVi
         val str: String get() = stringValue!!
         val num: Number get() = algebraicValue!!
         val kv: Pair<String, Value> get() = keyValuePair!!
+
+        companion object {
+            val Empty = Value("", ValueType.STRING, "")
+        }
     }
 
     enum class ValueType { STRING, ALGEBRAIC, KEY_VALUE }
@@ -97,6 +101,10 @@ class UniversalChartVisitor : UniversalAffChartVisitor<Any>, AbstractParseTreeVi
 
             ctx.expr() != null -> {
                 visitExpr(ctx.expr()!!)
+            }
+
+            ctx.text == "" -> {
+                Value.Empty
             }
 
             else -> error("Unknown value type at ${ctx.start!!.line}:${ctx.start!!.charPositionInLine}")
