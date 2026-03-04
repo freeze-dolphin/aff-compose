@@ -22,8 +22,11 @@ LBrack    : '[';
 RBrack    : ']';
 LBrace    : '{';
 RBrace    : '}';
+LChev     : '<';
+RChev     : '>';
 Comma     : ',';
 Semicolon : ';';
+Colon     : ':';
 Equal     : '=';
 
 Space    : ' ';
@@ -85,11 +88,11 @@ item
     ;
 
 property
-    : Word (Equal value)?
+    : Word (Colon value)?
     ;
 
 properties
-    : LBrace (property (Comma property)*)? RBrace
+    : LChev (property (Comma property)*)? RChev
     ;
 
 subEvents
@@ -109,8 +112,8 @@ ExprString
     ;
 
 String
-    : SQUOTE (SHARP | UNDERLINE | ALPHABET | DIGIT | DOT | SPACE)* SQUOTE
-    | DQUOTE (SHARP | UNDERLINE | ALPHABET | DIGIT | DOT | SPACE)* DQUOTE
+    : SQUOTE ~[']* SQUOTE
+    | DQUOTE ~["]* DQUOTE
     ;
 
 Word

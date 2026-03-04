@@ -187,7 +187,7 @@ class UniversalChartVisitor : UniversalAffChartVisitor<Any>, AbstractParseTreeVi
         requireNotNull(ctx.start)
 
         return when {
-            ctx.Equal() != null && ctx.value() != null -> {
+            ctx.Colon() != null && ctx.value() != null -> {
                 val key = ctx.Word().text
                 val value = visitValue(ctx.value()!!)
                 Value("$key=${value.raw}", ValueType.KEY_VALUE, keyValuePair = key to value)
