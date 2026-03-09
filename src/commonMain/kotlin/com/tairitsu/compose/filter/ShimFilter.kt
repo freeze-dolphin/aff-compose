@@ -26,8 +26,17 @@ object ShimFilter {
      */
     object A2C : EventFilter(), TimingGroupSpecialEffectFilter {
         override fun filterScenecontrol(sc: Scenecontrol): TimedObject = when (sc.type.value) {
-            ScenecontrolType.TRACK_HIDE.value -> Scenecontrol(sc.time, ScenecontrolType.TRACK_DISPLAY) { listOf(1000, 0).map { it.toString() } }
-            ScenecontrolType.TRACK_SHOW.value -> Scenecontrol(sc.time, ScenecontrolType.TRACK_DISPLAY) { listOf(1000, 255).map { it.toString() } }
+            ScenecontrolType.TRACK_HIDE.value -> Scenecontrol(sc.time, ScenecontrolType.TRACK_DISPLAY) {
+                listOf(
+                    1000, 0
+                ).map { it.toString() }
+            }
+
+            ScenecontrolType.TRACK_SHOW.value -> Scenecontrol(sc.time, ScenecontrolType.TRACK_DISPLAY) {
+                listOf(
+                    1000, 255
+                ).map { it.toString() }
+            }
 
             in needTimeConversion -> Scenecontrol(sc.time, sc.type) {
                 listOf(
@@ -39,7 +48,8 @@ object ShimFilter {
         }
 
         override fun filter(fx: TimingGroup.SpecialEffect): TimingGroup.SpecialEffect = when (fx.type.value) {
-            "anglex", "angley" -> fx.copy(param = (fx.param!!.toDouble() / 10).toString())
+            "anglex" -> fx.copy(param = (fx.param!!.toDouble() / 10).toString())
+            "angley" -> fx.copy(param = (fx.param!!.toDouble() / -10).toString())
 
             else -> fx
         }
@@ -59,11 +69,15 @@ object ShimFilter {
             else -> sc
         }
 
-        internal fun Double.toArcaeaAngleFormat(): String = if (this < 0) ((3600 + (this * 10).roundToInt()) % 3600).toString()
-        else ((this % 360) * 10).roundToInt().toString()
+        internal fun Double.toArcaeaAngleFormat(multiplyWith: Double = 1.0): String = if (this < 0) {
+            ((3600 + (this * 10).roundToInt()) % 3600 * multiplyWith).toString()
+        } else {
+            ((this % 360) * 10 * multiplyWith).roundToInt().toString()
+        }
 
         override fun filter(fx: TimingGroup.SpecialEffect): TimingGroup.SpecialEffect = when (fx.type.value) {
-            "anglex", "angley" -> fx.copy(param = fx.param!!.toDouble().toArcaeaAngleFormat())
+            "anglex" -> fx.copy(param = fx.param!!.toDouble().toArcaeaAngleFormat())
+            "angley" -> fx.copy(param = fx.param!!.toDouble().toArcaeaAngleFormat(-1.0))
 
             else -> fx
         }

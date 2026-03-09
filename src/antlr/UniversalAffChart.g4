@@ -49,6 +49,8 @@ fragment DIGIT      : DIGITSTART | ZERO;
 fragment DOT        : '.';
 fragment NEGATIVE   : '-';
 fragment SPACE      : ' ';
+fragment SLASH      : '/';
+fragment BSLASH     : '\\';
 
 // $antlr-format alignTrailingComments true, columnLimit 150, minEmptyLines 1, maxEmptyLinesToKeep 1, reflowComments false, useTab false
 // $antlr-format allowShortRulesOnASingleLine false, allowShortBlocksOnASingleLine true, alignSemicolons hanging, alignColons hanging
@@ -117,8 +119,30 @@ String
     | DQUOTE ~["]* DQUOTE
     ;
 
+fragment WORD_HEAD // Word must starts with '#', '_' or an Alpha
+    : (SHARP | UNDERLINE | ALPHABET)
+    ;
+
+fragment WORD_BODY
+    : (
+        SHARP
+        | UNDERLINE
+        | ALPHABET
+        | DIGIT
+        | DOT
+        | SLASH
+        | BSLASH
+        | NEGATIVE
+        | SPACE // space can only be in the middle part of the Word
+    )
+    ;
+
+fragment WORD_TAIL // space is not allowed as ending
+    : (SHARP | UNDERLINE | ALPHABET | DIGIT | DOT | SLASH | BSLASH | NEGATIVE)
+    ;
+
 Word
-    : (SHARP | UNDERLINE | ALPHABET) (SHARP | UNDERLINE | ALPHABET | DIGIT)*
+    : WORD_HEAD (WORD_BODY* WORD_TAIL)?
     ;
 
 Int
