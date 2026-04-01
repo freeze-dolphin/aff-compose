@@ -169,7 +169,7 @@ class UniversalChartVisitor : UniversalAffChartVisitor<Any>, AbstractParseTreeVi
     }
 
     override fun visitValues(ctx: UniversalAffChartParser.ValuesContext): List<Value> {
-        return ctx.value().map { visitValue(it) }
+        return ctx.value().map { visitValue(it) }.filterNot { it == Value.Empty }
     }
 
     override fun visitEvent(ctx: UniversalAffChartParser.EventContext): Event {

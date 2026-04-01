@@ -16,6 +16,16 @@ grammar UniversalAffChart;
 
 Whitespace: [\p{White_Space}] -> skip;
 
+LineComment 
+    : '//' ~[\r\n]*  ('\r'? '\n' | EOF)
+    -> skip
+    ;
+
+BlockComment 
+    : '/*' .*? '*/'
+    -> skip
+    ;
+
 LParen    : '(';
 RParen    : ')';
 LBrack    : '[';
