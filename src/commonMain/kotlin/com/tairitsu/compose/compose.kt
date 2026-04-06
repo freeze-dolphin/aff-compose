@@ -302,6 +302,7 @@ fun <TTime : Number, TEndTime : Number, TCoordinate : Number> Chart.arc(
         ArcNote.Color.fromColorId(color),
         noteType,
         arcResolution,
+        hitSound,
         arcTapList = mutableListOf<ArcTapNote>().apply { arcTapList(this) }
     )
     return ctx.addArcNote(note)

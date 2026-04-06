@@ -71,7 +71,7 @@ open class SimpleArcCreateChartParser : ArcaeaChartParser() {
                     startPosition.y,
                     endPosition.y,
                     color,
-                    hitSound,
+                    hitSound.replace(".wav", "_wav"),
                     noteType,
                     arcResolution
                 ) {

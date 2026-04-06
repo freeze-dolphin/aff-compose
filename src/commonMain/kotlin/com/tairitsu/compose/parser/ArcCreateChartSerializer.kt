@@ -17,6 +17,11 @@ open class ArcCreateChartSerializer : ArcaeaChartSerializer() {
         return super.serializeArcNote(timedObject, ctx)
     }
 
+    override fun serializeHitSound(hitSound: String, ctx: SerializationContext): String =
+        if (hitSound == "none") "none"
+        else if (hitSound.endsWith("_wav")) hitSound.replace("_wav", ".wav")
+        else hitSound
+
     override val timingGroupSpecialEffectSeparator = ","
 
     override val timingGroupSpecialEffectFilter: (TimingGroup.SpecialEffect) -> Boolean =

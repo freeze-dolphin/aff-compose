@@ -148,10 +148,7 @@ open class ArcaeaChartSerializer : ChartSerializer {
     open fun serializeTimingGroupSpecialEffect(specialEffect: TimingGroup.SpecialEffect): String =
         specialEffect.type.value + (specialEffect.param ?: "")
 
-    open fun serializeHitSound(hitSound: String, ctx: SerializationContext): String =
-        if (hitSound == "none")
-            "none"
-        else "${hitSound}_wav"
+    open fun serializeHitSound(hitSound: String, ctx: SerializationContext): String = hitSound
 
     open fun serializeArcResolution(arcNote: ArcNote, arcResolution: Double, ctx: SerializationContext): String =
         if (arcResolution > 1.0)
